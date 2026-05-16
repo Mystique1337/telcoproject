@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     nvidia_api_key: str | None = None
     nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
+    # NVIDIA model for synthetic + rating refinement — override if your account
+    # doesn't have access to the default (set NVIDIA_NEMO_MODEL in .env).
+    # Run the diagnostic in the Colab notebook to find which models work for you.
+    nvidia_nemo_model: str = "meta/llama-3.3-70b-instruct"
     hf_token: str | None = None
 
     # --- LangSmith / W&B ---

@@ -269,7 +269,9 @@ async def stage2_refine_ratings(*, dry_run: bool = False) -> Path:
     if not settings.nvidia_api_key:
         raise SystemExit("NVIDIA_API_KEY not set — required for stage 2 rating refinement")
 
-    client = LLMClient("nvidia:nvidia/llama-3.1-nemotron-70b-instruct")
+    nemo_model = settings.nvidia_nemo_model
+    client = LLMClient(f"nvidia:{nemo_model}")
+    logger.info("[stage 2] using NVIDIA model: %s", nemo_model)
     sem = asyncio.Semaphore(RATING_REFINE_WORKERS)
 
     logger.info("[stage 2] refining ratings on %d rows (concurrency=%d)", len(rows), RATING_REFINE_WORKERS)
@@ -649,7 +651,11 @@ async def stage4_synthetic(*, dry_run: bool = False) -> Path:
 
     products = _stratified_sample_products(len(plan), dry_run)
 
-    client = LLMClient(f"nvidia:{cfg.get('model', 'nvidia/llama-3.1-nemotron-70b-instruct')}")
+    # Prefer the env var (NVIDIA_NEMO_MODEL) so users with restricted accounts can override
+    # without editing the YAML or the script.
+    nemo_model = settings.nvidia_nemo_model or cfg.get("model", "meta/llama-3.3-70b-instruct")
+    client = LLMClient(f"nvidia:{nemo_model}")
+    logger.info("[stage 4] using NVIDIA model: %s", nemo_model)
     sem = asyncio.Semaphore(SYNTHETIC_WORKERS)
     tasks = [
         _synth_one(client, persona, product, register, rating, sem)
