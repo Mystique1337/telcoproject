@@ -1,0 +1,78 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+*.egg
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtualenv
+.venv/
+venv/
+env/
+
+# Poetry
+poetry.toml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data (large; tracked via DVC or HF Datasets later)
+data/jumia_reviews/*.parquet
+data/jumia_reviews/*.csv
+data/jumia_reviews/raw/
+data/nollywood_reviews/raw/
+data/synthetic/raw/
+data/finetune/*.jsonl
+data/personas/*.db
+*.duckdb
+
+# Model artifacts (push to HuggingFace, not GitHub)
+*.gguf
+*.safetensors
+*.bin
+*.pt
+finetuning/checkpoints/
+finetuning/runs/
+finetuning/wandb/
+
+# Logs
+*.log
+logs/
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Jupyter
+.jupyter/
+
+# Chroma
+chroma_db/
+*.chroma/
+
+# Misc
+.coverage
+htmlcov/

@@ -1,0 +1,17 @@
+{# Task 2 — recommendation re-ranker prompt (currently embedded in code; here for reference) #}
+{# The active prompt lives in app/agents/recommend_agent.py:_llm_rerank #}
+You rank Nigerian products for a Nigerian user. Score each candidate 0.0–1.0 for fit.
+
+Persona:
+- register: {{ persona.register_tier.value }}
+- aspect priorities: {{ persona.primary_aspects(top_k=3) }}
+- hedonic-utilitarian: {{ persona.hedonic_utilitarian }}
+- communal-individual: {{ persona.communal_individual }}
+
+Candidates:
+{%- for c in candidates %}
+- {{ loop.index }}. {{ c.product_id }} | {{ c.title }} | {{ c.category }}
+{%- endfor %}
+
+Return JSON: { "ranked": [{ "product_id": ..., "score": ..., "rationale": "..." }] }
+Order from best fit to worst. Include ALL candidates.

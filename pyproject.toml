@@ -1,0 +1,78 @@
+[tool.poetry]
+name = "naija-persona-agent"
+version = "0.1.0"
+description = "Nigerian-context LLM agent for review simulation and personalised recommendation"
+authors = [
+    "Ashinze <ashinze@bluebulb.co.uk>",
+    "Franca",
+]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.115.0"
+uvicorn = {extras = ["standard"], version = "^0.32.0"}
+pydantic = "^2.9.0"
+pydantic-settings = "^2.6.0"
+python-dotenv = "^1.0.0"
+jinja2 = "^3.1.0"
+httpx = "^0.27.0"
+anthropic = "^0.39.0"
+openai = "^1.55.0"
+chromadb = "^0.5.0"
+pandas = "^2.2.0"
+numpy = "^1.26.0"
+scikit-learn = "^1.5.0"
+xgboost = "^2.1.0"
+tqdm = "^4.66.0"
+sentence-transformers = "^3.3.0"
+beautifulsoup4 = "^4.12.0"
+requests = "^2.32.0"
+datasets = "^3.1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+pytest-asyncio = "^0.24.0"
+ruff = "^0.7.0"
+black = "^24.10.0"
+mypy = "^1.13.0"
+ipython = "^8.29.0"
+
+[tool.poetry.group.demo.dependencies]
+streamlit = "^1.40.0"
+
+[tool.poetry.group.finetune.dependencies]
+torch = "^2.5.0"
+transformers = "^4.46.0"
+peft = "^0.13.0"
+bitsandbytes = "^0.44.0"
+accelerate = "^1.1.0"
+trl = "^0.12.0"
+wandb = "^0.18.0"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.black]
+target-version = ["py311"]
+line-length = 100
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,50 @@
+{
+  "user_id": "femi_abuja",
+  "demographics": {
+    "age_range": "30-40",
+    "location": "Abuja, Wuse 2",
+    "occupation": "commercial banker"
+  },
+  "hedonic_utilitarian": 0.62,
+  "intensity_calibration": {
+    "excellent": 4.7,
+    "premium": 4.5,
+    "good": 4.0,
+    "average": 3.0,
+    "subpar": 1.8
+  },
+  "communal_individual": 0.28,
+  "aspect_priority": {
+    "build_quality": 0.30,
+    "brand_reputation": 0.25,
+    "customer_service": 0.18,
+    "aesthetics": 0.15,
+    "value": 0.12
+  },
+  "register_tier": "standard_english",
+  "register_markers": [
+    "however",
+    "overall",
+    "I would recommend",
+    "in my experience",
+    "well done sir"
+  ],
+  "register_confidence": 0.82,
+  "review_anchors": [
+    {
+      "review_id": "anchor_f01",
+      "product_id": "MACBOOK-PRO-M3",
+      "rating": 5,
+      "text": "Excellent piece of engineering. The display is premium and the performance is consistent under heavy multitasking. Delivery from the Jumia Express partner was timely. Overall, I would recommend for any professional context."
+    },
+    {
+      "review_id": "anchor_f02",
+      "product_id": "OFFICE-CHAIR-ERGONOMIC",
+      "rating": 3,
+      "text": "Build quality is good. However, the lumbar support is not as advertised — it felt average after the first week. Customer service was responsive. Acceptable for the price, but I would not buy again."
+    }
+  ],
+  "history_count": 19,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

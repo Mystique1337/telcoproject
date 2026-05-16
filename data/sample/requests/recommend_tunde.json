@@ -1,0 +1,19 @@
+{
+  "persona": {
+    "user_id": "tunde_lagos",
+    "hedonic_utilitarian": 0.18,
+    "intensity_calibration": {"e too much": 5.0, "correct": 4.5, "manageable": 3.2, "rubbish": 1.5},
+    "communal_individual": 0.42,
+    "aspect_priority": {"value": 0.32, "durability": 0.28, "bulk_pricing": 0.18, "delivery": 0.12, "warranty": 0.10},
+    "register_tier": "nigerian_pidgin",
+    "register_markers": ["abeg", "no cap", "wahala", "as e dey hot", "no shaking"],
+    "register_confidence": 0.92,
+    "review_anchors": [],
+    "history_count": 47,
+    "extraction_source": "manual"
+  },
+  "domain": "jumia",
+  "k": 5,
+  "include_negatives": false,
+  "include_reasoning": true
+}

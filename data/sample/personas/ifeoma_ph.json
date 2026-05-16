@@ -1,0 +1,52 @@
+{
+  "user_id": "ifeoma_ph",
+  "demographics": {
+    "age_range": "25-35",
+    "location": "Port Harcourt",
+    "occupation": "fashion entrepreneur, Nollywood superfan"
+  },
+  "hedonic_utilitarian": 0.88,
+  "intensity_calibration": {
+    "epic": 5.0,
+    "Africa Magic level": 4.9,
+    "fire": 4.7,
+    "decent": 3.5,
+    "scam": 1.0
+  },
+  "communal_individual": 0.65,
+  "aspect_priority": {
+    "story": 0.30,
+    "production_value": 0.25,
+    "cast_performance": 0.20,
+    "cultural_authenticity": 0.15,
+    "soundtrack": 0.10
+  },
+  "register_tier": "nigerian_english",
+  "register_markers": [
+    "epic",
+    "fire",
+    "scatter",
+    "Africa Magic level",
+    "big-budget",
+    "well done sir",
+    "no cap"
+  ],
+  "register_confidence": 0.86,
+  "review_anchors": [
+    {
+      "review_id": "anchor_i01",
+      "product_id": "ANIKULAPO-MOVIE",
+      "rating": 5,
+      "text": "Anikulapo na epic, no cap. The production value reach Hollywood level, and Kunle Afolayan understand storytelling. My sister and I watched it three times. The Yoruba cultural detail was on point - it scatter me."
+    },
+    {
+      "review_id": "anchor_i02",
+      "product_id": "GENERIC-NIGERIAN-COMEDY-2024",
+      "rating": 2,
+      "text": "Production was decent but the story was scattered (and not in the good way). The cast tried but the script let them down. For ₦2k cinema ticket, I expected Africa Magic Epic level, not this."
+    }
+  ],
+  "history_count": 34,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

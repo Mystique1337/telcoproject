@@ -1,0 +1,25 @@
+{
+  "persona": {
+    "user_id": "chinwe_owerri",
+    "hedonic_utilitarian": 0.78,
+    "intensity_calibration": {"scatter": 5.0, "amazing": 4.8, "fire": 4.7, "okay": 3.0},
+    "communal_individual": 0.72,
+    "aspect_priority": {"quality": 0.3, "delivery": 0.25, "value": 0.2, "seller_responsiveness": 0.15, "packaging": 0.10},
+    "register_tier": "code_mixed",
+    "register_markers": ["abeg", "wahala", "no cap", "biko", "nna", "scatter scatter"],
+    "register_confidence": 0.85,
+    "review_anchors": [],
+    "history_count": 12,
+    "extraction_source": "manual"
+  },
+  "product": {
+    "product_id": "TECNO-SPARK-10",
+    "title": "Tecno Spark 10 - 128GB - 8GB RAM",
+    "category": "Phone & Tablet",
+    "brand": "Tecno",
+    "price_naira": 138500,
+    "domain": "jumia",
+    "description": "6.6-inch HD+ display, 5000mAh battery, 50MP camera, dual SIM 4G."
+  },
+  "include_reasoning": true
+}

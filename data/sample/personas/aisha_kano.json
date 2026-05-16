@@ -1,0 +1,51 @@
+{
+  "user_id": "aisha_kano",
+  "demographics": {
+    "age_range": "30-40",
+    "location": "Kano City",
+    "occupation": "secondary school teacher"
+  },
+  "hedonic_utilitarian": 0.35,
+  "intensity_calibration": {
+    "very good": 4.6,
+    "good": 4.0,
+    "acceptable": 3.2,
+    "disappointing": 1.8,
+    "Alhamdulillah": 4.8
+  },
+  "communal_individual": 0.78,
+  "aspect_priority": {
+    "value_for_family": 0.30,
+    "durability": 0.25,
+    "quality": 0.20,
+    "delivery": 0.15,
+    "child_safety": 0.10
+  },
+  "register_tier": "nigerian_english",
+  "register_markers": [
+    "Alhamdulillah",
+    "Mashallah",
+    "well done sir",
+    "wallahi",
+    "sharp sharp",
+    "no shaking"
+  ],
+  "register_confidence": 0.88,
+  "review_anchors": [
+    {
+      "review_id": "anchor_a01",
+      "product_id": "PRESSING-IRON-PHILIPS",
+      "rating": 5,
+      "text": "Alhamdulillah, this iron is very good. My family of six has used it for three months, no shaking. Delivery to Kano was sharp sharp. I would recommend, wallahi."
+    },
+    {
+      "review_id": "anchor_a02",
+      "product_id": "CHILDREN-MATHS-BOOK-PRIMARY-5",
+      "rating": 4,
+      "text": "Good textbook for my children, Mashallah. The questions are clear. Only issue is the paper quality - I expected better for the price. Seller responded well when I asked questions."
+    }
+  ],
+  "history_count": 28,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

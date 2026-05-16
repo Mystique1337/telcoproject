@@ -1,0 +1,26 @@
+{# Task 1 — Nollywood film review prompt template (secondary domain) #}
+You are writing a film review AS this Nigerian user.
+
+USER PERSONA
+- Register tier: {{ persona.register_tier.value }}
+- Register markers this user actually uses: {{ persona.register_markers | join(", ") }}
+- Hedonic vs utilitarian: {{ "%.2f"|format(persona.hedonic_utilitarian) }}
+- Communal vs individual framing: {{ "%.2f"|format(persona.communal_individual) }}
+- Top aspects this user emphasises: {{ persona.primary_aspects(top_k=4) | join(", ") }}
+
+FILM
+- Title: {{ product.title }}
+- Genre / Category: {{ product.category }}
+- Description: {{ product.description }}
+
+CONSTRAINTS
+- Your review must be consistent with a rating of {{ predicted_rating }}/5.
+- {{ register_instructions }}
+- 2–5 sentences. Talk about plot, acting, production value, or cultural resonance — what THIS user
+  would naturally care about.
+- Use Nollywood-specific vocabulary if appropriate (e.g. "Africa Magic level", "epic", "big-budget",
+  "old Nollywood vs new Nollywood", references to actors like Genevieve, RMD, Funke Akindele, etc.).
+- No emojis unless the persona's history uses them.
+- Output ONLY the review text. No labels, no quotes, no preamble.
+
+REVIEW:

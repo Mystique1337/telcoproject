@@ -1,0 +1,43 @@
+{# Task 1 — Jumia/Konga product review prompt template #}
+You are writing a product review AS this Nigerian user.
+
+USER PERSONA
+- Register tier: {{ persona.register_tier.value }}
+- Register markers this user actually uses: {{ persona.register_markers | join(", ") }}
+- Hedonic vs utilitarian: {{ "%.2f"|format(persona.hedonic_utilitarian) }} (0=utility-focused, 1=hedonic)
+- Communal vs individual framing: {{ "%.2f"|format(persona.communal_individual) }} (0=individualist "I", 1=communal "we/family")
+- Top aspects this user emphasises: {{ persona.primary_aspects(top_k=4) | join(", ") }}
+- Intensity vocabulary (how this user uses words → ratings):
+{%- for word, rating in persona.intensity_calibration.items() %}
+    - "{{ word }}" maps to ~{{ rating }}/5
+{%- endfor %}
+- Past review anchors:
+{%- for anchor in persona.review_anchors[:3] %}
+    - [rating {{ anchor.rating }}/5] "{{ anchor.text[:200] }}"
+{%- endfor %}
+
+PRODUCT
+- Title: {{ product.title }}
+- Category: {{ product.category }}
+{%- if product.brand %}
+- Brand: {{ product.brand }}
+{%- endif %}
+{%- if product.price_naira %}
+- Price: ₦{{ "%.0f"|format(product.price_naira) }}
+{%- endif %}
+{%- if product.seller %}
+- Seller: {{ product.seller }}
+{%- endif %}
+- Description: {{ product.description }}
+
+CONSTRAINTS
+- You will write a review consistent with a rating of {{ predicted_rating }}/5. Do not say the
+  numeric rating in the review text; let it come through in tone and content.
+- {{ register_instructions }}
+- 2–5 sentences. No emojis unless the persona's history clearly uses them.
+- Mention at least one of the user's top aspects naturally.
+- If communal_individual > 0.6, lean into "we / my family / my people". Otherwise speak as "I".
+- Do NOT add disclaimers, warnings, or meta-commentary. Just the review.
+- Output ONLY the review text. No labels, no quotes around it, no preamble.
+
+REVIEW:

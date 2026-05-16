@@ -1,0 +1,52 @@
+{
+  "user_id": "chinwe_owerri",
+  "demographics": {
+    "age_range": "20-25",
+    "location": "Owerri, Imo State",
+    "occupation": "university student"
+  },
+  "hedonic_utilitarian": 0.78,
+  "intensity_calibration": {
+    "scatter": 5.0,
+    "amazing": 4.8,
+    "fire": 4.7,
+    "okay": 3.0,
+    "rubbish": 1.2
+  },
+  "communal_individual": 0.72,
+  "aspect_priority": {
+    "quality": 0.30,
+    "delivery": 0.25,
+    "value": 0.20,
+    "seller_responsiveness": 0.15,
+    "packaging": 0.10
+  },
+  "register_tier": "code_mixed",
+  "register_markers": [
+    "abeg",
+    "wahala",
+    "no cap",
+    "biko",
+    "nna",
+    "scatter scatter",
+    "e shock me"
+  ],
+  "register_confidence": 0.85,
+  "review_anchors": [
+    {
+      "review_id": "anchor_001",
+      "product_id": "TECNO-SPARK-10",
+      "rating": 5,
+      "text": "Nna ehn this phone scatter me, battery dey last forever! Even my mama dey use am now to watch Africa Magic. Delivery sef was sharp sharp."
+    },
+    {
+      "review_id": "anchor_002",
+      "product_id": "MAYBELLINE-FIT-ME",
+      "rating": 4,
+      "text": "Biko this foundation match my skin well well, no wahala. My babes been hyping me at the owambe last weekend. Only complaint - the bottle small small."
+    }
+  ],
+  "history_count": 12,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

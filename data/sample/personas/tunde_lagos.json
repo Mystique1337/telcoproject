@@ -1,0 +1,52 @@
+{
+  "user_id": "tunde_lagos",
+  "demographics": {
+    "age_range": "35-45",
+    "location": "Lagos Island Market",
+    "occupation": "wholesale electronics trader"
+  },
+  "hedonic_utilitarian": 0.18,
+  "intensity_calibration": {
+    "e too much": 5.0,
+    "correct": 4.5,
+    "manageable": 3.2,
+    "rubbish": 1.5,
+    "yawa": 1.2
+  },
+  "communal_individual": 0.42,
+  "aspect_priority": {
+    "value": 0.32,
+    "durability": 0.28,
+    "bulk_pricing": 0.18,
+    "delivery": 0.12,
+    "warranty": 0.10
+  },
+  "register_tier": "nigerian_pidgin",
+  "register_markers": [
+    "abeg",
+    "no cap",
+    "wahala",
+    "e shock me",
+    "as e dey hot",
+    "scatter scatter",
+    "no shaking"
+  ],
+  "register_confidence": 0.92,
+  "review_anchors": [
+    {
+      "review_id": "anchor_t01",
+      "product_id": "SOLAR-INVERTER-3KVA",
+      "rating": 5,
+      "text": "This inverter e too much. I bought 5 for my customers, all of them dey work like new. As e dey hot, no light wahala in my shop again. Value for money no cap."
+    },
+    {
+      "review_id": "anchor_t02",
+      "product_id": "BLUETOOTH-SPEAKER-CHEAP",
+      "rating": 1,
+      "text": "Rubbish. Speaker work for 2 weeks, then off. Yawa be that. Seller refuse to refund me. Abeg, no buy."
+    }
+  ],
+  "history_count": 47,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}
