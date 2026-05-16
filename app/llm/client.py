@@ -7,8 +7,10 @@ via env var (e.g. `TASK1_BACKBONE=ollama:naija-reviewer-8b`) without code change
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
+import random
 from typing import Any
 
 import httpx
@@ -20,6 +22,27 @@ logger = logging.getLogger(__name__)
 
 class LLMError(RuntimeError):
     """Raised when an LLM call fails after retries / fallbacks."""
+
+
+# 429 rate-limit handling: retry up to N times with exponential backoff + jitter
+_RETRY_MAX = 6
+_RETRY_BASE = 4.0  # seconds
+
+
+async def _retry_on_429(do_request, *, attempt_label: str = "request") -> httpx.Response:
+    """Call do_request() async until it returns non-429 or retries exhausted."""
+    for attempt in range(_RETRY_MAX):
+        resp = await do_request()
+        if resp.status_code != 429:
+            return resp
+        if attempt < _RETRY_MAX - 1:
+            sleep_for = _RETRY_BASE * (2 ** attempt) + random.uniform(0, 1)
+            logger.warning(
+                "%s rate-limited (429); backing off %.1fs (attempt %d/%d)",
+                attempt_label, sleep_for, attempt + 1, _RETRY_MAX,
+            )
+            await asyncio.sleep(sleep_for)
+    return resp  # last 429, caller decides what to do
 
 
 class LLMClient:
@@ -103,15 +126,17 @@ class LLMClient:
             payload["stop_sequences"] = stop
 
         async with httpx.AsyncClient(timeout=60.0) as client:
-            resp = await client.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": self.settings.anthropic_api_key,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                json=payload,
-            )
+            async def _do():
+                return await client.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key": self.settings.anthropic_api_key,
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json",
+                    },
+                    json=payload,
+                )
+            resp = await _retry_on_429(_do, attempt_label=f"anthropic:{self.model}")
             if resp.status_code != 200:
                 raise LLMError(f"Anthropic API {resp.status_code}: {resp.text[:300]}")
             data = resp.json()
@@ -220,15 +245,17 @@ class LLMClient:
             payload["stop"] = stop
 
         async with httpx.AsyncClient(timeout=120.0) as client:
-            resp = await client.post(
-                f"{self.settings.nvidia_base_url}/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {self.settings.nvidia_api_key}",
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                },
-                json=payload,
-            )
+            async def _do():
+                return await client.post(
+                    f"{self.settings.nvidia_base_url}/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.settings.nvidia_api_key}",
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                    },
+                    json=payload,
+                )
+            resp = await _retry_on_429(_do, attempt_label=f"nvidia:{self.model}")
             if resp.status_code != 200:
                 raise LLMError(f"NVIDIA NIM {resp.status_code}: {resp.text[:300]}")
             data = resp.json()

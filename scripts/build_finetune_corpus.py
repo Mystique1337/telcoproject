@@ -72,10 +72,12 @@ TARGET_JUMIA = 15_000
 TARGET_AFRISENTI = 3_000
 TARGET_SYNTHETIC = 2_000
 
-# Concurrency
-RATING_REFINE_WORKERS = 12
-AFRISENTI_WORKERS = 8
-SYNTHETIC_WORKERS = 8
+# Concurrency — NVIDIA NIM free / low-tier rate limits are strict (~2 req/s).
+# Anthropic also rate-limits. The LLM client retries 429s with exponential backoff,
+# but lower concurrency dramatically reduces how often we hit the limit at all.
+RATING_REFINE_WORKERS = 2
+AFRISENTI_WORKERS = 2
+SYNTHETIC_WORKERS = 2
 
 # Pidgin markers used to detect register density in source text
 PIDGIN_MARKERS = {
@@ -371,36 +373,68 @@ async def stage3_afrisenti_reformulate(*, dry_run: bool = False) -> Path:
     if not settings.anthropic_api_key:
         raise SystemExit("ANTHROPIC_API_KEY not set — required for stage 3 reformulation")
 
-    # Lazy import: datasets is heavy
+    # Load AfriSenti pcm via HF auto-converted parquet (the dataset's loading script
+    # was deprecated in `datasets` v3, so we bypass it by going straight to parquet).
     try:
-        from datasets import load_dataset  # type: ignore
+        import pandas as pd
+        from huggingface_hub import HfFileSystem
     except ImportError:
-        raise SystemExit("`datasets` package not installed — run `poetry install`")
+        raise SystemExit("`pandas` + `huggingface_hub` required — run `pip install pandas huggingface_hub`")
 
-    logger.info("[stage 3] downloading shmuhammad/AfriSenti-twitter-sentiment (pcm split)...")
-    ds = load_dataset("shmuhammad/AfriSenti-twitter-sentiment", "pcm")
+    logger.info("[stage 3] downloading AfriSenti pcm split via parquet auto-convert...")
+    fs = HfFileSystem()
+    repo = "shmuhammad/AfriSenti-twitter-sentiment"
 
-    # Combine all splits; filter out neutral (we want polarity signal)
-    rows = []
+    # The auto-converted parquet branch is at refs/convert/parquet
+    # Pattern: datasets/<repo>@~parquet/<config>/<split>/<shard>.parquet
+    dfs: list = []
     for split_name in ("train", "validation", "test"):
-        if split_name not in ds:
+        try:
+            parquet_files = fs.glob(f"datasets/{repo}@~parquet/pcm/{split_name}/*.parquet")
+            for pf in parquet_files:
+                df_part = pd.read_parquet(f"hf://{pf}")
+                dfs.append(df_part)
+                logger.info("  loaded %s: %d rows", pf, len(df_part))
+        except Exception as exc:
+            logger.warning("  could not load %s split: %s", split_name, exc)
+
+    if not dfs:
+        raise RuntimeError(
+            "AfriSenti parquet auto-convert failed. Manual fallback:\n"
+            "  pd.read_parquet('https://huggingface.co/datasets/shmuhammad/"
+            "AfriSenti-twitter-sentiment/resolve/refs%2Fconvert%2Fparquet/pcm/train/0000.parquet')"
+        )
+
+    df = pd.concat(dfs, ignore_index=True)
+    logger.info("[stage 3] total AfriSenti pcm rows: %d", len(df))
+    logger.info("[stage 3] columns: %s", df.columns.tolist())
+
+    # Normalise schema — AfriSenti columns are `tweet` + `label` (one of positive/neutral/negative)
+    rows = []
+    for _, row in df.iterrows():
+        tweet = str(row.get("tweet", "")).strip()
+        if len(tweet) < 20 or len(tweet) > 280:
             continue
-        for r in ds[split_name]:
-            label_int = r.get("label")
-            tweet = (r.get("tweet") or "").strip()
-            if len(tweet) < 20 or len(tweet) > 280:
-                continue
-            # 0=positive, 1=neutral, 2=negative in some splits — normalize
-            label_str = r.get("label_text") or ""
-            if isinstance(label_int, int):
-                sentiment = 1 if label_int == 0 else (-1 if label_int == 2 else 0)
-            elif isinstance(label_str, str):
-                sentiment = 1 if "positive" in label_str.lower() else (-1 if "negative" in label_str.lower() else 0)
+        label = row.get("label")
+        # `label` is usually a string ("positive"/"negative"/"neutral") in MTEB-style
+        # parquet exports, or an int (0/1/2) in script-style. Handle both.
+        if isinstance(label, str):
+            label_l = label.lower()
+            if "positive" in label_l:
+                sentiment = 1
+            elif "negative" in label_l:
+                sentiment = -1
             else:
-                continue
+                continue  # neutral or unknown
+        elif isinstance(label, (int, float)):
+            # Most splits: 0=positive, 1=neutral, 2=negative
+            i = int(label)
+            sentiment = 1 if i == 0 else (-1 if i == 2 else 0)
             if sentiment == 0:
-                continue  # skip neutral
-            rows.append({"tweet": tweet, "sentiment": sentiment})
+                continue
+        else:
+            continue
+        rows.append({"tweet": tweet, "sentiment": sentiment})
 
     random.shuffle(rows)
     target = 50 if dry_run else TARGET_AFRISENTI
