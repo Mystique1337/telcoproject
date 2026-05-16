@@ -76,3 +76,7 @@ chroma_db/
 # Misc
 .coverage
 htmlcov/
+
+# Private docs — PRDs kept locally only, never pushed to GitHub
+PRD/
+
