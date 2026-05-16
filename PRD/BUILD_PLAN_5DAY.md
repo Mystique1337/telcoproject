@@ -7,6 +7,20 @@
 
 ---
 
+## STATUS (live)
+
+| Day | Owner | Status |
+|---|---|---|
+| **Day 1** | Ashinze | ✅ **Complete** — repo scaffolded, FastAPI + Docker stack, corpus pipeline, end-to-end Colab notebook, sample personas + products, paper LaTeX skeleton, both initial commits pushed |
+| **Day 2** | Ashinze (training) + Franca (frontend) + Writer (paper §1-2) | 🟢 In progress — fine-tune kicks off via `notebooks/naija_reviewer_8b_end_to_end.ipynb` |
+| Day 3 | — | Pending — integrate trained model into FastAPI container; head-to-head eval; Streamlit demo polish |
+| Day 4 | — | Pending — deploy public URL; reproducibility test; paper sections 3-7 drafted |
+| Day 5 | — | Pending — paper polish; final submission |
+
+**Critical-path entry point Day 2**: open `notebooks/naija_reviewer_8b_end_to_end.ipynb` in Colab. The notebook runs the full corpus → fine-tune → eval → HF push pipeline unattended, ~3–4 hours on an A100.
+
+---
+
 ## Day-0 Setup Checklist (do this BEFORE Day 1)
 
 Allocate 2–3 hours together. Don't start Day 1 without these green.

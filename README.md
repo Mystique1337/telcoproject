@@ -2,10 +2,11 @@
 
 > A Nigerian-context LLM agent system for review simulation and personalised product recommendation. Submission to the Nigerian AI Agents Hackathon, May 2026.
 
-Vanilla LLM agents carry an implicit Western cultural prior. On Nigerian users this shows up as compressed rating intensity, flattened Pidgin/Nigerian-English register, individualised framing, and misread religious markers. **NPA** makes the cultural prior visible, recovers it with a structured cognitive persona representation + register-aware prompting + (optionally) a fine-tuned open-weight Llama 3.1 8B model, and ships it as two production-ready API endpoints.
+Vanilla LLM agents carry an implicit Western cultural prior. On Nigerian users this shows up as compressed rating intensity, flattened Pidgin/Nigerian-English register, individualised framing, and misread religious markers. **NPA** makes the cultural prior visible, recovers it with a structured cognitive persona representation + register-aware prompting + a fine-tuned open-weight Llama 3.1 8B model (**NaijaReviewer-8B**), and ships it as two production-ready API endpoints.
 
-> 📄 **Paper**: `paper/paper.pdf`
-> 🤗 **Model**: `huggingface.co/<team>/naija-reviewer-8b` *(released Day 5)*
+> 📄 **Paper**: `paper/paper.pdf` *(drafted Day 4–5)*
+> 🤗 **Model**: `huggingface.co/<org>/naija-reviewer-8b` *(released Day 4)*
+> 📊 **Corpus**: `huggingface.co/datasets/<org>/npa-corpus-v1` *(~20k Nigerian reviews, released Day 4)*
 > 🌐 **Demo**: `[deployment URL]` *(deployed Day 4)*
 
 ## Two endpoints (per hackathon brief)
@@ -17,7 +18,20 @@ Vanilla LLM agents carry an implicit Western cultural prior. On Nigerian users t
 
 Both share a structured `Persona` representation (4 cognitive dimensions + register tier + aspect priorities + history anchors).
 
-## Quick start
+## Train the model (Colab, Drive-persisted, resume-safe)
+
+**The fastest path to a working NaijaReviewer-8B is the end-to-end Colab notebook**: build the ~20k corpus, QLoRA fine-tune Llama 3.1 8B, eval head-to-head against Claude + Nemotron baselines, and push everything to HuggingFace — in one notebook, ~3–4 hours on an A100.
+
+1. **Open in Colab**: `File → Open notebook → GitHub → Mystique1337/telcoproject → notebooks/naija_reviewer_8b_end_to_end.ipynb`
+2. **Runtime → Change runtime type → A100** (or whatever GPU you have — the notebook auto-tunes batch size for H100/A100/L4/T4)
+3. **Add three secrets** to Colab Secrets (sidebar key icon): `NVIDIA_API_KEY`, `ANTHROPIC_API_KEY`, `HF_TOKEN`
+4. **Runtime → Run all** — walk away
+
+Everything writes to `Drive/MyDrive/naija-persona-agent/`. If Colab disconnects mid-run, **just re-open the notebook and Run all again** — corpus stages skip if their JSONL exists, training resumes from the last `checkpoint-XXXX`, the merged model skips if already present.
+
+Full notebook docs in `notebooks/naija_reviewer_8b_end_to_end.ipynb`.
+
+## Serve the API locally (after the model trains)
 
 ```bash
 # 1. Clone
@@ -33,7 +47,7 @@ make demo
 # Expected: ✅ Demo up — visit http://localhost:8000/docs
 ```
 
-If `make demo` exits clean within ~30 seconds, the API is live at `http://localhost:8000/docs` (interactive Swagger UI).
+If `make demo` exits clean within ~30 seconds, the API is live at `http://localhost:8000/docs` (interactive Swagger UI). Until NaijaReviewer-8B is trained and pulled into Ollama, the Task 1 backbone defaults to Claude Sonnet 4 via API — see Section "Switch to local NaijaReviewer-8B" below.
 
 ## Curl examples
 
@@ -76,6 +90,32 @@ curl -X POST http://localhost:8000/recommend \
 ```
 
 Full request/response schemas at `http://localhost:8000/docs`.
+
+## Switch to local NaijaReviewer-8B (after training)
+
+Once the notebook finishes training and you have the merged model on HuggingFace:
+
+```bash
+# On your local machine (you'll need llama.cpp built)
+git clone https://github.com/ggerganov/llama.cpp && cd llama.cpp && make
+
+# Download merged model from HF
+huggingface-cli download <org>/naija-reviewer-8b --local-dir ./naija-reviewer-merged
+
+# Convert + quantize to GGUF for Ollama
+python3 convert_hf_to_gguf.py ./naija-reviewer-merged --outfile naija-reviewer-8b-f16.gguf --outtype f16
+./llama-quantize naija-reviewer-8b-f16.gguf naija-reviewer-8b-Q4_K_M.gguf Q4_K_M
+
+# Register with Ollama
+cp naija-reviewer-8b-Q4_K_M.gguf <repo>/finetuning/
+cd <repo> && ollama create naija-reviewer-8b -f finetuning/Modelfile
+
+# Flip the backbone in .env, restart the container
+echo "TASK1_BACKBONE=ollama:naija-reviewer-8b" >> .env
+make down && make demo
+```
+
+Now `/simulate-review` is served by your local fine-tuned model — zero API cost.
 
 ## Architecture in 60 seconds
 
