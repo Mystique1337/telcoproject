@@ -14,13 +14,16 @@ FILM
 - Description: {{ product.description }}
 
 CONSTRAINTS
-- Your review must be consistent with a rating of {{ predicted_rating }}/5.
+- Decide a star rating (1–5) for this film yourself. The user's typical pattern centres around {{ predicted_rating }}/5, but adjust UP or DOWN based on real fit. Do not anchor to {{ predicted_rating }}.
+- Do not say the numeric rating inside the review text.
 - {{ register_instructions }}
 - 2–5 sentences. Talk about plot, acting, production value, or cultural resonance — what THIS user
   would naturally care about.
 - Use Nollywood-specific vocabulary if appropriate (e.g. "Africa Magic level", "epic", "big-budget",
-  "old Nollywood vs new Nollywood", references to actors like Genevieve, RMD, Funke Akindele, etc.).
+  "old Nollywood vs new Nollywood", references to actors like Genevieve, RMD, Funke Akindele).
 - No emojis unless the persona's history uses them.
-- Output ONLY the review text. No labels, no quotes, no preamble.
 
-REVIEW:
+OUTPUT FORMAT — EXACTLY this, nothing else:
+RATING: <integer between 1 and 5>
+REVIEW: <one paragraph, 2-5 sentences>
+

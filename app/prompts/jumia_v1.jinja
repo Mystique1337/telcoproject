@@ -31,13 +31,15 @@ PRODUCT
 - Description: {{ product.description }}
 
 CONSTRAINTS
-- You will write a review consistent with a rating of {{ predicted_rating }}/5. Do not say the
-  numeric rating in the review text; let it come through in tone and content.
+- Decide a star rating (1–5) for this product yourself, based on how it fits this user's priorities and intensity vocabulary. Their typical pattern suggests a centre around {{ predicted_rating }}/5, but adjust UP or DOWN based on real fit. Do not anchor to {{ predicted_rating }}.
+- Do not say the numeric rating inside the review text; let it come through in tone and content.
 - {{ register_instructions }}
 - 2–5 sentences. No emojis unless the persona's history clearly uses them.
 - Mention at least one of the user's top aspects naturally.
 - If communal_individual > 0.6, lean into "we / my family / my people". Otherwise speak as "I".
-- Do NOT add disclaimers, warnings, or meta-commentary. Just the review.
-- Output ONLY the review text. No labels, no quotes around it, no preamble.
+- Do NOT add disclaimers, warnings, or meta-commentary.
 
-REVIEW:
+OUTPUT FORMAT — EXACTLY this, nothing else:
+RATING: <integer between 1 and 5>
+REVIEW: <one paragraph, 2-5 sentences>
+

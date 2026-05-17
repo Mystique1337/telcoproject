@@ -2,59 +2,67 @@
 
 > A Nigerian-context LLM agent system for review simulation and personalised product recommendation. Submission to the Nigerian AI Agents Hackathon, May 2026.
 
-Vanilla LLM agents carry an implicit Western cultural prior. On Nigerian users this shows up as compressed rating intensity, flattened Pidgin/Nigerian-English register, individualised framing, and misread religious markers. **NPA** makes the cultural prior visible, recovers it with a structured cognitive persona representation + register-aware prompting + a fine-tuned open-weight Llama 3.1 8B model (**NaijaReviewer-8B**), and ships it as two production-ready API endpoints.
+Vanilla LLM agents carry an implicit Western cultural prior. On Nigerian users this shows up as compressed rating intensity, flattened Pidgin / Nigerian-English register, individualised framing, and misread religious markers. **NPA** makes the cultural prior visible and recovers it with a structured cognitive persona representation + register-aware prompting + a fine-tuned open-weight Llama 3.1 8B model (**NaijaReviewer-8B**), and ships it as two production-ready API endpoints.
 
-> 📄 **Paper**: `paper/paper.pdf` *(drafted Day 4–5)*
-> 🤗 **Model**: `huggingface.co/<org>/naija-reviewer-8b` *(released Day 4)*
-> 📊 **Corpus**: `huggingface.co/datasets/<org>/npa-corpus-v1` *(~20k Nigerian reviews, released Day 4)*
-> 🌐 **Demo**: `[deployment URL]` *(deployed Day 4)*
+| Asset | Link |
+|---|---|
+| 📄 **Paper** | `paper/paper.tex` (compiles to `paper/paper.pdf`) |
+| 🤗 **Model (GGUF)** | <https://huggingface.co/Shinzmann/naija-reviewer-8b-v2-Q4_K_M-GGUF> |
+| 💻 **AgentSociety-compatible drop-in** | `submission/naija_agent.py` |
+| 🎬 **Judge demo (Streamlit)** | `demo/streamlit_app.py` |
+| 📊 **Eval harness** | `scripts/eval_all.py` + `scripts/eval_register_fidelity.py` |
+
+## Two submission paths
+
+NPA ships two equivalent ways to drive it, so judges can use whichever fits their harness:
+
+1. **REST API mode** (FastAPI) — `POST /simulate-review` and `POST /recommend` on `http://localhost:8765`. Per-request `backbone_override` / `reranker_override` fields let judges A/B between the fine-tune and frontier models.
+2. **AgentSociety simulator mode** — drop `submission/naija_agent.py` into the upstream `websocietysimulator` from [`AGI-FBHC/AgentsChallenge`](https://github.com/AGI-FBHC/AgentsChallenge). It subclasses `SimulationAgent` and `RecommendationAgent` and implements `workflow()` per the reference contract. No persona JSON is assumed — every input comes from `self.interaction_tool`.
+
+See [`JUDGES.md`](JUDGES.md) for end-to-end instructions on both paths.
 
 ## Two endpoints (per hackathon brief)
 
 | Endpoint | Input | Output |
 |---|---|---|
-| `POST /simulate-review` | `{persona, product}` | `{rating, review, register_tier, rationale}` |
-| `POST /recommend` | `{persona, candidate_set?, k}` | `{recommendations: [{product_id, score, rationale}, ...]}` |
+| `POST /simulate-review` | `{persona, product, backbone_override?}` | `{rating, review, register_tier, rationale}` |
+| `POST /recommend` | `{persona, candidate_set?, k, reranker_override?}` | `{recommendations: [{product_id, score, rationale, rank}, ...]}` |
 
-Both share a structured `Persona` representation (4 cognitive dimensions + register tier + aspect priorities + history anchors).
+Both share a structured `Persona` (4 cognitive dimensions + Nigerian register tier + aspect priorities + history anchors).
 
-## Train the model (Colab, Drive-persisted, resume-safe)
-
-**The fastest path to a working NaijaReviewer-8B is the end-to-end Colab notebook**: build the ~20k corpus, QLoRA fine-tune Llama 3.1 8B, eval head-to-head against Claude + Nemotron baselines, and push everything to HuggingFace — in one notebook, ~3–4 hours on an A100.
-
-1. **Open in Colab**: `File → Open notebook → GitHub → Mystique1337/telcoproject → notebooks/naija_reviewer_8b_end_to_end.ipynb`
-2. **Runtime → Change runtime type → A100** (or whatever GPU you have — the notebook auto-tunes batch size for H100/A100/L4/T4)
-3. **Add three secrets** to Colab Secrets (sidebar key icon): `NVIDIA_API_KEY`, `ANTHROPIC_API_KEY`, `HF_TOKEN`
-4. **Runtime → Run all** — walk away
-
-Everything writes to `Drive/MyDrive/naija-persona-agent/`. If Colab disconnects mid-run, **just re-open the notebook and Run all again** — corpus stages skip if their JSONL exists, training resumes from the last `checkpoint-XXXX`, the merged model skips if already present.
-
-Full notebook docs in `notebooks/naija_reviewer_8b_end_to_end.ipynb`.
-
-## Serve the API locally (after the model trains)
+## Quick start (no Docker, no Poetry)
 
 ```bash
-# 1. Clone
 git clone https://github.com/Mystique1337/telcoproject
 cd telcoproject
 
+# 1. Install deps
+pip install -r requirements.txt
+
 # 2. Configure
 cp .env.example .env
-# Edit .env — fill in ANTHROPIC_API_KEY, OPENAI_API_KEY, (optional) HF_TOKEN
+# Edit .env — fill in ANTHROPIC_API_KEY and/or OPENAI_API_KEY
 
-# 3. Bring up the stack
-make demo
-# Expected: ✅ Demo up — visit http://localhost:8000/docs
+# 3. (Optional) Run NaijaReviewer-8B locally via LM Studio:
+#    a) Download the GGUF model from
+#       https://huggingface.co/Shinzmann/naija-reviewer-8b-v2-Q4_K_M-GGUF
+#    b) Load it in LM Studio → start the local server on port 1234
+#    c) .env already sets TASK1_BACKBONE=lmstudio:naija-reviewer-8b
+#    If you skip this, /simulate-review will use Claude as the backbone instead.
+
+# 4. Run the API
+make serve
+# or: uvicorn app.api.main:app --reload --host 0.0.0.0 --port 8765
 ```
 
-If `make demo` exits clean within ~30 seconds, the API is live at `http://localhost:8000/docs` (interactive Swagger UI). Until NaijaReviewer-8B is trained and pulled into Ollama, the Task 1 backbone defaults to Claude Sonnet 4 via API — see Section "Switch to local NaijaReviewer-8B" below.
+API live at `http://localhost:8765/docs` (interactive Swagger UI) in ~10 seconds.
 
 ## Curl examples
 
-### Task 1 — Generate a review
+### Task 1 — generate a review
 
 ```bash
-curl -X POST http://localhost:8000/simulate-review \
+curl -X POST http://localhost:8765/simulate-review \
   -H "Content-Type: application/json" \
   -d '{
     "persona": {
@@ -65,22 +73,27 @@ curl -X POST http://localhost:8000/simulate-review \
       "aspect_priority": {"quality": 0.4, "value": 0.3, "delivery": 0.2, "seller": 0.1},
       "register_tier": "code_mixed",
       "register_markers": ["abeg", "wahala", "no cap"],
+      "register_confidence": 0.85,
       "review_anchors": [],
-      "extraction_source": "synthetic"
+      "history_count": 0,
+      "extraction_source": "manual"
     },
     "product": {
       "product_id": "TECNO-SPARK-10",
       "title": "Tecno Spark 10 — 128GB",
       "category": "Phone & Tablet",
-      "description": "6.6 inch display, 5000mAh battery, dual SIM"
+      "description": "6.6 inch display, 5000mAh battery, dual SIM",
+      "domain": "jumia"
     }
   }'
 ```
 
-### Task 2 — Recommend products
+Pass `"backbone_override": "anthropic:claude-sonnet-4-20250514"` to compare against vanilla Claude on the same request.
+
+### Task 2 — recommend products
 
 ```bash
-curl -X POST http://localhost:8000/recommend \
+curl -X POST http://localhost:8765/recommend \
   -H "Content-Type: application/json" \
   -d '{
     "persona": {... same as above ...},
@@ -89,33 +102,56 @@ curl -X POST http://localhost:8000/recommend \
   }'
 ```
 
-Full request/response schemas at `http://localhost:8000/docs`.
+Full schemas at `http://localhost:8765/docs`.
 
-## Switch to local NaijaReviewer-8B (after training)
-
-Once the notebook finishes training and you have the merged model on HuggingFace:
+## Streamlit judge demo
 
 ```bash
-# On your local machine (you'll need llama.cpp built)
-git clone https://github.com/ggerganov/llama.cpp && cd llama.cpp && make
-
-# Download merged model from HF
-huggingface-cli download <org>/naija-reviewer-8b --local-dir ./naija-reviewer-merged
-
-# Convert + quantize to GGUF for Ollama
-python3 convert_hf_to_gguf.py ./naija-reviewer-merged --outfile naija-reviewer-8b-f16.gguf --outtype f16
-./llama-quantize naija-reviewer-8b-f16.gguf naija-reviewer-8b-Q4_K_M.gguf Q4_K_M
-
-# Register with Ollama
-cp naija-reviewer-8b-Q4_K_M.gguf <repo>/finetuning/
-cd <repo> && ollama create naija-reviewer-8b -f finetuning/Modelfile
-
-# Flip the backbone in .env, restart the container
-echo "TASK1_BACKBONE=ollama:naija-reviewer-8b" >> .env
-make down && make demo
+make demo
+# or: NPA_API_URL=http://localhost:8765 streamlit run demo/streamlit_app.py
 ```
 
-Now `/simulate-review` is served by your local fine-tuned model — zero API cost.
+Opens at `http://localhost:8501`. Tab 1 — side-by-side compare (NaijaReviewer vs vanilla Claude / GPT-4o). Tab 2 — single-model recommendation panel.
+
+## Train the model (Colab, Drive-persisted, resume-safe)
+
+**The fastest path to a working NaijaReviewer-8B is the end-to-end Colab notebook:** build the ~20k Nigerian corpus, QLoRA fine-tune Llama 3.1 8B, eval head-to-head against Claude + Nemotron baselines, and push everything to HuggingFace — in one notebook, ~3-4 hours on an A100.
+
+1. **Open in Colab**: `File → Open notebook → GitHub → Mystique1337/telcoproject → notebooks/02_finetune.ipynb`
+2. **Runtime → Change runtime type → A100** (auto-tunes batch size for H100 / A100 / L4 / T4)
+3. **Add three secrets** to Colab Secrets: `NVIDIA_API_KEY`, `ANTHROPIC_API_KEY`, `HF_TOKEN`
+4. **Runtime → Run all** — walk away
+
+Everything writes to `Drive/MyDrive/naija-persona-agent/`. If Colab disconnects mid-run, **just re-open the notebook and Run all again** — corpus stages skip if their JSONL exists, training resumes from the last `checkpoint-XXXX`, the merged model skips if already present.
+
+## Switch the local backbone
+
+`.env`:
+
+```bash
+# Default — fine-tune via LM Studio (recommended)
+TASK1_BACKBONE=lmstudio:naija-reviewer-8b
+
+# Or — vanilla Claude
+TASK1_BACKBONE=anthropic:claude-sonnet-4-20250514
+
+# Or — vanilla GPT-4o
+TASK1_BACKBONE=openai:gpt-4o
+```
+
+Restart `make serve`. Per-request `backbone_override` overrides this on individual calls.
+
+## Evaluation
+
+```bash
+# No-GT register-fidelity eval — runs in ~3 min on the 5 sample personas × 6 products
+make eval-fidelity
+
+# Full eval with held-out test set (drop v1_test_full.parquet into data/finetune/)
+make eval
+```
+
+Both write to `paper/results.json` + `paper/results.md`. The full eval computes both our rubric-aligned metrics (RMSE / BERTScore F1 / ROUGE-L / register-match / cultural-marker recall) **and** the official AgentSociety metrics (`preference_estimation`, `sentiment_error`, `emotion_error`, `topic_error`, `review_generation`, `overall_quality`).
 
 ## Architecture in 60 seconds
 
@@ -132,18 +168,18 @@ Now `/simulate-review` is served by your local fine-tuned model — zero API cos
 │ review         │    │                │
 │                │    │ semantic       │
 │ NaijaReviewer- │    │ retrieval +    │
-│ 8B (Ollama) +  │    │ Claude         │
-│ Claude fallback│    │ re-rank + MMR  │
+│ 8B (LM Studio) │    │ Claude         │
+│ + Claude       │    │ re-rank + MMR  │
+│ fallback       │    │                │
 └────────────────┘    └────────────────┘
         │                     │
         └─────────┬───────────┘
                   ▼
          ┌──────────────────┐
-         │ Chroma + SQLite  │
+         │ Chroma + sample  │
+         │ Nigerian fixtures │
          └──────────────────┘
 ```
-
-See PRD at `PRD/PRD_v4_NPA_5Day.md` for the full architecture rationale.
 
 ## Repository structure
 
@@ -152,32 +188,29 @@ telcoproject/
 ├── app/                  FastAPI application
 │   ├── api/              routers, schemas, main
 │   ├── agents/           persona extractor, review agent, recommend agent
-│   ├── llm/              Ollama + Claude + OpenAI client abstraction
+│   ├── llm/              LM Studio + Claude + OpenAI + Ollama client abstraction
 │   ├── rag/              Chroma vector store wrapper
 │   ├── data/             loaders, persona cache
-│   └── prompts/          Jinja templates per domain / register tier
+│   └── prompts/          Jinja templates per domain × register tier
 ├── data/                 datasets (gitignored at scale; samples committed)
+│   ├── sample/           5 personas + 6 products (judge fixtures)
+│   └── finetune/         held-out test parquet (gitignored)
 ├── finetuning/           NaijaReviewer-8B QLoRA training scripts
-├── frontend/             Streamlit (or Next.js) judge demo
-├── demo/                 Streamlit app (entry point)
-├── paper/                LaTeX paper sources + figures
-├── scripts/              build / eval / deploy scripts
-├── tests/                pytest test suite
-├── notebooks/            exploratory notebooks
-└── PRD/                  product requirements + build plan + vision docs
+├── demo/                 Streamlit judge demo (entry point)
+├── paper/                LaTeX paper + figures + eval results
+├── scripts/              build_finetune_corpus, build_product_index, eval_all, eval_register_fidelity
+├── submission/           naija_agent.py — single-file drop-in for the AgentSociety simulator
+├── tests/                pytest suite
+└── notebooks/            01_build_corpus, 01b_build_corpus_openai, 02_finetune (Colab)
 ```
 
 ## Documentation
 
 | Doc | Purpose |
 |---|---|
-| `PRD/PRD_v4_NPA_5Day.md` | Operational PRD for the 5-day build |
-| `PRD/BUILD_PLAN_5DAY.md` | Day-by-day execution plan |
-| `PRD/PRD_v3_Naija_Persona_Agent_AllOut.md` | Vision document (post-hackathon roadmap) |
-| `JUDGES.md` | For the hackathon panel |
-| `finetuning/README.md` | Reproduce NaijaReviewer-8B from scratch |
-| `frontend/README.md` | Frontend setup notes for Franca |
-| `paper/README.md` | Paper drafting notes for the writer |
+| [`JUDGES.md`](JUDGES.md) | Two-mode submission paths + reading order for the panel |
+| [`finetuning/README.md`](finetuning/README.md) | Reproduce NaijaReviewer-8B from scratch |
+| [`paper/README.md`](paper/README.md) | Paper drafting notes |
 
 ## Team
 
@@ -187,16 +220,17 @@ telcoproject/
 
 ## License
 
-- **Code**: MIT
-- **NaijaReviewer-8B weights**: Llama 3.1 Community License (when released)
-- **Datasets we release**: CC-BY-4.0
+- **Code** — MIT
+- **NaijaReviewer-8B weights** — Llama 3.1 Community License
+- **Released datasets** — CC-BY-4.0
 
 ## Citation
 
 ```bibtex
 @misc{npa2026,
-  title={Naija Persona Agent: A Cultural-Prior-Aware LLM Agent for Nigerian Review Simulation and Recommendation},
-  author={Ashinze, Franca, and team},
+  title={Naija Persona Agent: A Cultural-Prior-Aware LLM Agent for
+         Nigerian Review Simulation and Recommendation},
+  author={Ashinze and Franca and team},
   year={2026},
   url={https://github.com/Mystique1337/telcoproject}
 }
@@ -204,4 +238,4 @@ telcoproject/
 
 ## Acknowledgments
 
-AfriSenti, NaijaSenti, SentiLeye, Masakhane community, AgentSociety Challenge organisers, and the Nigerian AI Agents Hackathon panel.
+AfriSenti, NaijaSenti, SentiLeye, Masakhane, the AgentSociety Challenge organisers, and the Nigerian AI Agents Hackathon panel.

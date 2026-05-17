@@ -151,7 +151,7 @@ async def generate_review(
 
     try:
         client = get_llm_client(backbone)
-        review_text = await client.complete(
+        raw_output = await client.complete(
             prompt=user_prompt,
             system=system_prompt,
             max_tokens=400,
@@ -164,7 +164,7 @@ async def generate_review(
         fallback_spec = settings.task1_fallback
         try:
             client = get_llm_client(fallback_spec)
-            review_text = await client.complete(
+            raw_output = await client.complete(
                 prompt=user_prompt,
                 system=system_prompt,
                 max_tokens=400,
@@ -176,28 +176,65 @@ async def generate_review(
                 f"Both primary ({backbone}) and fallback ({fallback_spec}) failed: {fb_err}"
             ) from fb_err
 
+    # Parse LLM-decided rating + review; predicted_rating is only a fallback now.
+    final_rating, review_text = _parse_rating_review(raw_output, fallback_rating=predicted_rating)
+
     trace.append(
         {
             "node": "stage_b_text_generation",
             "backbone": used_backbone,
+            "predicted_rating_hint": predicted_rating,
+            "llm_rating": final_rating,
             "duration_ms": int((time.perf_counter() - t1) * 1000),
         }
     )
 
-    # Self-consistency check is a Day-3 add-on; for now we accept the first generation.
-    # See PRD v4 FR-T1.4.
-
-    rationale = _compose_rationale(persona, product, predicted_rating)
+    rationale = _compose_rationale(persona, product, final_rating)
     trace.append({"node": "rationale_composition"})
 
     return {
-        "rating": predicted_rating,
+        "rating": final_rating,
         "review": review_text.strip(),
         "register_tier": persona.register_tier,
         "rationale": rationale,
         "fallback_reason": fallback_reason,
         "reasoning_trace": trace if include_reasoning else None,
     }
+
+
+def _parse_rating_review(text: str, fallback_rating: int) -> tuple[int, str]:
+    """Pull RATING: N + REVIEW: ... out of the LLM output.
+
+    The LLM is now asked for both. If the model ignores the format and just
+    writes prose, we keep the prose as the review and use fallback_rating
+    (the Stage-A heuristic prediction).
+    """
+    import re as _re
+    rating: int | None = None
+    review_lines: list[str] = []
+    in_review = False
+    for raw in (text or "").splitlines():
+        line = raw.strip().lstrip("*-•").strip()
+        low = line.lower()
+        if low.startswith("rating:") or low.startswith("stars:"):
+            m = _re.search(r"(\d+(?:\.\d+)?)", line)
+            if m:
+                v = float(m.group(1))
+                rating = max(1, min(5, int(round(v))))
+            continue
+        if low.startswith("review:"):
+            in_review = True
+            tail = line.split(":", 1)[1].strip()
+            if tail:
+                review_lines.append(tail)
+            continue
+        if in_review or not low.startswith(("rating:", "stars:")):
+            if line:
+                review_lines.append(line)
+    review = " ".join(review_lines).strip().strip('"').strip("'")
+    if not review:
+        review = (text or "").strip()
+    return rating if rating is not None else fallback_rating, review
 
 
 def _compose_rationale(persona: Persona, product: Product, rating: int) -> str:

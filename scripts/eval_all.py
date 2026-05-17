@@ -74,13 +74,23 @@ BACKBONES_TASK2 = {
 # Concurrency on API calls
 CONCURRENCY = 4
 
-# Pidgin / Nigerian register markers
+# Pidgin lexicon (specific to Pidgin register).
 PIDGIN_MARKERS = {
-    "abeg", "wahala", "no cap", "biko", "nna", "scatter", "shey", "sef",
-    "haba", "wallahi", "omo", "naija", "no shaking", "sharp sharp",
-    "dem", "wetin", "e clear", "e too much", "e dey", "owambe",
-    "alhamdulillah", "mashallah", "ahn ahn", "na fire",
+    "abeg", "wahala", "no cap", "nna", "scatter", "shey", "sef",
+    "haba", "omo", "naija", "ahn ahn", "na fire",
+    "dem", "wetin", "e clear", "e too much", "e dey", "e shock", "owambe",
 }
+# Nigerian English specifically.
+NIGERIAN_ENGLISH_MARKERS = {
+    "well done", "well done sir", "no shaking", "sharp sharp", "as for me", "see ehn",
+}
+# Register-neutral / religious markers (across all Nigerian tiers).
+NIGERIAN_NEUTRAL_MARKERS = {
+    "alhamdulillah", "mashallah", "wallahi", "biko",
+    "thank god", "by god's grace", "by god grace",
+}
+# Used for cultural-marker recall metric — any Nigerian-voice marker counts.
+ALL_NIGERIAN_MARKERS = PIDGIN_MARKERS | NIGERIAN_ENGLISH_MARKERS | NIGERIAN_NEUTRAL_MARKERS
 
 
 # --------------------------------------------------------------------------- #
@@ -113,8 +123,63 @@ def load_test_set(path: Path | None = None) -> list[dict[str, Any]]:
 
 
 def _load_parquet(p: Path) -> list[dict[str, Any]]:
+    """Load the parquet test split, normalising column names + filtering rows
+    that lack product info (seed_grounded pipeline rows don't have a product).
+
+    The corpus builder writes a richer schema than the eval needs; we coerce
+    it into the {persona_id, register_tier, product_title, product_category,
+    rating, review} shape expected downstream.
+    """
     import pandas as pd
     df = pd.read_parquet(p)
+
+    # Prefer product_title; fall back to title column if present.
+    if "title" in df.columns and "product_title" in df.columns:
+        df["product_title"] = df["product_title"].fillna("").astype(str)
+        empty = df["product_title"].str.len() == 0
+        df.loc[empty, "product_title"] = df.loc[empty, "title"].fillna("").astype(str)
+
+    # Same for category.
+    if "category" in df.columns and "product_category" in df.columns:
+        df["product_category"] = df["product_category"].fillna("").astype(str)
+        empty = df["product_category"].str.len() == 0
+        df.loc[empty, "product_category"] = df.loc[empty, "category"].fillna("").astype(str)
+
+    # Prefer the rich `persona_review` column when present (corpus-builder's
+    # final synthesised review). Fall back to `review`.
+    if "persona_review" in df.columns:
+        df["review"] = df["persona_review"].fillna(df.get("review", "")).astype(str)
+
+    # target_rating is the corpus-builder's GT rating (1-5 string). The plain
+    # `rating` column is a constant 3 placeholder in our corpus build, so we
+    # prefer target_rating when present.
+    if "target_rating" in df.columns:
+        def _coerce_rating(row):
+            tr = row.get("target_rating")
+            if tr is not None and str(tr).strip() not in ("", "None", "nan"):
+                try:
+                    return int(round(float(tr)))
+                except Exception:
+                    return None
+            r = row.get("rating")
+            try:
+                return int(round(float(r))) if r is not None else None
+            except Exception:
+                return None
+        df["rating"] = df.apply(_coerce_rating, axis=1)
+        df = df[df["rating"].notna()].copy()
+        df["rating"] = df["rating"].astype(int)
+
+    # Drop rows without product_title — they're seed_grounded pipeline rows
+    # whose "review" is about an underspecified item; product-grounded eval
+    # would be apples-to-oranges.
+    n_before = len(df)
+    df = df[df["product_title"].fillna("").astype(str).str.len() > 0].reset_index(drop=True)
+    n_after = len(df)
+    if n_after < n_before:
+        logger.info("filtered %d/%d rows missing product_title (likely seed_grounded)",
+                    n_before - n_after, n_before)
+
     return df.to_dict("records")
 
 
@@ -168,12 +233,14 @@ def rmse(predictions: list[int], targets: list[int]) -> float:
 
 def detect_register(text: str) -> str:
     t = (text or "").lower()
-    hits = sum(1 for m in PIDGIN_MARKERS if m in t)
-    if hits >= 3:
+    pidgin_hits = sum(1 for m in PIDGIN_MARKERS if m in t)
+    ne_hits = sum(1 for m in NIGERIAN_ENGLISH_MARKERS if m in t)
+    neutral_hits = sum(1 for m in NIGERIAN_NEUTRAL_MARKERS if m in t)
+    if pidgin_hits >= 3:
         return "nigerian_pidgin"
-    if hits >= 1:
+    if pidgin_hits >= 1:
         return "code_mixed"
-    if any(m in t for m in ["well done sir", "thank god", "by god", "no shaking", "sharp sharp"]):
+    if ne_hits >= 1 or neutral_hits >= 1:
         return "nigerian_english"
     return "standard_english"
 
@@ -182,7 +249,7 @@ def cultural_marker_recall(predicted: str, ground_truth: str) -> float | None:
     """Of the markers in ground_truth, fraction that appear in predicted."""
     gt = (ground_truth or "").lower()
     pred = (predicted or "").lower()
-    gt_markers = {m for m in PIDGIN_MARKERS if m in gt}
+    gt_markers = {m for m in ALL_NIGERIAN_MARKERS if m in gt}
     if not gt_markers:
         return None
     return sum(1 for m in gt_markers if m in pred) / len(gt_markers)
@@ -414,11 +481,16 @@ def _row_to_persona(row: dict) -> dict[str, Any]:
 
 
 def _row_to_product(row: dict) -> dict[str, Any]:
+    title = row.get("product_title") or row.get("title") or "Test Product"
+    category = row.get("product_category") or row.get("category") or "general"
+    description = (row.get("description") or "")[:800]
+    price = row.get("price_naira")
     return {
-        "product_id": row.get("product_id", row.get("product_title", "test-product")[:30]),
-        "title": row.get("product_title", "Test Product"),
-        "category": row.get("product_category", "general"),
-        "description": "",
+        "product_id": str(row.get("product_id") or title)[:60],
+        "title": title,
+        "category": category,
+        "description": description,
+        "price_naira": float(price) if price and not (isinstance(price, float) and price != price) else None,
         "domain": "jumia",
     }
 

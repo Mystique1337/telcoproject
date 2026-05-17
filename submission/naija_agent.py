@@ -72,16 +72,23 @@ logger = logging.getLogger("naija_agent")
 #  may exhibit. The agent uses them only to decide which register-aware prompt
 #  to send to the LLM.
 # ─────────────────────────────────────────────────────────────────────────────
+# True Pidgin lexicon.
 PIDGIN_MARKERS: set[str] = {
-    "abeg", "wahala", "no cap", "biko", "nna", "scatter", "shey", "sef",
-    "haba", "wallahi", "omo", "naija", "no shaking", "sharp sharp",
-    "dem", "wetin", "e clear", "e too much", "e dey", "owambe",
-    "alhamdulillah", "mashallah", "ahn ahn", "na fire", "epp", "comot",
+    "abeg", "wahala", "no cap", "nna", "scatter", "shey", "sef",
+    "haba", "omo", "naija", "ahn ahn", "na fire", "epp", "comot",
     "chop", "gbam", "shakara", "yawa", "shege",
+    "dem", "wetin", "e clear", "e too much", "e dey", "e shock", "owambe",
 }
+# Nigerian English specifically.
 NIGERIAN_ENGLISH_MARKERS: set[str] = {
-    "well done", "thank god", "by god's grace", "by god grace", "well done sir",
-    "no shaking", "sharp sharp", "as for me", "see ehn",
+    "well done", "well done sir", "no shaking", "sharp sharp", "as for me", "see ehn",
+}
+# Register-neutral / religious markers — appear across multiple Nigerian tiers,
+# so do NOT use them to classify a review as Pidgin.
+NIGERIAN_NEUTRAL_MARKERS: set[str] = {
+    "alhamdulillah", "mashallah", "wallahi",
+    "biko",
+    "thank god", "by god's grace", "by god grace",
 }
 
 # Aspect lexicon (English + light Pidgin glosses) for aspect-priority induction.
@@ -97,15 +104,21 @@ ASPECT_LEXICON: dict[str, set[str]] = {
 
 
 def _detect_register(text: str) -> str:
-    """Return one of {nigerian_pidgin, code_mixed, nigerian_english, standard_english}."""
+    """Return one of {nigerian_pidgin, code_mixed, nigerian_english, standard_english}.
+
+    Religious / Hausa-Arabic markers (alhamdulillah, mashallah, wallahi) and
+    biko are register-neutral — they count as Nigerian voice but do NOT push
+    a review into the Pidgin bucket.
+    """
     t = (text or "").lower()
     pidgin_hits = sum(1 for m in PIDGIN_MARKERS if m in t)
     ne_hits = sum(1 for m in NIGERIAN_ENGLISH_MARKERS if m in t)
+    neutral_hits = sum(1 for m in NIGERIAN_NEUTRAL_MARKERS if m in t)
     if pidgin_hits >= 3:
         return "nigerian_pidgin"
     if pidgin_hits >= 1:
         return "code_mixed"
-    if ne_hits >= 1:
+    if ne_hits >= 1 or neutral_hits >= 1:
         return "nigerian_english"
     return "standard_english"
 
