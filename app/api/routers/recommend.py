@@ -38,6 +38,7 @@ async def recommend(req: RecommendRequest) -> RecommendResponse:
             k=req.k,
             include_negatives=req.include_negatives,
             include_reasoning=req.include_reasoning,
+            reranker_override=req.reranker_override,
         )
     except Exception as exc:  # noqa: BLE001
         logger.exception("recommend failed")

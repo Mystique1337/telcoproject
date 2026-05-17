@@ -35,6 +35,7 @@ async def recommend_products(
     k: int,
     include_negatives: bool = False,
     include_reasoning: bool = False,
+    reranker_override: str | None = None,
 ) -> dict[str, Any]:
     """Generate top-k product recommendations for the persona."""
     trace: list[dict[str, Any]] = []
@@ -65,11 +66,12 @@ async def recommend_products(
 
     # Step 3 — LLM re-rank top-30 → top-K
     t1 = time.perf_counter()
-    ranked = await _llm_rerank(persona, candidates[:30], k=k)
+    reranker_spec = reranker_override or settings.task2_reranker
+    ranked = await _llm_rerank(persona, candidates[:30], k=k, reranker_spec=reranker_spec)
     trace.append(
         {
             "node": "llm_rerank",
-            "reranker": settings.task2_reranker,
+            "reranker": reranker_spec,
             "duration_ms": int((time.perf_counter() - t1) * 1000),
         }
     )
@@ -133,10 +135,13 @@ def _prerank(candidates: list[dict[str, Any]], persona: Persona) -> list[dict[st
 
 
 async def _llm_rerank(
-    persona: Persona, candidates: list[dict[str, Any]], k: int
+    persona: Persona,
+    candidates: list[dict[str, Any]],
+    k: int,
+    reranker_spec: str | None = None,
 ) -> list[dict[str, Any]]:
     """Use the configured re-ranker LLM to score and rationalise each candidate."""
-    client = get_llm_client(settings.task2_reranker)
+    client = get_llm_client(reranker_spec or settings.task2_reranker)
 
     candidate_lines = "\n".join(
         f"{i}. id={c['product_id']} | title={c.get('title','')[:80]} | "

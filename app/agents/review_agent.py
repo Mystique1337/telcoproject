@@ -114,6 +114,7 @@ async def generate_review(
     persona: Persona,
     product: Product,
     include_reasoning: bool = False,
+    backbone_override: str | None = None,
 ) -> dict[str, Any]:
     """Generate a review + rating for the given persona × product pair."""
     trace: list[dict[str, Any]] = []
@@ -144,7 +145,7 @@ async def generate_review(
         "aspects they care about. Do not break character. Do not add disclaimers."
     )
 
-    backbone = settings.task1_backbone
+    backbone = backbone_override or settings.task1_backbone
     fallback_reason: str | None = None
     t1 = time.perf_counter()
 

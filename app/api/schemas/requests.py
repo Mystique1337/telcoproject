@@ -20,6 +20,14 @@ class SimulateReviewRequest(BaseModel):
     product: Product
     stream: bool = False
     include_reasoning: bool = False
+    backbone_override: str | None = Field(
+        default=None,
+        description=(
+            "Per-request override of TASK1_BACKBONE. Format: 'provider:model'. "
+            "Examples: 'lmstudio:naija-reviewer-8b', 'anthropic:claude-sonnet-4-20250514', "
+            "'openai:gpt-4o', 'ollama:naija-reviewer-8b'. If unset, uses TASK1_BACKBONE from env."
+        ),
+    )
 
 
 class SimulateReviewResponse(BaseModel):
@@ -47,6 +55,14 @@ class RecommendRequest(BaseModel):
     k: int = Field(default=5, ge=1, le=20)
     include_negatives: bool = False
     include_reasoning: bool = False
+    reranker_override: str | None = Field(
+        default=None,
+        description=(
+            "Per-request override of TASK2_RERANKER. Format: 'provider:model'. "
+            "Examples: 'lmstudio:naija-reviewer-8b', 'anthropic:claude-sonnet-4-20250514', "
+            "'openai:gpt-4o'. If unset, uses TASK2_RERANKER from env."
+        ),
+    )
 
 
 class RecommendItem(BaseModel):
