@@ -79,6 +79,8 @@ class LLMClient:
             return await self._ollama(prompt, system, max_tokens, temperature, stop)
         if self.provider == "nvidia":
             return await self._nvidia(prompt, system, max_tokens, temperature, stop)
+        if self.provider == "lmstudio":
+            return await self._lmstudio(prompt, system, max_tokens, temperature, stop)
         raise LLMError(f"Unknown provider: {self.provider}")
 
     async def complete_json(
@@ -178,6 +180,42 @@ class LLMClient:
             )
             if resp.status_code != 200:
                 raise LLMError(f"OpenAI API {resp.status_code}: {resp.text[:300]}")
+            data = resp.json()
+            return data["choices"][0]["message"]["content"]
+
+    async def _lmstudio(
+        self,
+        prompt: str,
+        system: str | None,
+        max_tokens: int,
+        temperature: float,
+        stop: list[str] | None,
+    ) -> str:
+        """LM Studio's OpenAI-compatible local server (default localhost:1234)."""
+        messages: list[dict[str, str]] = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        payload: dict[str, Any] = {
+            "model": self.model,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "messages": messages,
+        }
+        if stop:
+            payload["stop"] = stop
+
+        async with httpx.AsyncClient(timeout=300.0) as client:
+            async def _do():
+                return await client.post(
+                    f"{self.settings.lm_studio_url}/chat/completions",
+                    headers={"Content-Type": "application/json"},
+                    json=payload,
+                )
+            resp = await _retry_on_429(_do, attempt_label=f"lmstudio:{self.model}")
+            if resp.status_code != 200:
+                raise LLMError(f"LM Studio {resp.status_code}: {resp.text[:300]}")
             data = resp.json()
             return data["choices"][0]["message"]["content"]
 

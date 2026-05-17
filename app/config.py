@@ -47,6 +47,7 @@ class Settings(BaseSettings):
 
     # --- Service endpoints ---
     ollama_url: str = "http://localhost:11434"
+    lm_studio_url: str = "http://localhost:1234/v1"
     chroma_host: str = "localhost"
     chroma_port: int = 8001
 
