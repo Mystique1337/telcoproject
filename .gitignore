@@ -80,3 +80,6 @@ htmlcov/
 # Private docs — PRDs kept locally only, never pushed to GitHub
 PRD/
 
+# Local-only llama.cpp checkout (~500MB) — judges convert via HF Space "gguf-my-repo"
+llama.cpp/
+

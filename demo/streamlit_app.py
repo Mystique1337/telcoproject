@@ -21,7 +21,7 @@ import requests
 import streamlit as st
 
 
-API_URL = os.getenv("NPA_API_URL", "http://localhost:8000")
+API_URL = os.getenv("NPA_API_URL", "http://localhost:8765")
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PERSONA_DIR = PROJECT_ROOT / "data" / "sample" / "personas"
 PRODUCT_DIR = PROJECT_ROOT / "data" / "sample" / "products"

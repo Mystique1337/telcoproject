@@ -29,3 +29,14 @@ numpy>=1.24,<2
 
 # HuggingFace datasets (used in scripts/ — comment out if not building product index)
 # datasets>=3.0
+
+# Demo (judge-facing UI)
+streamlit>=1.38
+requests>=2.32
+
+# Evaluation suite (scripts/eval_all.py)
+bert-score>=0.3.13
+rouge-score>=0.1.2
+scikit-learn>=1.3
+# torch is a bert-score transitive dep — pinned for CPU stability on macOS
+torch>=2.2,<3.0
