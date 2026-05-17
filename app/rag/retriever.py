@@ -37,18 +37,28 @@ async def retrieve_candidates(
     candidate_set: list[str] | None,
     top_k: int = 30,
 ) -> list[dict[str, Any]]:
-    """Return candidate products as dicts of metadata."""
+    """Return candidate products as dicts of metadata.
+
+    Resolution order:
+      1. If an explicit ``candidate_set`` is provided, ALWAYS honour it.
+         Each item is tried first as a Chroma id, then matched by title in
+         Chroma metadata, then synthesised as a minimal {product_id, title}
+         dict so the LLM re-ranker still has something to rank. Sample
+         products are NEVER used to replace an explicit candidate set.
+      2. Otherwise: semantic retrieval from Chroma if populated.
+      3. Otherwise: fall back to the sample-products bundle.
+    """
     collection = get_product_collection()
     n_in_index = collection.count()
 
-    if n_in_index == 0:
-        logger.info("chroma empty — loading sample products bundle")
-        return _load_sample_products(domain=domain, limit=top_k)
-
-    # Path 1: explicit candidate set
+    # Path 1: explicit candidate set — always honoured
     if candidate_set:
-        result = collection.get(ids=candidate_set, include=["metadatas", "documents"])
-        return [_meta_to_candidate(m) for m in (result.get("metadatas") or [])]
+        return _resolve_candidate_set(candidate_set, collection if n_in_index > 0 else None)
+
+    # Path 2: empty Chroma + no candidate set → sample fallback
+    if n_in_index == 0:
+        logger.info("chroma empty + no candidate_set — loading sample products bundle")
+        return _load_sample_products(domain=domain, limit=top_k)
 
     # Path 2: semantic retrieval
     query_text = _persona_query_text(persona)
@@ -80,6 +90,75 @@ async def retrieve_candidates(
         cand["similarity"] = 1.0 - float(d)
         out.append(cand)
     return out
+
+
+def _resolve_candidate_set(
+    candidate_set: list[str], collection: Any | None
+) -> list[dict[str, Any]]:
+    """Resolve an explicit candidate_set into candidate dicts.
+
+    For each input string: try Chroma id lookup → title lookup → synthesise.
+    Order is preserved (callers may rely on it).
+    """
+    out: list[dict[str, Any]] = []
+    if collection is not None:
+        # Single Chroma .get() with all ids; the collection returns metadatas
+        # in the SAME ORDER as the ids that resolved. Items not found in
+        # Chroma are silently dropped from this result, so we have to fall
+        # back to title-match + synthesise for the rest.
+        found_by_id: dict[str, dict[str, Any]] = {}
+        try:
+            result = collection.get(ids=candidate_set, include=["metadatas"])
+            for meta in (result.get("metadatas") or []):
+                if meta and meta.get("product_id"):
+                    found_by_id[str(meta["product_id"])] = _meta_to_candidate(meta)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Chroma id lookup failed (%s); falling back to title match", exc)
+
+        # For unmatched items, try matching by title.
+        unmatched = [c for c in candidate_set if c not in found_by_id]
+        found_by_title: dict[str, dict[str, Any]] = {}
+        if unmatched:
+            try:
+                # Scan up to 2000 items by title — fine for our catalog size.
+                all_items = collection.get(limit=2000, include=["metadatas"])
+                meta_list = all_items.get("metadatas") or []
+                titles_index = {
+                    str(m.get("title", "")).strip().lower(): m
+                    for m in meta_list if m and m.get("title")
+                }
+                for c in unmatched:
+                    key = c.strip().lower()
+                    if key in titles_index:
+                        found_by_title[c] = _meta_to_candidate(titles_index[key])
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Chroma title-match scan failed (%s)", exc)
+
+        for c in candidate_set:
+            if c in found_by_id:
+                out.append(found_by_id[c])
+            elif c in found_by_title:
+                out.append(found_by_title[c])
+            else:
+                out.append(_synthesize_candidate(c))
+        return out
+
+    # No Chroma — synthesise every candidate from its title/id string.
+    return [_synthesize_candidate(c) for c in candidate_set]
+
+
+def _synthesize_candidate(s: str) -> dict[str, Any]:
+    """Minimal candidate dict when we have nothing but a title or product id."""
+    return {
+        "product_id": s,
+        "title": s,
+        "category": "",
+        "domain": "",
+        "price_naira": None,
+        "popularity": 0.5,
+        "description": "",
+        "similarity": 0.5,
+    }
 
 
 def _meta_to_candidate(meta: dict[str, Any]) -> dict[str, Any]:

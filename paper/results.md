@@ -6,20 +6,20 @@
 
 | Model | n | RMSE ↓ | BERTScore F1 ↑ | ROUGE-L ↑ | Register match ↑ | Marker recall ↑ |
 |---|---|---|---|---|---|---|
-| **naija_reviewer_8b** | 40 | 1.449 | 0.862 | 0.219 | 70.0% | 35.8% |
-| **claude_sonnet_4** | 40 | 1.549 | 0.856 | 0.183 | 70.0% | 21.5% |
+| **naija_reviewer_8b** | 40 | 1.432 | 0.863 | 0.222 | 62.5% | 40.9% |
+| **claude_sonnet_4** | 40 | 1.500 | 0.857 | 0.187 | 70.0% | 20.6% |
 
 ### Official AgentSociety metrics (run by the upstream simulator)
 
 | Model | preference_estimation ↑ | sentiment_err ↓ | emotion_err ↓ | topic_err ↓ | review_generation ↑ | **overall_quality ↑** |
 |---|---|---|---|---|---|---|
-| **naija_reviewer_8b** | 0.750 | 0.357 | 0.265 | 0.155 | 0.767 | **0.758** |
-| **claude_sonnet_4** | 0.750 | 0.276 | 0.240 | 0.182 | 0.780 | **0.765** |
+| **naija_reviewer_8b** | 0.760 | 0.376 | 0.249 | 0.165 | 0.761 | **0.761** |
+| **claude_sonnet_4** | 0.750 | 0.288 | 0.245 | 0.174 | 0.780 | **0.765** |
 
 
 ## Task B — Recommendation
 
 | Model (re-ranker) | n | NDCG@10 ↑ | HR@1 ↑ | HR@3 ↑ | HR@5 ↑ |
 |---|---|---|---|---|---|
-| **claude_sonnet_4** | 4 | 0.000 | 0.000 | 0.000 | 0.000 |
-| **naija_reviewer_8b** | 4 | 0.000 | 0.000 | 0.000 | 0.000 |
+| **claude_sonnet_4** | 2 | 0.422 | 0.000 | 0.333 | 0.333 |
+| **naija_reviewer_8b** | 4 | 0.801 | 0.750 | 0.750 | 0.833 |
