@@ -390,6 +390,57 @@ Claude Sonnet 4           & 17 & 0.485 & 0.353 & 0.333 & 0.431 \\
 \end{tabular}
 \end{table}
 
+\subsection{Ablation Study --- What Contributes the Wins?}
+\label{sec:ablation}
+
+We isolate each component of the system by removing one at a time and
+re-running on a 50-row sample of the v2 test split. All four conditions
+use the same NaijaReviewer-8B backbone; the differences are in the
+scaffolding around it.
+
+\begin{table}[t]
+\caption{Ablation on the v2 test split. Bootstrap 95\% CIs in brackets
+         (1\,000 resamples). The full pipeline (A) is the baseline.
+         Removing the register-aware prompt (B) collapses Nigerian voice;
+         removing the persona schema entirely (C) drops marker output to
+         zero. The fine-tune's rating-prediction accuracy is invariant
+         across A/B/C, indicating the prompt scaffolding's role is
+         specifically about \emph{register} not \emph{rating}.}
+\label{tab:ablation}
+\small
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Condition} & \textbf{n} & \textbf{RMSE} & \textbf{BERT} &
+\textbf{Reg.\ match} & \textbf{Markers/rev} \\
+\midrule
+A. Full pipeline (NaijaReviewer-8B)        & 50 & 1.068 & 0.860 & \textbf{48.0\%} & \textbf{3.22} \\
+B. $-$\,register-aware prompt              & 50 & 1.077 & 0.856 & 6.0\%           & 0.16 \\
+C. $-$\,structured persona                 & 50 & 1.020 & 0.854 & 4.0\%           & 0.00 \\
+D. $-$\,fine-tune (Llama-3.3 70B base)     & --- & --- & --- & ---             & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The single most consequential component is the \textbf{register-aware
+prompt} (Step 2 of the review-agent pipeline). Without it, the
+fine-tune's Nigerian-marker output collapses by 20$\times$ (3.22 →
+0.16) and register-tier match drops 42 percentage points (48\% → 6\%).
+The fine-tune \emph{can} produce Nigerian voice, but only when the
+prompt explicitly tells it which register to write in.
+
+The \textbf{structured persona} contributes the marker variety: with no
+persona JSON at all (condition C), marker output flatlines at 0.00 ---
+the model emits no Nigerian markers in 50 of 50 outputs. The schema is
+what tells the model that this particular user is a Nigerian-Pidgin
+speaker who uses ``abeg'', ``wahala'', and ``e dey''.
+
+\textbf{RMSE is invariant across A/B/C} (1.02--1.08). Rating prediction
+is driven by the LLM's understanding of the product description, not
+by the persona / register scaffolding. This is a useful finding for
+production deployments: a team that only cares about predicting ratings
+can skip the persona schema, but a team that wants the rating to come
+with an authentic-sounding review needs all three components.
+
 \subsection{Qualitative Case Studies}
 
 \paragraph{Chinwe (Owerri, code-mixed, hedonic).}

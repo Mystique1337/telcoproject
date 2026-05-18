@@ -43,10 +43,15 @@ except ImportError:
     pass
 
 from scripts.eval_all import (  # type: ignore
-    BACKBONES_TASK1, _row_to_persona, _row_to_product, bootstrap_ci,
-    bootstrap_rmse, count_markers, detect_register, length_ratio,
+    BACKBONES_TASK1, ALL_NIGERIAN_MARKERS, _row_to_persona, _row_to_product,
+    bootstrap_ci, bootstrap_rmse, detect_register, length_ratio,
     load_test_set, logger as eval_logger, rmse, rouge_batch, bertscore_batch,
 )
+
+
+def count_markers(text: str) -> int:
+    t = (text or "").lower()
+    return sum(1 for m in ALL_NIGERIAN_MARKERS if m in t)
 
 logger = logging.getLogger("ablation")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s — %(message)s")
@@ -59,7 +64,9 @@ API_URL = "http://localhost:8765"
 # --------------------------------------------------------------------------- #
 
 NAIJA_BACKBONE = "lmstudio:naija-reviewer-8b"
-BASE_LARGE_BACKBONE = "nvidia/llama-3.1-nemotron-70b-instruct"  # via NIM
+# Verified working on this NIM account (earlier probe). The full provider:model
+# string is mandatory — our LLM client parses on the first colon.
+BASE_LARGE_BACKBONE = "nvidia:meta/llama-3.3-70b-instruct"
 
 
 CONDITIONS: dict[str, dict[str, Any]] = {

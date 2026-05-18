@@ -1,0 +1,130 @@
+{
+  "A_full": {
+    "label": "A. Full pipeline (NaijaReviewer-8B)",
+    "backbone": "lmstudio:naija-reviewer-8b",
+    "via_api": true,
+    "strip_persona": false,
+    "strip_register": false,
+    "n_valid": 50,
+    "n_errors": 0,
+    "RMSE": {
+      "point": 1.0677078252031311,
+      "ci95": [
+        0.9797958971132712,
+        1.1661903789690602
+      ]
+    },
+    "BERTScore_F1": 0.8598710894584656,
+    "ROUGE_L": 0.20634687874507915,
+    "register_match_pct": {
+      "point": 48.0,
+      "ci95": [
+        34.0,
+        62.0
+      ]
+    },
+    "markers_per_review": {
+      "point": 3.22,
+      "ci95": [
+        2.74,
+        3.72
+      ]
+    }
+  },
+  "B_no_register": {
+    "label": "B. \u2212 register-aware prompt",
+    "backbone": "lmstudio:naija-reviewer-8b",
+    "via_api": true,
+    "strip_persona": false,
+    "strip_register": true,
+    "n_valid": 50,
+    "n_errors": 0,
+    "RMSE": {
+      "point": 1.0770329614269007,
+      "ci95": [
+        0.9273618495495703,
+        1.2409673645990857
+      ]
+    },
+    "BERTScore_F1": 0.8562020659446716,
+    "ROUGE_L": 0.1999980313299406,
+    "register_match_pct": {
+      "point": 6.0,
+      "ci95": [
+        0.0,
+        14.0
+      ]
+    },
+    "markers_per_review": {
+      "point": 0.16,
+      "ci95": [
+        0.04,
+        0.32
+      ]
+    }
+  },
+  "C_no_persona": {
+    "label": "C. \u2212 structured persona",
+    "backbone": "lmstudio:naija-reviewer-8b",
+    "via_api": false,
+    "strip_persona": true,
+    "strip_register": true,
+    "n_valid": 50,
+    "n_errors": 0,
+    "RMSE": {
+      "point": 1.019803902718557,
+      "ci95": [
+        0.9797958971132712,
+        1.0862780491200215
+      ]
+    },
+    "BERTScore_F1": 0.8544464111328125,
+    "ROUGE_L": 0.2060426105140362,
+    "register_match_pct": {
+      "point": 4.0,
+      "ci95": [
+        0.0,
+        10.0
+      ]
+    },
+    "markers_per_review": {
+      "point": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "D_no_finetune": {
+    "label": "D. \u2212 fine-tune (base Llama-3.1 70B via NIM)",
+    "backbone": "nvidia/llama-3.1-nemotron-70b-instruct",
+    "via_api": true,
+    "strip_persona": false,
+    "strip_register": false,
+    "n_valid": 0,
+    "n_errors": 50,
+    "RMSE": {
+      "point": NaN,
+      "ci95": [
+        NaN,
+        NaN
+      ]
+    },
+    "BERTScore_F1": NaN,
+    "ROUGE_L": NaN,
+    "register_match_pct": {
+      "point": 0.0,
+      "ci95": [
+        NaN,
+        NaN
+      ]
+    },
+    "markers_per_review": {
+      "point": NaN,
+      "ci95": [
+        NaN,
+        NaN
+      ]
+    }
+  }
+}
