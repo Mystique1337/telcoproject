@@ -83,3 +83,14 @@ PRD/
 # Local-only llama.cpp checkout (~500MB) — judges convert via HF Space "gguf-my-repo"
 llama.cpp/
 
+# Bulk Jumia product pull (6k+ JSONs, ~26MB) — regenerable via
+# `python scripts/pull_jumia_products.py`. The 6 curated demo products
+# remain tracked.
+data/sample/products/*.json
+!data/sample/products/anikulapo_movie.json
+!data/sample/products/macbook_pro_m3.json
+!data/sample/products/maybelline_fit_me.json
+!data/sample/products/pressing_iron_philips.json
+!data/sample/products/solar_inverter_3kva.json
+!data/sample/products/tecno_spark_10.json
+

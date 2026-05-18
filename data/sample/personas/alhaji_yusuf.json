@@ -1,0 +1,61 @@
+{
+  "user_id": "alhaji_yusuf",
+  "demographics": {
+    "age_range": "65-70",
+    "location": "Kano City, Kano State",
+    "occupation": "transport fleet owner"
+  },
+  "hedonic_utilitarian": 0.25,
+  "intensity_calibration": {
+    "very good": 3.8,
+    "excellent": 4.5,
+    "outstanding": 4.8,
+    "mashallah": 4.2,
+    "wallahi": 4.0,
+    "quite impressive": 3.5,
+    "absolutely perfect": 5.0
+  },
+  "communal_individual": 0.75,
+  "aspect_priority": {
+    "durability": 0.35,
+    "value_for_money": 0.25,
+    "brand_reputation": 0.2,
+    "functionality": 0.15,
+    "after_sales_service": 0.05
+  },
+  "register_tier": "nigerian_english",
+  "register_markers": [
+    "Alhamdulillah, this is very good",
+    "Wallahi, I am satisfied with this purchase",
+    "Mashallah, the quality is there",
+    "By Allah's grace, it serves the purpose well",
+    "Subhanallah, what more can one ask for",
+    "In sha Allah, it will last long",
+    "May Allah bless the manufacturer",
+    "This one is solid, wallahi"
+  ],
+  "register_confidence": 0.88,
+  "review_anchors": [
+    {
+      "review_id": "anchor_ay01",
+      "product_id": "heavy_duty_generator_15kva",
+      "rating": 4,
+      "text": "Alhamdulillah, this generator has been serving my transport yard very well for the past six months. The fuel consumption is reasonable and it starts without wahala even during harmattan season. Wallahi, for the price I paid, I am quite satisfied with the performance."
+    },
+    {
+      "review_id": "anchor_ay02",
+      "product_id": "samsung_galaxy_tab_a8",
+      "rating": 5,
+      "text": "Mashallah, this tablet is excellent for managing my fleet records and monitoring my drivers' locations. The battery life is outstanding and the screen is clear even in bright sunlight. My accountant finds it very easy to use for our daily operations. May Allah bless Samsung for this quality product."
+    },
+    {
+      "review_id": "anchor_ay03",
+      "product_id": "office_executive_chair_leather",
+      "rating": 3,
+      "text": "The chair looks good and the leather finish is decent, but after three months of use, I notice the padding is becoming less comfortable. For someone like me who spends long hours in the office coordinating my transport business, I expected better durability. Wallahi, it's not bad but not exactly what I hoped for at this price point."
+    }
+  ],
+  "history_count": 28,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

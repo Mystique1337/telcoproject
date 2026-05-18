@@ -1,0 +1,61 @@
+{
+  "user_id": "tobi_ibadan",
+  "demographics": {
+    "age_range": "25-34",
+    "location": "Ibadan, Oyo State",
+    "occupation": "fintech product manager"
+  },
+  "hedonic_utilitarian": 0.35,
+  "intensity_calibration": {
+    "fantastic": 4.2,
+    "really good": 3.8,
+    "decent": 3.0,
+    "not bad": 2.8,
+    "disappointing": 1.8,
+    "terrible": 1.2,
+    "amazing": 4.7
+  },
+  "communal_individual": 0.4,
+  "aspect_priority": {
+    "quality": 0.28,
+    "brand_reputation": 0.22,
+    "functionality": 0.25,
+    "value_for_money": 0.15,
+    "design_aesthetics": 0.1
+  },
+  "register_tier": "code_mixed",
+  "register_markers": [
+    "honestly speaking",
+    "it's giving premium vibes",
+    "the thing is solid gan",
+    "I'm not even capping",
+    "God is good sha",
+    "let me just say",
+    "it hit different",
+    "no be small thing"
+  ],
+  "register_confidence": 0.88,
+  "review_anchors": [
+    {
+      "review_id": "anchor_ti01",
+      "product_id": "apple_macbook_air_m2",
+      "rating": 5,
+      "text": "Honestly speaking, this MacBook is fantastic for my fintech work. The M2 chip handles all my product analytics and design tools smoothly, no lag whatsoever. It's giving premium vibes and the build quality is amazing. God is good sha, finally upgraded from my old laptop."
+    },
+    {
+      "review_id": "anchor_ti02",
+      "product_id": "nike_air_max_270",
+      "rating": 4,
+      "text": "These sneakers are really good, not even capping. The comfort level hit different during my morning runs in UI area. Design is clean and the Nike branding speaks for itself. Only thing is they collect dust easily but overall decent purchase."
+    },
+    {
+      "review_id": "anchor_ti03",
+      "product_id": "samsung_55_qled_tv",
+      "rating": 4,
+      "text": "Let me just say this TV is solid gan. Picture quality is amazing for Netflix and football matches. The thing is sleek and fits perfectly in my living room. Value for money considering the features you get, no be small thing."
+    }
+  ],
+  "history_count": 42,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

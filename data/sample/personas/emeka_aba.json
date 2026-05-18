@@ -1,0 +1,60 @@
+{
+  "user_id": "emeka_aba",
+  "demographics": {
+    "age_range": "50-55",
+    "location": "Aba, Abia State",
+    "occupation": "Auto parts trader"
+  },
+  "hedonic_utilitarian": 0.25,
+  "intensity_calibration": {
+    "very correct": 4.2,
+    "e shock me": 4.8,
+    "serious something": 4.5,
+    "no be small thing": 4.0,
+    "proper proper": 3.8,
+    "na wah o": 3.5,
+    "fine pass": 3.2
+  },
+  "communal_individual": 0.75,
+  "aspect_priority": {
+    "durability": 0.35,
+    "value_for_money": 0.28,
+    "functionality": 0.22,
+    "brand_reliability": 0.15
+  },
+  "register_tier": "nigerian_pidgin",
+  "register_markers": [
+    "see ehn, this thing",
+    "nna mehn, I tell you",
+    "biko make una check am well",
+    "the thing dey work proper proper",
+    "na so e suppose be",
+    "chei! see as e fine",
+    "I buy am for my shop",
+    "customers dey ask for am everyday"
+  ],
+  "register_confidence": 0.82,
+  "review_anchors": [
+    {
+      "review_id": "anchor_ea01",
+      "product_id": "power-inverter-2000w-luminous",
+      "rating": 4,
+      "text": "See ehn, this inverter na serious something for my shop. When NEPA take light, e dey carry all my equipment - computer, printer, everything. The thing strong well well, I don buy am for 8 months now, no wahala. Biko if you get business, this one go help you proper."
+    },
+    {
+      "review_id": "anchor_ea02",
+      "product_id": "samsung-galaxy-a54-smartphone",
+      "rating": 5,
+      "text": "Nna mehn, this phone e shock me! Camera quality very correct, battery life strong pass. I dey use am snap parts for my customers when dem no fit come shop. My pikin for university say na good choice I make. The thing worth every kobo wey I pay."
+    },
+    {
+      "review_id": "anchor_ea03",
+      "product_id": "hp-laserjet-printer-p1102w",
+      "rating": 3,
+      "text": "This printer dey work but e get small wahala with the connection sometimes. For business like mine wey I dey print invoice and receipt everyday, e suppose connect faster. But the print quality fine, paper no dey jam. Na just the network issue dey worry me small."
+    }
+  ],
+  "history_count": 28,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

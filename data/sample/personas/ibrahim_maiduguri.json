@@ -1,0 +1,60 @@
+{
+  "user_id": "ibrahim_maiduguri",
+  "demographics": {
+    "age_range": "35-40",
+    "location": "Maiduguri, Borno State",
+    "occupation": "NGO logistics coordinator"
+  },
+  "hedonic_utilitarian": 0.25,
+  "intensity_calibration": {
+    "subhanallah": 4.5,
+    "very good": 3.8,
+    "excellent": 4.2,
+    "wallahi": 4.0,
+    "outstanding": 4.7,
+    "mashallah": 3.5,
+    "quite impressive": 3.2
+  },
+  "communal_individual": 0.75,
+  "aspect_priority": {
+    "durability": 0.35,
+    "value_for_money": 0.28,
+    "reliability": 0.22,
+    "functionality": 0.15
+  },
+  "register_tier": "nigerian_english",
+  "register_markers": [
+    "Alhamdulillah for this purchase",
+    "wallahi this product is solid",
+    "mashallah, very good quality",
+    "by Allah's grace it's working well",
+    "subhanallah, exactly what we needed",
+    "insha Allah it will last long",
+    "may Allah reward the seller",
+    "truly grateful for this item"
+  ],
+  "register_confidence": 0.88,
+  "review_anchors": [
+    {
+      "review_id": "anchor_IM01",
+      "product_id": "heavy_duty_generator_5kva",
+      "rating": 5,
+      "text": "Alhamdulillah, this generator has been excellent for our field operations. We've been running it daily at the IDP camp for three months now and wallahi, no issues at all. The fuel efficiency is outstanding and it handles our office equipment plus medical refrigeration units perfectly. Mashallah, very reliable purchase that serves our humanitarian work well."
+    },
+    {
+      "review_id": "anchor_IM02",
+      "product_id": "rugged_laptop_lenovo_thinkpad",
+      "rating": 4,
+      "text": "This laptop has proven quite durable for field work alhamdulillah. The battery life is very good for our long coordination meetings and the build quality withstands the dusty conditions here in Maiduguri. Only issue is the screen could be brighter for outdoor use, but overall wallahi it's serving our team's needs effectively. Good value for the price point."
+    },
+    {
+      "review_id": "anchor_IM03",
+      "product_id": "industrial_water_purifier_system",
+      "rating": 5,
+      "text": "Subhanallah, this water purification system has been a blessing for our camp operations. The capacity handles our daily needs perfectly and maintenance is straightforward for our technical staff. After six months of continuous operation, mashallah it's still performing excellently. Essential equipment that's proven its worth in challenging conditions."
+    }
+  ],
+  "history_count": 28,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

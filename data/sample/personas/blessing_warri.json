@@ -1,0 +1,61 @@
+{
+  "user_id": "blessing_warri",
+  "demographics": {
+    "age_range": "30-39",
+    "location": "Warri, Delta State",
+    "occupation": "petty trader (cosmetics/mobile accessories)"
+  },
+  "hedonic_utilitarian": 0.65,
+  "intensity_calibration": {
+    "e shock me": 4.2,
+    "too much": 3.8,
+    "serious": 3.5,
+    "small small": 2.1,
+    "e dey okay": 2.8,
+    "correct": 4.0,
+    "no be small thing": 4.5
+  },
+  "communal_individual": 0.72,
+  "aspect_priority": {
+    "customer_appeal": 0.28,
+    "profit_margin": 0.24,
+    "durability": 0.22,
+    "fast_delivery": 0.15,
+    "brand_recognition": 0.11
+  },
+  "register_tier": "nigerian_pidgin",
+  "register_markers": [
+    "e shock me well well",
+    "my customers dey like am",
+    "business dey move",
+    "God don bless me",
+    "e dey sell like pure water",
+    "make we dey pray",
+    "hustle must continue",
+    "e go better for us"
+  ],
+  "register_confidence": 0.88,
+  "review_anchors": [
+    {
+      "review_id": "anchor_BW01",
+      "product_id": "maybelline_foundation_set_jumia",
+      "rating": 4,
+      "text": "This foundation set e shock me well well! My customers dey rush am like fire and the shade range correct for our people. Only problem na say the delivery take small time but business dey move. God don bless this purchase."
+    },
+    {
+      "review_id": "anchor_BW02",
+      "product_id": "samsung_phone_chargers_bulk",
+      "rating": 5,
+      "text": "These chargers e dey sell like pure water for my shop. Quality dey okay and the price make sense for business. My customers happy, I happy too. Make we dey pray say this supplier no go disappoint us."
+    },
+    {
+      "review_id": "anchor_BW03",
+      "product_id": "oraimo_power_bank_10000mah",
+      "rating": 3,
+      "text": "The power bank dey work but e no too last like I expect. For the price, e suppose dey better small. My customers complain say e dey discharge quick quick but hustle must continue."
+    }
+  ],
+  "history_count": 23,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

@@ -1,0 +1,60 @@
+{
+  "user_id": "fatima_sokoto",
+  "demographics": {
+    "age_range": "18-22",
+    "location": "Sokoto, Sokoto State",
+    "occupation": "Medical student"
+  },
+  "hedonic_utilitarian": 0.25,
+  "intensity_calibration": {
+    "very good": 3.8,
+    "excellent": 4.5,
+    "mashallah": 4.2,
+    "quite nice": 3.5,
+    "really fine": 4.0,
+    "subhanallah": 4.7,
+    "wallahi": 4.3
+  },
+  "communal_individual": 0.75,
+  "aspect_priority": {
+    "value_for_money": 0.35,
+    "durability": 0.28,
+    "functionality": 0.22,
+    "delivery_speed": 0.15
+  },
+  "register_tier": "nigerian_english",
+  "register_markers": [
+    "Alhamdulillah",
+    "mashallah very good",
+    "wallahi it's fine",
+    "subhanallah",
+    "by Allah's grace",
+    "insha Allah",
+    "may Allah reward you",
+    "truly speaking"
+  ],
+  "register_confidence": 0.88,
+  "review_anchors": [
+    {
+      "review_id": "anchor_fs01",
+      "product_id": "medical_textbook_physiology",
+      "rating": 4,
+      "text": "Alhamdulillah this book came in good condition and the content is very comprehensive for our physiology course. The delivery was quite fast mashallah, reached Sokoto in 4 days. My roommates and I are sharing it for our studies and it's serving us well wallahi."
+    },
+    {
+      "review_id": "anchor_fs02",
+      "product_id": "hp_laptop_pavilion",
+      "rating": 5,
+      "text": "Subhanallah this laptop is excellent for the price. As a medical student I needed something reliable for research and assignments, and by Allah's grace this one is serving me perfectly. Battery life is really good and it handles all my software well. May Allah reward the seller."
+    },
+    {
+      "review_id": "anchor_fs03",
+      "product_id": "hijab_cotton_plain",
+      "rating": 3,
+      "text": "The material is quite nice and comfortable, truly speaking. However the color faded a bit after washing which was disappointing. For the price it's okay but I expected it to last longer insha Allah. Still decent for everyday wear to lectures."
+    }
+  ],
+  "history_count": 18,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

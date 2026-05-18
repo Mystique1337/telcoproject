@@ -51,7 +51,13 @@ class RecommendRequest(BaseModel):
         default=None,
         description="If omitted, the agent retrieves candidates via Chroma over the product index.",
     )
-    domain: str = "jumia"
+    domain: str = Field(
+        default="jumia",
+        description=(
+            "Single domain ('jumia'/'konga'/'nollywood'), or 'all' / comma-list for "
+            "cross-domain retrieval ('jumia,konga' or 'all')."
+        ),
+    )
     k: int = Field(default=5, ge=1, le=20)
     include_negatives: bool = False
     include_reasoning: bool = False
@@ -61,6 +67,14 @@ class RecommendRequest(BaseModel):
             "Per-request override of TASK2_RERANKER. Format: 'provider:model'. "
             "Examples: 'lmstudio:naija-reviewer-8b', 'anthropic:claude-sonnet-4-20250514', "
             "'openai:gpt-4o'. If unset, uses TASK2_RERANKER from env."
+        ),
+    )
+    conversation_history: list[dict[str, str]] | None = Field(
+        default=None,
+        description=(
+            "Optional multi-turn context: ordered list of {role, content} chat turns. "
+            "Constraints (budget, recipient, category) are extracted and folded into "
+            "the re-ranking prompt. Enables conversational refinement scenarios."
         ),
     )
 
@@ -77,6 +91,10 @@ class RecommendItem(BaseModel):
 class RecommendResponse(BaseModel):
     recommendations: list[RecommendItem]
     negatives: list[RecommendItem] | None = None
+    cold_start: bool | None = None
+    cross_domain: bool | None = None
+    multi_turn: bool | None = None
+    extracted_constraints: list[str] | None = None
     reasoning_trace: list[dict[str, Any]] | None = None
     latency_ms: int
 

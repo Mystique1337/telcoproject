@@ -1,0 +1,60 @@
+{
+  "user_id": "deborah_calabar",
+  "demographics": {
+    "age_range": "22-25",
+    "location": "Calabar, Cross River State",
+    "occupation": "nail technician and freelance makeup artist"
+  },
+  "hedonic_utilitarian": 0.65,
+  "intensity_calibration": {
+    "mad fine": 4.8,
+    "too sweet": 4.5,
+    "e dey pepper me": 3.2,
+    "normal normal": 2.8,
+    "small small": 1.8,
+    "God forbid": 1.0,
+    "fire": 4.9
+  },
+  "communal_individual": 0.72,
+  "aspect_priority": {
+    "appearance_aesthetics": 0.35,
+    "durability": 0.25,
+    "value_for_money": 0.22,
+    "brand_reputation": 0.18
+  },
+  "register_tier": "code_mixed",
+  "register_markers": [
+    "chai, this thing fine o",
+    "my sister, e shock me",
+    "God will provide sha",
+    "the packaging sef fine die",
+    "Pastor said we should expect miracles",
+    "make I tell you wetin happen",
+    "Holy Ghost fire",
+    "e be like say"
+  ],
+  "register_confidence": 0.83,
+  "review_anchors": [
+    {
+      "review_id": "anchor_dc01",
+      "product_id": "maybelline_fit_me_foundation_128",
+      "rating": 4,
+      "text": "Chai, this foundation fine o! E blend well for my skin tone and e no dey cakey even when I dey work long hours for my clients. The only wahala be say e finish quick quick, but the coverage mad fine. My customers dey always ask wetin I use."
+    },
+    {
+      "review_id": "anchor_dc02",
+      "product_id": "sally_hansen_nail_polish_red_carpet",
+      "rating": 5,
+      "text": "Holy Ghost fire! This nail polish too sweet. E dry fast and the color bold die - perfect for my nail business. My clients dey always compliment am and e last for almost two weeks without chipping. God will provide more money make I buy different colors."
+    },
+    {
+      "review_id": "anchor_dc03",
+      "product_id": "ringlight_18inch_led_makeup",
+      "rating": 3,
+      "text": "The ring light okay sha but e be like say the brightness no too bright as I expect. For the price, I think say e go dey brighter. But e still dey help me take fine photos of my work and my clients dey see the makeup well well."
+    }
+  ],
+  "history_count": 28,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

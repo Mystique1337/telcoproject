@@ -1,0 +1,59 @@
+{
+  "user_id": "garba_kano",
+  "demographics": {
+    "age_range": "50-59",
+    "location": "Sabon Gari, Kano",
+    "occupation": "Textile wholesaler"
+  },
+  "hedonic_utilitarian": 0.25,
+  "intensity_calibration": {
+    "very good": 3.8,
+    "excellent": 4.5,
+    "outstanding": 4.8,
+    "mashallah": 4.2,
+    "fantastic": 4.6,
+    "wallahi": 4.0
+  },
+  "communal_individual": 0.75,
+  "aspect_priority": {
+    "durability": 0.35,
+    "value_for_money": 0.25,
+    "brand_reputation": 0.2,
+    "functionality": 0.2
+  },
+  "register_tier": "nigerian_english",
+  "register_markers": [
+    "Alhamdulillah, this is exactly what I needed",
+    "Mashallah, the quality is there",
+    "Wallahi, I recommend this to anyone",
+    "By Allah's grace, it serves the purpose well",
+    "Subhanallah, very impressive",
+    "Insha Allah, it will last long",
+    "May Allah continue to bless the manufacturers",
+    "This one is worth every kobo, wallahi"
+  ],
+  "register_confidence": 0.88,
+  "review_anchors": [
+    {
+      "review_id": "anchor_gk01",
+      "product_id": "samsung-galaxy-tab-a8-tablet",
+      "rating": 4,
+      "text": "Alhamdulillah, this tablet is serving me well for my business records and communication with suppliers. The screen is clear and the battery life is very good for long market days. Mashallah, Samsung has maintained their quality standard. I recommend it for any serious business person who needs reliable technology."
+    },
+    {
+      "review_id": "anchor_gk02",
+      "product_id": "hp-laserjet-pro-printer",
+      "rating": 5,
+      "text": "Wallahi, this printer is outstanding for my wholesale business documentation. Fast printing, clear text, and the toner lasts very long - exactly what I need for invoices and delivery notes. By Allah's grace, HP has delivered excellent value. My fellow traders are asking where I bought it from."
+    },
+    {
+      "review_id": "anchor_gk03",
+      "product_id": "nokia-power-bank-10000mah",
+      "rating": 4,
+      "text": "Very good power bank, alhamdulillah. Keeps my phones charged throughout the busy market hours when I'm coordinating with customers and suppliers. Nokia quality is there as expected, and the price is reasonable. Insha Allah, it will serve me for many years to come."
+    }
+  ],
+  "history_count": 28,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

@@ -1,0 +1,60 @@
+{
+  "user_id": "musa_kaduna",
+  "demographics": {
+    "age_range": "30-39",
+    "location": "Kaduna, Kaduna State",
+    "occupation": "Secondary school physics teacher"
+  },
+  "hedonic_utilitarian": 0.25,
+  "intensity_calibration": {
+    "very good": 3.5,
+    "excellent": 4.2,
+    "wallahi": 4.8,
+    "mashallah": 4.5,
+    "quite impressive": 3.8,
+    "outstanding": 4.6,
+    "alhamdulillah": 4.3
+  },
+  "communal_individual": 0.75,
+  "aspect_priority": {
+    "durability": 0.35,
+    "value_for_money": 0.25,
+    "educational_utility": 0.2,
+    "brand_reliability": 0.2
+  },
+  "register_tier": "nigerian_english",
+  "register_markers": [
+    "Alhamdulillah, this is exactly what I needed",
+    "Mashallah, the quality is very good",
+    "Wallahi, I recommend this to my colleagues",
+    "The delivery was quite prompt",
+    "This will serve my students well",
+    "Very practical for classroom use",
+    "Good value considering the price point",
+    "I'm satisfied with this purchase"
+  ],
+  "register_confidence": 0.88,
+  "review_anchors": [
+    {
+      "review_id": "anchor_mk01",
+      "product_id": "scientific_calculator_casio_fx991",
+      "rating": 4,
+      "text": "Alhamdulillah, this calculator is exactly what I needed for my physics classes. The functions are comprehensive and my students find it easy to use during practicals. Delivery was quite prompt and the price is reasonable for teachers like us. Mashallah, very good quality that will last."
+    },
+    {
+      "review_id": "anchor_mk02",
+      "product_id": "hp_laptop_pavilion_15",
+      "rating": 5,
+      "text": "Wallahi, this laptop has been outstanding for preparing my lesson notes and presentations. The battery life is excellent which is important during our frequent power outages in Kaduna. My colleagues are impressed with the performance and I've recommended it to several of them. Very good investment for any educator."
+    },
+    {
+      "review_id": "anchor_mk03",
+      "product_id": "physics_textbook_senior_secondary",
+      "rating": 4,
+      "text": "This textbook covers the curriculum very well and my students appreciate the clear explanations. The examples are quite practical and relevant to our Nigerian context. Good value for money considering how comprehensive it is. I'm satisfied with this purchase for my classroom library."
+    }
+  ],
+  "history_count": 28,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

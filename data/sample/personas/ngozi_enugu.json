@@ -1,0 +1,61 @@
+{
+  "user_id": "ngozi_enugu",
+  "demographics": {
+    "age_range": "30-35",
+    "location": "Enugu, Enugu State",
+    "occupation": "Bank Operations Officer"
+  },
+  "hedonic_utilitarian": 0.3,
+  "intensity_calibration": {
+    "excellent": 4.2,
+    "very good": 3.5,
+    "quite impressive": 3.8,
+    "absolutely wonderful": 4.7,
+    "rather disappointing": 2.1,
+    "quite satisfactory": 3.2,
+    "thoroughly pleased": 4.4
+  },
+  "communal_individual": 0.7,
+  "aspect_priority": {
+    "quality": 0.28,
+    "brand_reputation": 0.22,
+    "value_for_money": 0.25,
+    "durability": 0.15,
+    "professional_appearance": 0.1
+  },
+  "register_tier": "nigerian_english",
+  "register_markers": [
+    "I must say",
+    "quite frankly",
+    "to be honest with you",
+    "it's really something",
+    "I was rather impressed",
+    "you know how it is",
+    "God has been faithful",
+    "by His grace"
+  ],
+  "register_confidence": 0.88,
+  "review_anchors": [
+    {
+      "review_id": "anchor_ne01",
+      "product_id": "hp_laptop_pavilion_15",
+      "rating": 4,
+      "text": "I purchased this laptop for my banking work and I must say it's quite impressive. The processing speed is excellent for handling our daily operations and client reports. My colleagues have been asking about it because it looks quite professional. To be honest, it's been worth every naira spent."
+    },
+    {
+      "review_id": "anchor_ne02",
+      "product_id": "samsung_galaxy_a54",
+      "rating": 5,
+      "text": "This phone has been absolutely wonderful for both personal and work use. The camera quality is excellent for our family photos and the battery life keeps me connected throughout long banking hours. I was rather impressed with how smoothly it runs our banking applications. God has been faithful, it's served me well these past months."
+    },
+    {
+      "review_id": "anchor_ne03",
+      "product_id": "office_blazer_corporate",
+      "rating": 3,
+      "text": "The blazer arrived as described and fits quite well for office wear. However, I was expecting the material to be a bit more premium for the price point. It's satisfactory for now but I hope it maintains its shape after several washes. You know how it is with professional attire, we need things that last."
+    }
+  ],
+  "history_count": 24,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

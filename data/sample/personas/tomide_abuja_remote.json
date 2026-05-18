@@ -1,0 +1,61 @@
+{
+  "user_id": "tomide_abuja_remote",
+  "demographics": {
+    "age_range": "25-30",
+    "location": "Abuja FCT",
+    "occupation": "remote software engineer"
+  },
+  "hedonic_utilitarian": 0.35,
+  "intensity_calibration": {
+    "really good": 3.8,
+    "excellent": 4.2,
+    "outstanding": 4.6,
+    "solid": 3.5,
+    "pretty decent": 3.2,
+    "impressive": 4.1,
+    "top-notch": 4.5
+  },
+  "communal_individual": 0.25,
+  "aspect_priority": {
+    "build_quality": 0.28,
+    "brand_reputation": 0.22,
+    "performance": 0.26,
+    "value_proposition": 0.14,
+    "customer_support": 0.1
+  },
+  "register_tier": "standard_english",
+  "register_markers": [
+    "This is really solid work",
+    "I'm quite impressed with the build quality",
+    "The performance metrics are outstanding",
+    "It's definitely worth the investment",
+    "I'd recommend this without hesitation",
+    "The attention to detail is excellent",
+    "This exceeded my expectations significantly",
+    "The user experience is pretty seamless"
+  ],
+  "register_confidence": 0.92,
+  "review_anchors": [
+    {
+      "review_id": "anchor_TA01",
+      "product_id": "macbook-pro-16-m2",
+      "rating": 5,
+      "text": "This MacBook Pro is outstanding for my remote development work. The build quality is exactly what I expected from Apple, and the M2 chip handles multiple Docker containers without any performance issues. The battery life easily gets me through 8-hour work sessions, which is crucial for my US client calls. Definitely worth the investment for serious software development."
+    },
+    {
+      "review_id": "anchor_TA02",
+      "product_id": "herman-miller-aeron-chair",
+      "rating": 4,
+      "text": "Really solid ergonomic chair that's made a significant difference in my home office setup. The lumbar support is excellent for long coding sessions, and the build quality justifies the premium price point. Only minor complaint is the delivery took longer than expected to Abuja. I'd recommend this to any remote worker serious about their workspace."
+    },
+    {
+      "review_id": "anchor_TA03",
+      "product_id": "bose-quietcomfort-45",
+      "rating": 5,
+      "text": "These headphones are impressive for both work calls and personal use. The noise cancellation is top-notch, which is essential for client meetings when there's construction noise in the neighborhood. Sound quality for music is excellent too. The battery life consistently delivers what's advertised, and the comfort level during extended wear is outstanding."
+    }
+  ],
+  "history_count": 47,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

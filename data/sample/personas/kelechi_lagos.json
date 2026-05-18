@@ -1,0 +1,60 @@
+{
+  "user_id": "kelechi_lagos",
+  "demographics": {
+    "age_range": "20-25",
+    "location": "Ikeja, Lagos",
+    "occupation": "ride-hailing driver"
+  },
+  "hedonic_utilitarian": 0.25,
+  "intensity_calibration": {
+    "e shock me": 4.5,
+    "mad": 3.8,
+    "too much": 3.2,
+    "small": 2.1,
+    "somehow": 2.8,
+    "serious": 4.0,
+    "correct": 3.5
+  },
+  "communal_individual": 0.7,
+  "aspect_priority": {
+    "durability": 0.35,
+    "price_value": 0.28,
+    "functionality": 0.22,
+    "brand_reputation": 0.15
+  },
+  "register_tier": "nigerian_pidgin",
+  "register_markers": [
+    "e dey work well well",
+    "the thing strong die",
+    "no be small money o",
+    "God don bless me",
+    "my guy, this one correct",
+    "e go last me tire",
+    "make I tell you wetin happen",
+    "Pastor talk am for church say"
+  ],
+  "register_confidence": 0.82,
+  "review_anchors": [
+    {
+      "review_id": "anchor_KL01",
+      "product_id": "samsung_galaxy_a14_128gb",
+      "rating": 4,
+      "text": "This phone dey work well for my Bolt and Uber work. Battery strong, e fit last me whole day without charging. The GPS dey accurate and e no dey hang when I dey use am. Only wahala be say the camera somehow but for the price, e correct die."
+    },
+    {
+      "review_id": "anchor_KL02",
+      "product_id": "car_phone_holder_dashboard",
+      "rating": 5,
+      "text": "Abeg, this phone holder na the best thing wey I buy this year. E hold my phone tight tight, even when I dey drive rough road for Lagos. My passengers sef dey comment say e look professional. God don bless the person wey create this thing."
+    },
+    {
+      "review_id": "anchor_KL03",
+      "product_id": "power_bank_20000mah",
+      "rating": 3,
+      "text": "The power bank dey charge phone well but e heavy small. For my line of work, I need am to dey portable but this one big like stone. E dey work sha, but next time I go buy lighter one even if e go cost me more money."
+    }
+  ],
+  "history_count": 18,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

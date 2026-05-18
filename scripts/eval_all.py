@@ -231,6 +231,61 @@ def rmse(predictions: list[int], targets: list[int]) -> float:
     return statistics.mean(sq) ** 0.5
 
 
+def bootstrap_ci(
+    values: list[float],
+    n_resamples: int = 1000,
+    confidence: float = 0.95,
+    seed: int = 42,
+) -> tuple[float, float, float]:
+    """Bootstrap mean + (lo, hi) percentile CI for a per-sample metric.
+
+    Returns: (point_estimate, ci_low, ci_high). Returns (mean, NaN, NaN) if
+    fewer than 2 samples (CI undefined).
+    """
+    import random as _random
+    if not values:
+        return (float("nan"), float("nan"), float("nan"))
+    point = statistics.mean(values)
+    if len(values) < 2:
+        return (point, float("nan"), float("nan"))
+    rng = _random.Random(seed)
+    n = len(values)
+    means: list[float] = []
+    for _ in range(n_resamples):
+        sample = [values[rng.randrange(n)] for _ in range(n)]
+        means.append(sum(sample) / n)
+    means.sort()
+    lo = means[int(n_resamples * (1 - confidence) / 2)]
+    hi = means[int(n_resamples * (1 - (1 - confidence) / 2))]
+    return (point, lo, hi)
+
+
+def bootstrap_rmse(
+    pred: list[int], gt: list[int],
+    n_resamples: int = 1000, confidence: float = 0.95, seed: int = 42,
+) -> tuple[float, float, float]:
+    """Bootstrap CI for RMSE specifically (re-computes RMSE on each resample).
+
+    RMSE isn't a simple per-sample mean, so we resample (pred, gt) pairs.
+    """
+    import random as _random
+    if not pred:
+        return (float("nan"), float("nan"), float("nan"))
+    point = rmse(pred, gt)
+    if len(pred) < 2:
+        return (point, float("nan"), float("nan"))
+    rng = _random.Random(seed)
+    n = len(pred)
+    rmses: list[float] = []
+    for _ in range(n_resamples):
+        idx = [rng.randrange(n) for _ in range(n)]
+        rmses.append(rmse([pred[i] for i in idx], [gt[i] for i in idx]))
+    rmses.sort()
+    lo = rmses[int(n_resamples * (1 - confidence) / 2)]
+    hi = rmses[int(n_resamples * (1 - (1 - confidence) / 2))]
+    return (point, lo, hi)
+
+
 def detect_register(text: str) -> str:
     t = (text or "").lower()
     pidgin_hits = sum(1 for m in PIDGIN_MARKERS if m in t)

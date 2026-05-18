@@ -1,0 +1,61 @@
+{
+  "user_id": "yemisi_abeokuta",
+  "demographics": {
+    "age_range": "45-54",
+    "location": "Abeokuta, Ogun State",
+    "occupation": "primary school headmistress"
+  },
+  "hedonic_utilitarian": 0.25,
+  "intensity_calibration": {
+    "very good": 3.5,
+    "excellent": 4.2,
+    "outstanding": 4.8,
+    "quite nice": 3.0,
+    "really impressed": 4.0,
+    "wonderful": 4.5,
+    "not bad at all": 2.8
+  },
+  "communal_individual": 0.75,
+  "aspect_priority": {
+    "durability": 0.35,
+    "value_for_money": 0.25,
+    "professional_appearance": 0.2,
+    "functionality": 0.15,
+    "brand_reputation": 0.05
+  },
+  "register_tier": "nigerian_english",
+  "register_markers": [
+    "I must say",
+    "quite frankly",
+    "to be honest with you",
+    "it's really serving me well",
+    "I'm very particular about",
+    "as a professional woman",
+    "for someone in my position",
+    "God has been faithful"
+  ],
+  "register_confidence": 0.88,
+  "review_anchors": [
+    {
+      "review_id": "anchor_ya01",
+      "product_id": "hp_laserjet_printer_m404n",
+      "rating": 4,
+      "text": "I bought this printer for my school office and I must say it's been quite reliable. As a headmistress, I'm very particular about equipment that can handle heavy daily use, and this one has been serving us well for the past six months. The print quality is excellent for official documents and the running costs are reasonable for our school budget."
+    },
+    {
+      "review_id": "anchor_ya02",
+      "product_id": "samsung_galaxy_a54_smartphone",
+      "rating": 5,
+      "text": "This phone is outstanding value for money. For someone in my position, I needed something professional-looking that could handle my work calls and school administration apps efficiently. The camera quality is wonderful for taking pictures during school events, and the battery life easily lasts through my long working days. I'm really impressed with Samsung's quality at this price point."
+    },
+    {
+      "review_id": "anchor_ya03",
+      "product_id": "defacto_women_blazer_navy",
+      "rating": 4,
+      "text": "As a professional woman, I needed a well-tailored blazer that would maintain its shape and color after regular washing. This piece fits quite well and the fabric quality is good for the price. It's been serving me well for important meetings and school functions. To be honest, I would recommend it to other working mothers who need smart professional wear that doesn't break the bank."
+    }
+  ],
+  "history_count": 28,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

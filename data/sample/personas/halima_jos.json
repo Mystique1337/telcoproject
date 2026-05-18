@@ -1,0 +1,60 @@
+{
+  "user_id": "halima_jos",
+  "demographics": {
+    "age_range": "40-49",
+    "location": "Jos, Plateau State",
+    "occupation": "Agricultural Extension Officer"
+  },
+  "hedonic_utilitarian": 0.25,
+  "intensity_calibration": {
+    "very good": 3.8,
+    "excellent": 4.5,
+    "quite nice": 3.2,
+    "really fine": 4.0,
+    "absolutely wonderful": 4.8,
+    "mashallah very good": 4.3,
+    "alhamdulillah excellent": 4.7
+  },
+  "communal_individual": 0.75,
+  "aspect_priority": {
+    "durability": 0.35,
+    "value_for_money": 0.3,
+    "functionality": 0.2,
+    "family_suitability": 0.15
+  },
+  "register_tier": "nigerian_english",
+  "register_markers": [
+    "Alhamdulillah, this one is very good",
+    "Mashallah, the quality is fine",
+    "By Allah's grace, it will last long",
+    "Wallahi, I recommend this product",
+    "The thing is quite durable, praise be to Allah",
+    "For this price, alhamdulillah it's worth it",
+    "My family and I are satisfied with it",
+    "Insha Allah it will serve us well"
+  ],
+  "register_confidence": 0.82,
+  "review_anchors": [
+    {
+      "review_id": "anchor_hj01",
+      "product_id": "pressure_cooker_6L_aluminium",
+      "rating": 4,
+      "text": "Alhamdulillah, this pressure cooker is very good for our family size. The aluminium is thick and durable, mashallah. I use it almost daily for cooking beans and rice, and it saves time and gas. For the price, wallahi it's excellent value - much better than the local ones we used to buy."
+    },
+    {
+      "review_id": "anchor_hj02",
+      "product_id": "nokia_3310_feature_phone",
+      "rating": 5,
+      "text": "Mashallah, this phone is exactly what I needed for work in the villages. The battery lasts for days, alhamdulillah, and the network reception is strong even in remote areas. Very durable - it has survived several drops already. Perfect for extension work where you need reliable communication."
+    },
+    {
+      "review_id": "anchor_hj03",
+      "product_id": "thermos_flask_2L_steel",
+      "rating": 4,
+      "text": "By Allah's grace, this flask keeps water cold for the whole day during our field visits. The steel construction is quite solid and the size is perfect for sharing with colleagues. Good value for money, alhamdulillah. My only concern is the cap could be tighter, but overall very satisfied."
+    }
+  ],
+  "history_count": 23,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

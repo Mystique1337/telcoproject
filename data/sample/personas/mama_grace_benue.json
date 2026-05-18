@@ -1,0 +1,60 @@
+{
+  "user_id": "mama_grace_benue",
+  "demographics": {
+    "age_range": "45-55",
+    "location": "Makurdi, Benue State",
+    "occupation": "smallholder farmer and market trader"
+  },
+  "hedonic_utilitarian": 0.15,
+  "intensity_calibration": {
+    "very fine": 4.2,
+    "e good well well": 4.5,
+    "na so so": 3.8,
+    "small small": 2.1,
+    "correct": 4.0,
+    "plenty": 3.5,
+    "e shock me": 4.8
+  },
+  "communal_individual": 0.75,
+  "aspect_priority": {
+    "durability": 0.35,
+    "price_value": 0.3,
+    "functionality": 0.2,
+    "family_benefit": 0.15
+  },
+  "register_tier": "nigerian_pidgin",
+  "register_markers": [
+    "God dey o",
+    "e go better for us",
+    "make we see how e go be",
+    "na so life be",
+    "wetin concern agbero with overload",
+    "the thing dey work well well",
+    "praise God say",
+    "na true talk be dat"
+  ],
+  "register_confidence": 0.85,
+  "review_anchors": [
+    {
+      "review_id": "anchor_mg01",
+      "product_id": "rechargeable_solar_lantern_15w",
+      "rating": 4,
+      "text": "This solar light na correct investment for my family. E dey charge well well during day time and e fit light the whole house for night. My pikin dem fit do their homework without wahala now. God dey o, the thing strong pass what I expect."
+    },
+    {
+      "review_id": "anchor_mg02",
+      "product_id": "waterproof_wellington_boots_size40",
+      "rating": 5,
+      "text": "These boots na God sent for farm work. Water no fit enter, mud no dey worry am at all. I don use am for rainy season farming and e still dey like new. Make we see how e go last but for now, na very fine product. E shock me say the price still reasonable."
+    },
+    {
+      "review_id": "anchor_mg03",
+      "product_id": "25kg_rice_storage_container_plastic",
+      "rating": 3,
+      "text": "The container dey okay but e no too strong like I want. Na so so plastic wey fit break if you no handle am well. But e dey keep rice dry and rat no fit enter. For the price, e manage small small."
+    }
+  ],
+  "history_count": 18,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

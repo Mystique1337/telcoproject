@@ -1,0 +1,61 @@
+{
+  "user_id": "ada_owerri",
+  "demographics": {
+    "age_range": "30-35",
+    "location": "Owerri, Imo State",
+    "occupation": "public hospital nurse"
+  },
+  "hedonic_utilitarian": 0.3,
+  "intensity_calibration": {
+    "very good": 3.8,
+    "excellent": 4.2,
+    "fantastic": 4.6,
+    "wonderful": 4.0,
+    "amazing": 4.4,
+    "okay": 2.8,
+    "fine": 3.2
+  },
+  "communal_individual": 0.75,
+  "aspect_priority": {
+    "durability": 0.28,
+    "value_for_money": 0.25,
+    "comfort": 0.22,
+    "health_safety": 0.15,
+    "appearance": 0.1
+  },
+  "register_tier": "code_mixed",
+  "register_markers": [
+    "biko",
+    "nna ehn",
+    "see ehn",
+    "my dear",
+    "you know now",
+    "chai",
+    "God will bless you",
+    "thank God o"
+  ],
+  "register_confidence": 0.82,
+  "review_anchors": [
+    {
+      "review_id": "anchor_ao01",
+      "product_id": "nursing_shoes_comfort_plus",
+      "rating": 4,
+      "text": "These shoes are very good for long shifts at the hospital. Biko, if you work in healthcare like me, you need something comfortable that will last. My feet don't hurt anymore after 12-hour shifts, thank God. The price is reasonable too, considering how durable they are."
+    },
+    {
+      "review_id": "anchor_ao02",
+      "product_id": "hp_laptop_pavilion_15",
+      "rating": 5,
+      "text": "Nna ehn, this laptop is excellent! I bought it for my continuing education courses and it works perfectly. See ehn, the battery life is wonderful - lasts through my entire online classes. My colleagues at work are asking where I got it because it looks professional and runs smoothly."
+    },
+    {
+      "review_id": "anchor_ao03",
+      "product_id": "blood_pressure_monitor_omron",
+      "rating": 4,
+      "text": "This BP monitor is fantastic for home use. As a nurse, I know quality when I see it, and this one gives accurate readings just like the ones we use at the hospital. My dear, it's worth every kobo for monitoring my family's health. Easy to use and the readings are consistent."
+    }
+  ],
+  "history_count": 23,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

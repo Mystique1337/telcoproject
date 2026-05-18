@@ -1,0 +1,61 @@
+{
+  "user_id": "olumide_lagos",
+  "demographics": {
+    "age_range": "45-49",
+    "location": "Victoria Island, Lagos",
+    "occupation": "oil & gas executive"
+  },
+  "hedonic_utilitarian": 0.35,
+  "intensity_calibration": {
+    "excellent": 4.2,
+    "outstanding": 4.8,
+    "impressive": 4.0,
+    "quite good": 3.5,
+    "satisfactory": 3.0,
+    "rather disappointing": 2.0,
+    "completely unacceptable": 1.2
+  },
+  "communal_individual": 0.25,
+  "aspect_priority": {
+    "brand_reputation": 0.28,
+    "build_quality": 0.24,
+    "professional_appearance": 0.18,
+    "reliability": 0.2,
+    "value_proposition": 0.1
+  },
+  "register_tier": "standard_english",
+  "register_markers": [
+    "I must say",
+    "quite frankly",
+    "in my experience",
+    "I would recommend",
+    "the quality is evident",
+    "meets my expectations",
+    "professional standard",
+    "well worth the investment"
+  ],
+  "register_confidence": 0.92,
+  "review_anchors": [
+    {
+      "review_id": "anchor_OL01",
+      "product_id": "samsung-galaxy-s23-ultra-256gb",
+      "rating": 4,
+      "text": "I purchased this device primarily for business use and I must say the camera quality is outstanding for video conferences. The build quality meets professional standards, though the battery life could be more impressive during extended travel days. Well worth the investment for executive-level communication needs."
+    },
+    {
+      "review_id": "anchor_OL02",
+      "product_id": "hp-elitebook-850-g9-laptop",
+      "rating": 5,
+      "text": "Excellent choice for corporate work. The security features are quite robust and the performance handles multiple applications seamlessly during board presentations. In my experience, HP maintains consistent quality standards that justify the premium pricing. I would recommend this to fellow executives without hesitation."
+    },
+    {
+      "review_id": "anchor_OL03",
+      "product_id": "bose-quietcomfort-45-headphones",
+      "rating": 4,
+      "text": "The noise cancellation is impressive for long-haul flights to international meetings. Sound quality is excellent and the comfort level during extended wear meets my expectations. Quite frankly, the price point reflects the professional-grade engineering, though the carrying case could be more durable."
+    }
+  ],
+  "history_count": 28,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

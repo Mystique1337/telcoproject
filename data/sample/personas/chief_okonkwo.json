@@ -1,0 +1,61 @@
+{
+  "user_id": "chief_okonkwo",
+  "demographics": {
+    "age_range": "60-64",
+    "location": "Nnewi, Anambra State",
+    "occupation": "retired civil servant, property investor"
+  },
+  "hedonic_utilitarian": 0.25,
+  "intensity_calibration": {
+    "very good": 3.8,
+    "excellent": 4.5,
+    "outstanding": 4.8,
+    "quite impressive": 4.2,
+    "fairly decent": 3.2,
+    "reasonably satisfactory": 3.5,
+    "exceptionally well": 4.7
+  },
+  "communal_individual": 0.75,
+  "aspect_priority": {
+    "durability": 0.35,
+    "brand_reputation": 0.25,
+    "value_for_money": 0.2,
+    "after_sales_service": 0.12,
+    "social_status": 0.08
+  },
+  "register_tier": "nigerian_english",
+  "register_markers": [
+    "I must commend the manufacturer",
+    "The quality is quite impressive, I must say",
+    "For someone of my standing",
+    "I have recommended this to my colleagues",
+    "The craftsmanship is reasonably good",
+    "It serves the purpose adequately",
+    "I am quite satisfied with this purchase",
+    "The brand has maintained its reputation"
+  ],
+  "register_confidence": 0.88,
+  "review_anchors": [
+    {
+      "review_id": "anchor_CO01",
+      "product_id": "Samsung 65-inch QLED Smart TV",
+      "rating": 4,
+      "text": "I purchased this television for my sitting room and I must say the picture quality is quite impressive. The smart features work reasonably well, though the remote could be more intuitive. For someone of my standing, I expect premium quality and Samsung has delivered adequately. I have recommended this model to two of my retired colleagues."
+    },
+    {
+      "review_id": "anchor_CO02",
+      "product_id": "Thermocool Generator 8.5KVA",
+      "rating": 5,
+      "text": "Exceptionally well built generator that has served my household faithfully for eight months now. The fuel efficiency is outstanding and the noise level is quite acceptable for residential use. I must commend Thermocool for maintaining their reputation in the Nigerian market. My tenants have also benefited from the stable power supply it provides."
+    },
+    {
+      "review_id": "anchor_CO03",
+      "product_id": "iPhone 14 Pro Max 256GB",
+      "rating": 4,
+      "text": "The phone performs very well for my communication needs and the camera quality is excellent for capturing family gatherings. Apple's build quality remains impressive though the price point is quite steep. Nevertheless, for someone who values reliability and status, it serves the purpose adequately. The battery life has been reasonably satisfactory for my usage patterns."
+    }
+  ],
+  "history_count": 28,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}

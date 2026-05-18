@@ -1,0 +1,60 @@
+{
+  "user_id": "amaka_anambra",
+  "demographics": {
+    "age_range": "22-26",
+    "location": "Onitsha, Anambra",
+    "occupation": "Fashion vendor & content creator"
+  },
+  "hedonic_utilitarian": 0.75,
+  "intensity_calibration": {
+    "fire": 4.5,
+    "mad": 4.2,
+    "sick": 4.8,
+    "too much": 3.5,
+    "crazy": 4.0,
+    "pepper dem": 4.7,
+    "mad o": 4.3
+  },
+  "communal_individual": 0.65,
+  "aspect_priority": {
+    "aesthetic_appeal": 0.35,
+    "social_validation": 0.25,
+    "value_for_money": 0.2,
+    "content_worthy": 0.2
+  },
+  "register_tier": "code_mixed",
+  "register_markers": [
+    "biko this thing is mad o",
+    "see ehn, the quality shocked me",
+    "nna the packaging alone",
+    "ehee it's giving what it's supposed to give",
+    "my customers go mad for this one",
+    "the way it came out fine ehn",
+    "I swear this brand sabi their work",
+    "make I tell you something"
+  ],
+  "register_confidence": 0.88,
+  "review_anchors": [
+    {
+      "review_id": "anchor_aa01",
+      "product_id": "ring_light_18inch_adjustable",
+      "rating": 5,
+      "text": "Biko this ring light is fire! The brightness levels are mad and my content quality just upgraded seriously. See ehn, my followers been asking what changed and it's just this baby doing the work. Worth every kobo I spent."
+    },
+    {
+      "review_id": "anchor_aa02",
+      "product_id": "bodycon_midi_dress_wine",
+      "rating": 4,
+      "text": "Nna this dress came out fine o! The material quality shocked me in a good way and the fit is giving what it's supposed to give. My customers go mad for pieces like this. Only issue na the delivery took small time but the product pepper dem well well."
+    },
+    {
+      "review_id": "anchor_aa03",
+      "product_id": "phone_tripod_bluetooth_remote",
+      "rating": 5,
+      "text": "Make I tell you something - this tripod is sick! Ehee the remote works perfectly and it's so portable for my shoots. The way it holds my phone steady ehn, my videos just dey come out crisp. Every content creator needs this abeg."
+    }
+  ],
+  "history_count": 28,
+  "extraction_source": "manual",
+  "schema_version": "1.0"
+}
