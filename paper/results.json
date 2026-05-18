@@ -2,77 +2,77 @@
   "task1_user_modeling": {
     "naija_reviewer_8b": {
       "backbone": "lmstudio:naija-reviewer-8b",
-      "n_valid": 40,
+      "n_valid": 100,
       "n_errors": 0,
-      "RMSE": 1.4317821063276353,
-      "register_match_pct": 62.5,
-      "cultural_marker_recall": 0.40870535714285716,
-      "length_ratio_mean": 1.1778874068836667,
+      "RMSE": 1.1135528725660044,
+      "register_match_pct": 53.0,
+      "cultural_marker_recall": 0.1300556586270872,
+      "length_ratio_mean": 1.044033318157936,
       "BERTScore": {
-        "P": 0.8610035181045532,
-        "R": 0.8652018308639526,
-        "F1": 0.8630481958389282
+        "P": 0.8566581606864929,
+        "R": 0.8595058917999268,
+        "F1": 0.8580358624458313
       },
       "ROUGE": {
-        "rouge1": 0.3678998072045622,
-        "rouge2": 0.1058341803418926,
-        "rougeL": 0.22244649703423586
+        "rouge1": 0.35121236507964754,
+        "rouge2": 0.09311397383102202,
+        "rougeL": 0.20525043242646326
       },
       "AgentSociety": {
-        "preference_estimation": 0.76,
-        "sentiment_error": 0.375905,
-        "topic_error": 0.16470364745308577,
-        "emotion_error": 0.24907636507996359,
-        "review_generation": 0.7614028350034663,
-        "overall_quality": 0.7607014175017331
+        "preference_estimation": 0.792,
+        "sentiment_error": 0.2853015,
+        "topic_error": 0.16743501228258192,
+        "emotion_error": 0.2529515391052701,
+        "review_generation": 0.7817192340823915,
+        "overall_quality": 0.7868596170411958
       }
     },
     "claude_sonnet_4": {
       "backbone": "anthropic:claude-sonnet-4-20250514",
-      "n_valid": 40,
+      "n_valid": 100,
       "n_errors": 0,
-      "RMSE": 1.5,
-      "register_match_pct": 70.0,
-      "cultural_marker_recall": 0.20580357142857142,
-      "length_ratio_mean": 1.2230354415455378,
+      "RMSE": 1.3190905958272918,
+      "register_match_pct": 35.0,
+      "cultural_marker_recall": 0.07111935683364255,
+      "length_ratio_mean": 1.0985393284738603,
       "BERTScore": {
-        "P": 0.8564742803573608,
-        "R": 0.8575478792190552,
-        "F1": 0.8569574356079102
+        "P": 0.857114851474762,
+        "R": 0.8559932112693787,
+        "F1": 0.8565115332603455
       },
       "ROUGE": {
-        "rouge1": 0.33002615470530566,
-        "rouge2": 0.06744244790528156,
-        "rougeL": 0.18718438961379283
+        "rouge1": 0.34712618443969356,
+        "rouge2": 0.06995841553649751,
+        "rougeL": 0.19187372818658097
       },
       "AgentSociety": {
-        "preference_estimation": 0.75,
-        "sentiment_error": 0.288315,
-        "topic_error": 0.17386885397504565,
-        "emotion_error": 0.24485235580359585,
-        "review_generation": 0.7797737340615782,
-        "overall_quality": 0.7648868670307891
+        "preference_estimation": 0.784,
+        "sentiment_error": 0.22842949999999998,
+        "topic_error": 0.16923258144506714,
+        "emotion_error": 0.21295041250414215,
+        "review_generation": 0.8050387311514309,
+        "overall_quality": 0.7945193655757155
       }
     }
   },
   "task2_recommendation": {
     "claude_sonnet_4": {
       "reranker": "anthropic:claude-sonnet-4-20250514",
-      "n_valid": 2,
-      "n_errors": 2,
-      "NDCG_at_10": 0.4217868789962072,
-      "HR_at_1": 0.0,
+      "n_valid": 17,
+      "n_errors": 1,
+      "NDCG_at_10": 0.48460707538938397,
+      "HR_at_1": 0.35294117647058826,
       "HR_at_3": 0.3333333333333333,
-      "HR_at_5": 0.3333333333333333
+      "HR_at_5": 0.4313725490196078
     },
     "naija_reviewer_8b": {
       "reranker": "lmstudio:naija-reviewer-8b",
-      "n_valid": 4,
-      "n_errors": 0,
-      "NDCG_at_10": 0.8005268366251369,
-      "HR_at_1": 0.75,
-      "HR_at_3": 0.75,
-      "HR_at_5": 0.8333333333333334
+      "n_valid": 17,
+      "n_errors": 1,
+      "NDCG_at_10": 0.6226915579728498,
+      "HR_at_1": 0.5882352941176471,
+      "HR_at_3": 0.5882352941176471,
+      "HR_at_5": 0.6470588235294118
     }
   }
 }
