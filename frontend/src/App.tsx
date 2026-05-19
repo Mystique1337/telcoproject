@@ -428,12 +428,40 @@ const NAIJA_VOICES: { name: string; description: string }[] = [
 ];
 
 
-function ListenButton({ text }: { text: string }) {
+function ListenButton({ text, persona }: { text: string; persona?: Persona | null }) {
   const [voice, setVoice] = useState("Idera");
+  const [autoMatched, setAutoMatched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Auto-match the voice to the persona on mount / persona change
+  useEffect(() => {
+    if (!persona) return;
+    let cancelled = false;
+    fetch("/tts/voice-for-persona", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        persona_id: persona.user_id,
+        demographics: persona.demographics,
+        register_tier: persona.register_tier,
+        register_markers: persona.register_markers,
+      }),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        if (d.voice) {
+          setVoice(d.voice);
+          setAutoMatched(true);
+          setAudioUrl(null);   // invalidate any prior audio
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [persona?.user_id]);
 
   async function generate() {
     if (loading) return;
@@ -464,9 +492,9 @@ function ListenButton({ text }: { text: string }) {
       <select
         className="bg-ink-900 border border-ink-700 rounded text-xs px-2 py-1 text-ink-200"
         value={voice}
-        onChange={(e) => { setVoice(e.target.value); setAudioUrl(null); }}
+        onChange={(e) => { setVoice(e.target.value); setAutoMatched(false); setAudioUrl(null); }}
         disabled={loading}
-        title="Pick a Nigerian voice character"
+        title="Pick a Nigerian voice character (auto-matched to persona by default)"
       >
         {NAIJA_VOICES.map((v) => (
           <option key={v.name} value={v.name}>
@@ -474,6 +502,11 @@ function ListenButton({ text }: { text: string }) {
           </option>
         ))}
       </select>
+      {autoMatched && persona && (
+        <span className="text-[10px] text-naija-300/80 px-1" title={`Auto-matched to ${persona.user_id}`}>
+          ✨ matched
+        </span>
+      )}
       <button
         onClick={generate}
         disabled={loading || !text}
@@ -504,7 +537,8 @@ function ListenButton({ text }: { text: string }) {
 }
 
 
-function ReviewCard({ data, modelLabel }: { data: SimulateReviewResponse; modelLabel: string }) {
+function ReviewCard({ data, modelLabel, persona }:
+  { data: SimulateReviewResponse; modelLabel: string; persona?: Persona | null }) {
   return (
     <div className="card space-y-3">
       <div className="flex items-center justify-between gap-3">
@@ -516,7 +550,7 @@ function ReviewCard({ data, modelLabel }: { data: SimulateReviewResponse; modelL
       </div>
       <StarRating rating={data.rating}/>
       <p className="text-ink-100 leading-relaxed">{data.review}</p>
-      <ListenButton text={data.review}/>
+      <ListenButton text={data.review} persona={persona}/>
       <p className="text-xs text-ink-400 italic">💡 {data.rationale}</p>
       <ReasoningTrace trace={data.reasoning_trace}/>
     </div>
@@ -578,12 +612,12 @@ function TabReview({ personas }: { personas: Persona[] }) {
         <div className={`grid gap-4 ${compare ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
           <div>
             {errA && <div className="card border-red-700 text-red-300 text-sm">{errA}</div>}
-            {dataA && <ReviewCard data={dataA} modelLabel={modelLabel(modelA)}/>}
+            {dataA && <ReviewCard data={dataA} modelLabel={modelLabel(modelA)} persona={persona}/>}
           </div>
           {compare && (
             <div>
               {errB && <div className="card border-red-700 text-red-300 text-sm">{errB}</div>}
-              {dataB && <ReviewCard data={dataB} modelLabel={modelLabel(modelB)}/>}
+              {dataB && <ReviewCard data={dataB} modelLabel={modelLabel(modelB)} persona={persona}/>}
             </div>
           )}
         </div>
