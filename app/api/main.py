@@ -12,7 +12,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import simulate_review, recommend, elicit, health
+from app.api.routers import simulate_review, recommend, elicit, health, catalog
 from app.config import get_settings
 
 settings = get_settings()
@@ -52,13 +52,42 @@ app.include_router(health.router)
 app.include_router(simulate_review.router)
 app.include_router(recommend.router)
 app.include_router(elicit.router)
+app.include_router(catalog.router)
 
 
-@app.get("/", include_in_schema=False)
-async def root() -> dict[str, str]:
-    return {
-        "name": settings.app_name,
-        "version": settings.app_version,
-        "docs": "/docs",
-        "tasks": "POST /simulate-review (Task 1), POST /recommend (Task 2)",
-    }
+# ── Static frontend (React build) ─────────────────────────────────────────
+# In production we serve the built React SPA from frontend/dist/.
+# In dev, run `npm run dev` in frontend/ — Vite proxies API calls back here.
+from pathlib import Path as _Path
+from fastapi.staticfiles import StaticFiles as _StaticFiles
+from fastapi.responses import FileResponse as _FileResponse
+
+_FRONTEND_DIST = _Path(__file__).resolve().parents[2] / "frontend" / "dist"
+
+if _FRONTEND_DIST.exists() and (_FRONTEND_DIST / "index.html").exists():
+    # Serve hashed asset files (/assets/*) directly.
+    app.mount(
+        "/assets",
+        _StaticFiles(directory=str(_FRONTEND_DIST / "assets")),
+        name="frontend-assets",
+    )
+
+    # Root + any other non-API path → React index.html (SPA routing).
+    @app.get("/", include_in_schema=False)
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str = "") -> _FileResponse:
+        # Don't intercept API routes — let them 404 normally if missed.
+        # FastAPI's path matching already prefers more-specific routes, so
+        # /simulate-review, /recommend, /catalog/*, /docs, /openapi.json are
+        # all handled before this catch-all fires.
+        return _FileResponse(_FRONTEND_DIST / "index.html")
+else:
+    @app.get("/", include_in_schema=False)
+    async def root() -> dict[str, str]:
+        return {
+            "name": settings.app_name,
+            "version": settings.app_version,
+            "docs": "/docs",
+            "tasks": "POST /simulate-review (Task 1), POST /recommend (Task 2)",
+            "frontend_status": "not built — run `cd frontend && npm install && npm run build`",
+        }

@@ -94,3 +94,8 @@ data/sample/products/*.json
 !data/sample/products/solar_inverter_3kva.json
 !data/sample/products/tecno_spark_10.json
 
+
+# Vite build output — regenerable via `cd frontend && npm run build`
+frontend/dist/
+frontend/node_modules/
+frontend/tsconfig.tsbuildinfo
