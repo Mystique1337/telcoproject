@@ -35,6 +35,11 @@ async def simulate_review(req: SimulateReviewRequest) -> SimulateReviewResponse:
             product=req.product,
             include_reasoning=req.include_reasoning,
             backbone_override=req.backbone_override,
+            target_rating=req.target_rating,
+            aspect_focus=req.aspect_focus,
+            length_hint=req.length_hint,
+            tone_modifier=req.tone_modifier,
+            refinement_instructions=req.refinement_instructions,
         )
     except Exception as exc:  # noqa: BLE001
         logger.exception("simulate-review failed")

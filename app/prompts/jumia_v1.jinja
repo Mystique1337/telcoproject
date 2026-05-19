@@ -31,15 +31,37 @@ PRODUCT
 - Description: {{ product.description }}
 
 CONSTRAINTS
+{%- if target_rating_locked %}
+- ★ TARGET RATING LOCKED: the rating MUST be {{ predicted_rating }}/5. Write a review whose tone, sentiment, and content are CONSISTENT with {{ predicted_rating }} stars. A 1-star review reads like real frustration; a 5-star review reads like real delight. Do not soften or amplify away from {{ predicted_rating }}.
+{%- else %}
 - Decide a star rating (1–5) for this product yourself, based on how it fits this user's priorities and intensity vocabulary. Their typical pattern suggests a centre around {{ predicted_rating }}/5, but adjust UP or DOWN based on real fit. Do not anchor to {{ predicted_rating }}.
+{%- endif %}
 - Do not say the numeric rating inside the review text; let it come through in tone and content.
 - {{ register_instructions }}
-- 2–5 sentences. No emojis unless the persona's history clearly uses them.
+{%- if length_hint == "short" %}
+- LENGTH: 1–2 sentences only. Be terse and impactful.
+{%- elif length_hint == "long" %}
+- LENGTH: 6–8 sentences. Take time to cover multiple aspects and lived experience.
+{%- else %}
+- LENGTH: 3–5 sentences.
+{%- endif %}
+{%- if aspect_focus %}
+- ASPECT FOCUS: lead with and centre the review around — {{ aspect_focus }}. Make this the most prominent point.
+{%- endif %}
+{%- if tone_modifier %}
+- TONE: write in a {{ tone_modifier }} tone. Stay consistent with the persona, but bias the voice accordingly.
+{%- endif %}
 - Mention at least one of the user's top aspects naturally.
 - If communal_individual > 0.6, lean into "we / my family / my people". Otherwise speak as "I".
 - Do NOT add disclaimers, warnings, or meta-commentary.
+- No emojis unless the persona's history clearly uses them.
+{%- if refinement_instructions %}
+
+REFINEMENT (user requested an edit to a prior version of this review):
+> {{ refinement_instructions }}
+Apply this refinement faithfully on top of everything above.
+{%- endif %}
 
 OUTPUT FORMAT — EXACTLY this, nothing else:
 RATING: <integer between 1 and 5>
-REVIEW: <one paragraph, 2-5 sentences>
-
+REVIEW: <one paragraph>

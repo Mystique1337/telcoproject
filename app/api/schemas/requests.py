@@ -28,6 +28,42 @@ class SimulateReviewRequest(BaseModel):
             "'openai:gpt-4o', 'ollama:naija-reviewer-8b'. If unset, uses TASK1_BACKBONE from env."
         ),
     )
+    target_rating: int | None = Field(
+        default=None, ge=1, le=5,
+        description=(
+            "Optional explicit star rating (1-5). When set, the agent will "
+            "generate a review CONSISTENT with this rating instead of the "
+            "Stage-A heuristic prediction. Use to test how the model writes "
+            "for a given sentiment (1-star angry vs 5-star delighted)."
+        ),
+    )
+    aspect_focus: str | None = Field(
+        default=None, max_length=120,
+        description=(
+            "Optional aspect to emphasise (free text, ≤120 chars). "
+            "Examples: 'battery life', 'value for money', 'delivery speed', "
+            "'build quality after one month of use'."
+        ),
+    )
+    length_hint: str | None = Field(
+        default=None,
+        description="Optional: 'short' (1-2 sentences), 'medium' (3-5), 'long' (6-8).",
+    )
+    tone_modifier: str | None = Field(
+        default=None, max_length=80,
+        description=(
+            "Optional tone direction (free text). Examples: 'enthusiastic', "
+            "'skeptical', 'frustrated', 'measured', 'sarcastic'."
+        ),
+    )
+    refinement_instructions: str | None = Field(
+        default=None, max_length=500,
+        description=(
+            "Optional natural-language refinement instruction for iterating "
+            "on a prior review. Examples: 'make it shorter', 'use more Pidgin', "
+            "'rewrite as 3 stars', 'mention the Owambe use case'."
+        ),
+    )
 
 
 class SimulateReviewResponse(BaseModel):

@@ -537,24 +537,152 @@ function ListenButton({ text, persona }: { text: string; persona?: Persona | nul
 }
 
 
-function ReviewCard({ data, modelLabel, persona }:
-  { data: SimulateReviewResponse; modelLabel: string; persona?: Persona | null }) {
+interface ReviewIteration {
+  data: SimulateReviewResponse;
+  refinement?: string; // the instruction that produced THIS iteration (None for v1)
+}
+
+function ReviewCard({ iterations, modelLabel, persona, product, modelSpec, generationKnobs,
+                       onRefine }:
+  {
+    iterations: ReviewIteration[];
+    modelLabel: string;
+    persona?: Persona | null;
+    product?: Product | null;
+    modelSpec: string;
+    generationKnobs: GenerationKnobs;
+    onRefine: (refinement: string, newData: SimulateReviewResponse) => void;
+  }) {
+  const latest = iterations[iterations.length - 1];
+  const [showHistory, setShowHistory] = useState(false);
+  const [refineInput, setRefineInput] = useState("");
+  const [refining, setRefining] = useState(false);
+  const [refineErr, setRefineErr] = useState<string | null>(null);
+  const refineRef = useRef<HTMLTextAreaElement>(null);
+
+  if (!latest) return null;
+  const data = latest.data;
+
+  const quickRefines = [
+    "make it shorter",
+    "make it longer",
+    "use heavier Pidgin",
+    "tone it down",
+    "more communal framing",
+    "mention price/value more",
+    "regenerate",
+  ];
+
+  async function runRefine(instr: string) {
+    if (!instr.trim() || refining || !persona || !product) return;
+    setRefining(true); setRefineErr(null);
+    try {
+      const resp = await api.simulateReview({
+        persona,
+        product,
+        backbone_override: modelSpec,
+        include_reasoning: true,
+        target_rating: generationKnobs.target_rating ?? undefined,
+        aspect_focus: generationKnobs.aspect_focus,
+        length_hint: generationKnobs.length_hint,
+        tone_modifier: generationKnobs.tone_modifier,
+        refinement_instructions: instr,
+      });
+      onRefine(instr, resp);
+      setRefineInput("");
+    } catch (e) {
+      setRefineErr(String(e));
+    }
+    setRefining(false);
+  }
+
   return (
     <div className="card space-y-3">
       <div className="flex items-center justify-between gap-3">
         <Badge tone="naija">{modelLabel}</Badge>
         <div className="flex items-center gap-3 text-xs text-ink-400">
+          {iterations.length > 1 && (
+            <button onClick={() => setShowHistory(!showHistory)}
+                    className="text-naija-300 hover:text-naija-200 text-xs flex items-center gap-1"
+                    title="View prior iterations">
+              <RefreshCcw size={11}/> v{iterations.length}
+            </button>
+          )}
           <Badge>{data.register_tier.replace("_", " ")}</Badge>
           <span>{data.latency_ms} ms</span>
         </div>
       </div>
+
+      {latest.refinement && (
+        <div className="text-[11px] px-2 py-1 rounded-md bg-naija-900/30 border border-naija-700/30 text-naija-200 italic">
+          ↺ Refined with: "{latest.refinement}"
+        </div>
+      )}
+
       <StarRating rating={data.rating}/>
       <p className="text-ink-100 leading-relaxed">{data.review}</p>
       <ListenButton text={data.review} persona={persona}/>
       <p className="text-xs text-ink-400 italic">💡 {data.rationale}</p>
+
+      {/* Iteration history */}
+      {showHistory && iterations.length > 1 && (
+        <div className="border-t border-ink-700/60 pt-3 space-y-3">
+          <div className="text-xs text-ink-400 uppercase tracking-wider">prior iterations</div>
+          {iterations.slice(0, -1).map((it, i) => (
+            <div key={i} className="border-l-2 border-ink-700 pl-3 text-sm">
+              <div className="text-[10px] text-ink-500 mb-1">
+                v{i + 1} {it.refinement ? `— refined with "${it.refinement}"` : "(initial)"} · ★{it.data.rating}
+              </div>
+              <p className="text-ink-300 text-xs leading-relaxed">{it.data.review}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Refinement chat */}
+      <div className="border-t border-ink-700/60 pt-3 space-y-2">
+        <div className="text-xs text-ink-400 uppercase tracking-wider flex items-center gap-2">
+          <MessageSquare size={12}/> Refine via chat
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {quickRefines.map((q) => (
+            <button key={q} onClick={() => runRefine(q)} disabled={refining}
+                    className="text-[11px] px-2 py-1 rounded-full bg-ink-800 hover:bg-ink-700 border border-ink-700 text-ink-200 disabled:opacity-40">
+              {q}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2 items-end">
+          <textarea
+            ref={refineRef}
+            value={refineInput}
+            onChange={(e) => setRefineInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runRefine(refineInput); }
+            }}
+            rows={1}
+            placeholder='e.g. "use the word \"owambe\"" or "rewrite as 4 stars"'
+            className="input flex-1 resize-none text-sm"
+            disabled={refining}
+          />
+          <button onClick={() => runRefine(refineInput)} disabled={refining || !refineInput.trim()}
+                  className="btn-primary text-sm">
+            {refining ? <Loader2 size={14} className="animate-spin"/> : <>Apply ↵</>}
+          </button>
+        </div>
+        {refineErr && <div className="text-xs text-amber-300/90">{refineErr}</div>}
+      </div>
+
       <ReasoningTrace trace={data.reasoning_trace}/>
     </div>
   );
+}
+
+interface GenerationKnobs {
+  target_rating: number | null;        // null = let LLM decide
+  aspect_focus: string;
+  length_hint: "short" | "medium" | "long";
+  tone_modifier: string;
 }
 
 function TabReview({ personas }: { personas: Persona[] }) {
@@ -563,21 +691,42 @@ function TabReview({ personas }: { personas: Persona[] }) {
   const [modelA, setModelA] = useState(MODELS[0].spec);
   const [modelB, setModelB] = useState(MODELS[1].spec);
   const [compare, setCompare] = useState(true);
-  const [dataA, setDataA] = useState<SimulateReviewResponse | null>(null);
-  const [dataB, setDataB] = useState<SimulateReviewResponse | null>(null);
+  const [iterA, setIterA] = useState<ReviewIteration[]>([]);
+  const [iterB, setIterB] = useState<ReviewIteration[]>([]);
   const [errA, setErrA] = useState<string | null>(null);
   const [errB, setErrB] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Generation knobs (target rating + aspect + length + tone)
+  const [knobs, setKnobs] = useState<GenerationKnobs>({
+    target_rating: null,
+    aspect_focus: "",
+    length_hint: "medium",
+    tone_modifier: "",
+  });
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => { if (!persona && personas.length) setPersona(personas[0]); }, [personas]);
 
   async function run() {
     if (!persona || !product) return;
     setLoading(true);
-    setDataA(null); setDataB(null); setErrA(null); setErrB(null);
-    const callA = api.simulateReview(persona, product, modelA).then(setDataA).catch((e) => setErrA(String(e)));
+    setIterA([]); setIterB([]); setErrA(null); setErrB(null);
+    const baseOpts = {
+      persona, product,
+      include_reasoning: true,
+      target_rating: knobs.target_rating ?? undefined,
+      aspect_focus: knobs.aspect_focus || undefined,
+      length_hint: knobs.length_hint,
+      tone_modifier: knobs.tone_modifier || undefined,
+    };
+    const callA = api.simulateReview({ ...baseOpts, backbone_override: modelA })
+                       .then((d) => setIterA([{ data: d }]))
+                       .catch((e) => setErrA(String(e)));
     const callB = compare
-      ? api.simulateReview(persona, product, modelB).then(setDataB).catch((e) => setErrB(String(e)))
+      ? api.simulateReview({ ...baseOpts, backbone_override: modelB })
+            .then((d) => setIterB([{ data: d }]))
+            .catch((e) => setErrB(String(e)))
       : Promise.resolve();
     await Promise.all([callA, callB]);
     setLoading(false);
@@ -602,26 +751,123 @@ function TabReview({ personas }: { personas: Persona[] }) {
           <ModelSelect label={compare ? "Model A (left)" : "Model"} value={modelA} onChange={setModelA} taskKind="review"/>
           {compare && <ModelSelect label="Model B (right)" value={modelB} onChange={setModelB} taskKind="review"/>}
         </div>
+
+        {/* ── Generation knobs ──────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+          <div>
+            <span className="label">Target rating</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <button
+                onClick={() => setKnobs({...knobs, target_rating: null})}
+                className={`text-xs px-2.5 py-1 rounded-md border ${knobs.target_rating === null
+                  ? "bg-naija-600 text-white border-naija-600"
+                  : "bg-ink-800 text-ink-300 border-ink-700 hover:bg-ink-700"}`}
+                title="Let the model decide based on persona × product fit">
+                ✨ any
+              </button>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button key={n}
+                        onClick={() => setKnobs({...knobs, target_rating: n})}
+                        className={`text-xs px-2.5 py-1 rounded-md border flex items-center gap-0.5 ${knobs.target_rating === n
+                          ? "bg-amber-600 text-white border-amber-600"
+                          : "bg-ink-800 text-ink-300 border-ink-700 hover:bg-ink-700"}`}
+                        title={`Force a ${n}-star review`}>
+                  {Array.from({length: n}).map((_, i) => <Star key={i} size={10} className="fill-current"/>)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className="label">Length</span>
+            <div className="flex items-center gap-1.5">
+              {(["short", "medium", "long"] as const).map((l) => (
+                <button key={l}
+                        onClick={() => setKnobs({...knobs, length_hint: l})}
+                        className={`text-xs px-3 py-1 rounded-md border ${knobs.length_hint === l
+                          ? "bg-naija-600 text-white border-naija-600"
+                          : "bg-ink-800 text-ink-300 border-ink-700 hover:bg-ink-700"}`}>
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className="text-xs text-ink-400 hover:text-ink-200 flex items-center gap-1"
+        >
+          <ChevronDown size={12} className={showAdvanced ? "rotate-180 transition-transform" : "transition-transform"}/>
+          {showAdvanced ? "Hide" : "Show"} advanced (aspect focus, tone)
+        </button>
+        {showAdvanced && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <span className="label">Aspect focus <span className="text-ink-500">(optional)</span></span>
+              <input
+                type="text"
+                value={knobs.aspect_focus}
+                onChange={(e) => setKnobs({...knobs, aspect_focus: e.target.value})}
+                placeholder="e.g. battery life, value for money, Owambe use"
+                className="input text-sm"
+                maxLength={120}
+              />
+            </div>
+            <div>
+              <span className="label">Tone <span className="text-ink-500">(optional)</span></span>
+              <input
+                type="text"
+                value={knobs.tone_modifier}
+                onChange={(e) => setKnobs({...knobs, tone_modifier: e.target.value})}
+                placeholder="e.g. enthusiastic, skeptical, frustrated"
+                className="input text-sm"
+                maxLength={80}
+              />
+            </div>
+          </div>
+        )}
+
         <button className="btn-primary flex items-center gap-2 w-full md:w-auto"
                 onClick={run} disabled={loading || !persona || !product}>
           {loading ? <Spinner label="Generating review..."/> : (<><Sparkles size={16}/> Generate Review</>)}
         </button>
       </div>
 
-      {(dataA || errA || dataB || errB) && (
+      {(iterA.length || errA || iterB.length || errB) ? (
         <div className={`grid gap-4 ${compare ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
           <div>
             {errA && <div className="card border-red-700 text-red-300 text-sm">{errA}</div>}
-            {dataA && <ReviewCard data={dataA} modelLabel={modelLabel(modelA)} persona={persona}/>}
+            {iterA.length > 0 && (
+              <ReviewCard
+                iterations={iterA}
+                modelLabel={modelLabel(modelA)}
+                persona={persona}
+                product={product}
+                modelSpec={modelA}
+                generationKnobs={knobs}
+                onRefine={(r, d) => setIterA([...iterA, { data: d, refinement: r }])}
+              />
+            )}
           </div>
           {compare && (
             <div>
               {errB && <div className="card border-red-700 text-red-300 text-sm">{errB}</div>}
-              {dataB && <ReviewCard data={dataB} modelLabel={modelLabel(modelB)} persona={persona}/>}
+              {iterB.length > 0 && (
+                <ReviewCard
+                  iterations={iterB}
+                  modelLabel={modelLabel(modelB)}
+                  persona={persona}
+                  product={product}
+                  modelSpec={modelB}
+                  generationKnobs={knobs}
+                  onRefine={(r, d) => setIterB([...iterB, { data: d, refinement: r }])}
+                />
+              )}
             </div>
           )}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

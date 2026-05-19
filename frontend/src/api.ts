@@ -57,17 +57,27 @@ export const api = {
     return r.json() as Promise<{ count: number; categories: { name: string; n: number }[] }>;
   },
 
-  simulateReview: (
-    persona: Persona,
-    product: Product,
-    backboneOverride?: string,
-    includeReasoning = true,
-  ) =>
+  simulateReview: (opts: {
+    persona: Persona;
+    product: Product;
+    backbone_override?: string;
+    include_reasoning?: boolean;
+    target_rating?: number | null;
+    aspect_focus?: string;
+    length_hint?: "short" | "medium" | "long";
+    tone_modifier?: string;
+    refinement_instructions?: string;
+  }) =>
     postJson<SimulateReviewResponse>("/simulate-review", {
-      persona,
-      product,
-      include_reasoning: includeReasoning,
-      backbone_override: backboneOverride,
+      persona: opts.persona,
+      product: opts.product,
+      include_reasoning: opts.include_reasoning ?? true,
+      backbone_override: opts.backbone_override,
+      target_rating: opts.target_rating ?? null,
+      aspect_focus: opts.aspect_focus || undefined,
+      length_hint: opts.length_hint || undefined,
+      tone_modifier: opts.tone_modifier || undefined,
+      refinement_instructions: opts.refinement_instructions || undefined,
     }),
 
   chat: async (opts: {

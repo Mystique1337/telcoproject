@@ -115,20 +115,42 @@ async def generate_review(
     product: Product,
     include_reasoning: bool = False,
     backbone_override: str | None = None,
+    target_rating: int | None = None,
+    aspect_focus: str | None = None,
+    length_hint: str | None = None,
+    tone_modifier: str | None = None,
+    refinement_instructions: str | None = None,
 ) -> dict[str, Any]:
-    """Generate a review + rating for the given persona × product pair."""
+    """Generate a review + rating for the given persona × product pair.
+
+    Optional knobs:
+      target_rating          — force a specific rating (1-5); LLM writes consistent
+      aspect_focus           — free-text aspect to emphasise
+      length_hint            — 'short' / 'medium' / 'long'
+      tone_modifier          — 'enthusiastic' / 'skeptical' / etc.
+      refinement_instructions — natural-language instructions for iteration
+                                ('make it shorter', 'more Pidgin', 'as 3 stars')
+    """
     trace: list[dict[str, Any]] = []
 
     # Stage A — rating
     t0 = time.perf_counter()
-    predicted_rating = predict_rating(persona, product)
-    trace.append(
-        {
-            "node": "stage_a_rating_prediction",
+    if target_rating is not None:
+        predicted_rating = max(1, min(5, int(target_rating)))
+        trace.append({
+            "node": "stage_a_target_rating",
+            "summary": f"User-specified target_rating={predicted_rating} (Stage-A heuristic bypassed)",
             "predicted_rating": predicted_rating,
             "duration_ms": int((time.perf_counter() - t0) * 1000),
-        }
-    )
+        })
+    else:
+        predicted_rating = predict_rating(persona, product)
+        trace.append({
+            "node": "stage_a_rating_prediction",
+            "summary": f"Stage-A heuristic predicted rating {predicted_rating}/5 (soft prior, LLM can override)",
+            "predicted_rating": predicted_rating,
+            "duration_ms": int((time.perf_counter() - t0) * 1000),
+        })
 
     # Stage B — text generation
     template = _env.get_template(_template_for_domain(product.domain))
@@ -137,6 +159,11 @@ async def generate_review(
         product=product,
         predicted_rating=predicted_rating,
         register_instructions=_REGISTER_INSTRUCTIONS[persona.register_tier],
+        target_rating_locked=target_rating is not None,
+        aspect_focus=aspect_focus,
+        length_hint=length_hint,
+        tone_modifier=tone_modifier,
+        refinement_instructions=refinement_instructions,
     )
 
     system_prompt = (
@@ -178,6 +205,9 @@ async def generate_review(
 
     # Parse LLM-decided rating + review; predicted_rating is only a fallback now.
     final_rating, review_text = _parse_rating_review(raw_output, fallback_rating=predicted_rating)
+    # If user locked a target_rating, enforce it regardless of what the LLM said.
+    if target_rating is not None:
+        final_rating = max(1, min(5, int(target_rating)))
 
     trace.append(
         {
