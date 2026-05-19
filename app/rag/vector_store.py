@@ -44,26 +44,44 @@ def get_product_collection() -> chromadb.Collection:
     )
 
 
+def _coerce(v, default, kind):
+    """Chroma metadata values must be str/int/float/bool (no None). Coerce."""
+    if v is None:
+        return default
+    if kind is float:
+        try:
+            return float(v)
+        except (ValueError, TypeError):
+            return default
+    if kind is int:
+        try:
+            return int(v)
+        except (ValueError, TypeError):
+            return default
+    return str(v) if v is not None else default
+
+
 def add_products(
     products: list[dict[str, str]],
     embeddings: list[list[float]],
 ) -> None:
-    """Bulk-insert products into the index."""
+    """Bulk-insert products into the index. Sanitises None values which
+    Chroma rejects with `validate_metadata` errors."""
     if not products:
         return
     collection = get_product_collection()
     collection.add(
-        ids=[p["product_id"] for p in products],
+        ids=[str(p["product_id"]) for p in products],
         embeddings=embeddings,
         documents=[f"{p.get('title','')} — {p.get('description','')}" for p in products],
         metadatas=[
             {
-                "product_id": p["product_id"],
-                "title": p.get("title", ""),
-                "category": p.get("category", ""),
-                "domain": p.get("domain", "jumia"),
-                "price_naira": p.get("price_naira", 0.0),
-                "popularity": p.get("popularity", 0.5),
+                "product_id": _coerce(p.get("product_id"), "", str),
+                "title": _coerce(p.get("title"), "", str),
+                "category": _coerce(p.get("category"), "", str),
+                "domain": _coerce(p.get("domain"), "jumia", str),
+                "price_naira": _coerce(p.get("price_naira"), 0.0, float),
+                "popularity": _coerce(p.get("popularity"), 0.5, float),
             }
             for p in products
         ],

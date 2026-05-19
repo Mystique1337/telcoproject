@@ -302,25 +302,53 @@ class LLMClient:
     # ----------------------------- embeddings -------------------------- #
 
     async def embed(self, texts: list[str]) -> list[list[float]]:
-        """Embed `texts`. Only supported on OpenAI (text-embedding-3-small)."""
-        if self.provider != "openai":
-            raise LLMError("embed() only supported on openai provider for now")
-        if not self.settings.openai_api_key:
-            raise LLMError("OPENAI_API_KEY not set")
+        """Embed `texts`. Supports openai and local sentence-transformers.
 
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            resp = await client.post(
-                "https://api.openai.com/v1/embeddings",
-                headers={
-                    "Authorization": f"Bearer {self.settings.openai_api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={"model": self.model, "input": texts},
-            )
-            if resp.status_code != 200:
-                raise LLMError(f"OpenAI embed {resp.status_code}: {resp.text[:300]}")
-            data = resp.json()
-            return [item["embedding"] for item in data["data"]]
+        Spec formats:
+          - "openai:text-embedding-3-small"           → 1536-dim, requires OPENAI_API_KEY
+          - "local:paraphrase-MiniLM-L6-v2"           → 384-dim, free, runs on CPU
+          - "sentence-transformers:<any HF model>"    → same as local:
+        """
+        if self.provider in ("local", "sentence-transformers", "st"):
+            return await self._embed_local(texts)
+        if self.provider == "openai":
+            if not self.settings.openai_api_key:
+                raise LLMError("OPENAI_API_KEY not set")
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                resp = await client.post(
+                    "https://api.openai.com/v1/embeddings",
+                    headers={
+                        "Authorization": f"Bearer {self.settings.openai_api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={"model": self.model, "input": texts},
+                )
+                if resp.status_code != 200:
+                    raise LLMError(f"OpenAI embed {resp.status_code}: {resp.text[:300]}")
+                data = resp.json()
+                return [item["embedding"] for item in data["data"]]
+        raise LLMError(f"embed() not supported for provider '{self.provider}'")
+
+    # Sentence-transformers model is cached at the module level to avoid
+    # reloading the 80MB checkpoint for every query.
+    _ST_CACHE: dict[str, Any] = {}
+
+    async def _embed_local(self, texts: list[str]) -> list[list[float]]:
+        """Run sentence-transformers in a worker thread (synchronous library)."""
+        model_id = self.model or "paraphrase-MiniLM-L6-v2"
+        if model_id not in self._ST_CACHE:
+            from sentence_transformers import SentenceTransformer
+            logger.info("loading sentence-transformers model %s (one-time)", model_id)
+            self._ST_CACHE[model_id] = SentenceTransformer(model_id, device="cpu")
+        model = self._ST_CACHE[model_id]
+        # Run the synchronous encode in a thread so we don't block the event loop
+        loop = asyncio.get_running_loop()
+        embeddings = await loop.run_in_executor(
+            None,
+            lambda: model.encode(texts, show_progress_bar=False,
+                                  convert_to_numpy=True).tolist(),
+        )
+        return embeddings
 
 
 # --------------------------------------------------------------------------- #

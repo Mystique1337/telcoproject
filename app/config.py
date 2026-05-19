@@ -56,7 +56,11 @@ class Settings(BaseSettings):
     task1_fallback: str = "anthropic:claude-sonnet-4-20250514"
     task2_reranker: str = "anthropic:claude-sonnet-4-20250514"
     persona_extractor: str = "anthropic:claude-sonnet-4-20250514"
-    embedding_model: str = "openai:text-embedding-3-small"
+    # Default: local sentence-transformers (384-dim, free, no API key required).
+    # Switch to "openai:text-embedding-3-small" (1536-dim) if you want frontier
+    # embedding quality — set OPENAI_API_KEY and re-run build_product_index.py
+    # to rebuild the Chroma collection with matching dimensionality.
+    embedding_model: str = "local:paraphrase-MiniLM-L6-v2"
 
     # --- Feature flags ---
     enable_business_demo: bool = False

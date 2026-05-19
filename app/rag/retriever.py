@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Any
 
@@ -18,17 +19,55 @@ from app.config import get_settings
 from app.llm import get_llm_client
 from app.llm.client import LLMError
 from app.rag.vector_store import get_product_collection
+from app.rag import pinecone_store
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
 
 def _persona_query_text(persona: Persona) -> str:
-    """Build a free-text query from the persona for semantic retrieval."""
-    aspects = " ".join(persona.primary_aspects(top_k=4))
-    framing = "communal family" if persona.communal_individual > 0.6 else "personal"
-    intent = "hedonic experience" if persona.hedonic_utilitarian > 0.6 else "practical value"
-    return f"{aspects} {framing} {intent} Nigerian product".strip()
+    """Build a rich free-text query for asymmetric semantic retrieval.
+
+    The query is what the embedding model sees at retrieval time; richer
+    is better, because passages were indexed with full product context.
+    We fold in demographics (location, occupation, age band), aspect
+    priorities, framing (communal vs individual), intent (hedonic vs
+    utility), and a couple of register-derived hints.
+    """
+    parts: list[str] = []
+
+    # Demographic context (occupation drives a lot of purchase intent)
+    d = persona.demographics or {}
+    if d.get("occupation"):
+        parts.append(f"for a {d['occupation']}")
+    if d.get("location"):
+        parts.append(f"based in {d['location']}")
+    if d.get("age_range"):
+        parts.append(f"({d['age_range']} years old)")
+
+    # Aspect priorities — the strongest preference signal
+    aspects = persona.primary_aspects(top_k=4)
+    if aspects:
+        parts.append("who values " + ", ".join(aspects))
+
+    # Framing
+    if persona.communal_individual > 0.6:
+        parts.append("shopping for family / household use")
+    elif persona.communal_individual < 0.4:
+        parts.append("shopping for personal use")
+
+    # Intent
+    if persona.hedonic_utilitarian > 0.6:
+        parts.append("seeking pleasure / aspirational / experiential products")
+    elif persona.hedonic_utilitarian < 0.4:
+        parts.append("seeking practical / value-for-money / utilitarian products")
+
+    # Register marker hint (Nigerian context grounding)
+    if persona.register_tier.value in ("nigerian_pidgin", "code_mixed"):
+        parts.append("comfortable with informal Nigerian context")
+
+    parts.append("Nigerian product recommendation")
+    return ". ".join(parts).strip() or "Nigerian product"
 
 
 async def retrieve_candidates(
@@ -47,6 +86,23 @@ async def retrieve_candidates(
          register signals, returns the diverse top-K). This is the realistic
          e-commerce browsing path when no vector index is hot.
     """
+    # Path 0: Pinecone is preferred if populated — production-grade dense retrieval
+    # with asymmetric llama-text-embed-v2 (matches TAM-ESCO architecture).
+    if pinecone_store.pinecone_available() and not candidate_set:
+        pc_count = pinecone_store.index_count()
+        if pc_count > 0:
+            query_text = _persona_query_text(persona)
+            logger.info(
+                "pinecone retrieval (%d vectors): query='%s'",
+                pc_count, query_text[:80],
+            )
+            return pinecone_store.query_products(
+                query_text=query_text,
+                top_k=top_k,
+                threshold=float(os.getenv("NPA_RETRIEVAL_THRESHOLD", "0.10")),
+                domain=domain,
+            )
+
     collection = get_product_collection()
     n_in_index = collection.count()
 
