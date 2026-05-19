@@ -91,6 +91,17 @@ export interface ConversationTurn {
   content: string;
 }
 
+export interface ChatResponse {
+  action: "ask" | "recommend" | "refine";
+  message: string;
+  recommendations: RecommendItem[];
+  extracted_constraints: Record<string, unknown>;
+  filters_applied: Record<string, unknown>;
+  rerank_fallback_reason?: string | null;
+  reasoning_trace?: TraceNode[] | null;
+  latency_ms: number;
+}
+
 export interface HealthResponse {
   status: string;
   version: string;

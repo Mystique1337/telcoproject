@@ -607,132 +607,219 @@ function TabRecommend({ personas }: { personas: Persona[] }) {
 
 
 // =========================================================================
-// Tab: Multi-turn
+// Tab: Conversational Chat (real shopping concierge)
 // =========================================================================
 
-function TabMultiTurn({ personas }: { personas: Persona[] }) {
+interface ChatMessageItem {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  recommendations?: RecommendResponse["recommendations"];
+  constraints?: Record<string, unknown>;
+  filters?: Record<string, unknown>;
+  fallback?: string | null;
+  latency_ms?: number;
+}
+
+function TabChat({ personas }: { personas: Persona[] }) {
   const [persona, setPersona] = useState<Persona | null>(null);
-  const [domain, setDomain] = useState("jumia");
-  const [k, setK] = useState(5);
   const [model, setModel] = useState(MODELS[1].spec);  // default Claude
-  const [turns, setTurns] = useState<ConversationTurn[]>([
-    { role: "user", content: "I want a phone for my mum" },
-    { role: "assistant", content: "Got it — any budget or features she cares about?" },
-    { role: "user", content: "Under ₦100k, durable, big buttons preferred" },
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<ChatMessageItem[]>([
+    {
+      id: "welcome",
+      role: "assistant",
+      content: "Welcome! What are you shopping for today? Tell me what you need, who it's for, and your budget.",
+    },
   ]);
-  const [data, setData] = useState<RecommendResponse | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [showPersonaPicker, setShowPersonaPicker] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { if (!persona && personas.length) setPersona(personas[0]); }, [personas]);
+  // Auto-scroll on new message
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, sending]);
 
-  async function run() {
-    if (!persona) return;
-    setLoading(true); setErr(null); setData(null);
+  async function send() {
+    const text = input.trim();
+    if (!text || sending) return;
+    const userMsg: ChatMessageItem = {
+      id: `u-${Date.now()}`,
+      role: "user",
+      content: text,
+    };
+    setMessages((m) => [...m, userMsg]);
+    setInput("");
+    setSending(true);
+
+    // Build history payload — strip welcome message if it's the only assistant turn
+    const history = [...messages, userMsg]
+      .filter((m, i) => !(i === 0 && m.id === "welcome"))
+      .map((m) => ({ role: m.role, content: m.content }));
+    // Ensure welcome is included only if user-engaged
+    const payload = messages.length === 1 && messages[0].id === "welcome"
+      ? [{ role: "user" as const, content: text }]
+      : history;
+
     try {
-      const resp = await api.recommend({
-        persona, domain, k, reranker_override: model,
-        conversation_history: turns.filter((t) => t.content.trim()),
+      const resp = await api.chat({
+        history: payload,
+        persona: persona ?? undefined,
+        reranker_override: model,
+        orchestrator_override: model,
+        k: 4,
       });
-      setData(resp);
+      setMessages((m) => [...m, {
+        id: `a-${Date.now()}`,
+        role: "assistant",
+        content: resp.message,
+        recommendations: resp.recommendations,
+        constraints: resp.extracted_constraints,
+        filters: resp.filters_applied,
+        fallback: resp.rerank_fallback_reason,
+        latency_ms: resp.latency_ms,
+      }]);
     } catch (e) {
-      setErr(String(e));
+      setMessages((m) => [...m, {
+        id: `e-${Date.now()}`,
+        role: "assistant",
+        content: `⚠ ${String(e)}`,
+      }]);
     }
-    setLoading(false);
+    setSending(false);
+  }
+
+  function reset() {
+    setMessages([{
+      id: "welcome",
+      role: "assistant",
+      content: "Welcome! What are you shopping for today? Tell me what you need, who it's for, and your budget.",
+    }]);
+    setInput("");
   }
 
   return (
-    <div className="space-y-6">
-      <div className="card"><PersonaPicker personas={personas} selected={persona} onChange={setPersona}/></div>
-
-      <div className="card space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold flex items-center gap-2">
-            <MessageSquare size={18}/> Conversation history
-          </h3>
-          <button className="btn-ghost text-xs flex items-center gap-1"
-                  onClick={() => setTurns([
-                    { role: "user", content: "I want a phone for my mum" },
-                    { role: "assistant", content: "Got it — any budget or features she cares about?" },
-                    { role: "user", content: "Under ₦100k, durable, big buttons preferred" },
-                  ])}>
-            <RefreshCcw size={12}/> Reset demo
-          </button>
+    <div className="space-y-4">
+      {/* ── Compact controls strip ────────────────────────────────────── */}
+      <div className="card flex flex-wrap items-center gap-3 py-3">
+        <button
+          onClick={() => setShowPersonaPicker(!showPersonaPicker)}
+          className="btn-ghost flex items-center gap-2 text-sm"
+        >
+          <Users size={14}/>
+          {persona ? persona.user_id : "Anonymous"}
+          <ChevronDown size={12} className={showPersonaPicker ? "rotate-180 transition-transform" : "transition-transform"}/>
+        </button>
+        <div className="flex-1 min-w-[200px]">
+          <ModelSelect label="" value={model} onChange={setModel} taskKind="rank"/>
         </div>
-        <div className="space-y-2">
-          {turns.map((t, i) => (
-            <div key={i} className="flex items-stretch gap-2">
-              <select className="input w-32 flex-shrink-0" value={t.role}
-                      onChange={(e) => setTurns(turns.map((x, idx) => idx === i ? {...x, role: e.target.value as any} : x))}>
-                <option value="user">user</option>
-                <option value="assistant">assistant</option>
-              </select>
-              <input className="input flex-1" value={t.content}
-                     onChange={(e) => setTurns(turns.map((x, idx) => idx === i ? {...x, content: e.target.value} : x))}
-                     placeholder="Type a turn..."/>
-              <button className="btn-ghost px-3" onClick={() => setTurns(turns.filter((_, idx) => idx !== i))}>
-                <Trash2 size={14}/>
-              </button>
-            </div>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <button className="btn-ghost text-xs flex items-center gap-1"
-                  onClick={() => setTurns([...turns, { role: "user", content: "" }])}>
-            <Plus size={12}/> Add user turn
-          </button>
-          <button className="btn-ghost text-xs flex items-center gap-1"
-                  onClick={() => setTurns([...turns, { role: "assistant", content: "" }])}>
-            <Plus size={12}/> Add assistant turn
-          </button>
-        </div>
+        <button onClick={reset} className="btn-ghost text-xs flex items-center gap-1">
+          <RefreshCcw size={12}/> New chat
+        </button>
       </div>
-
-      <div className="card grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <span className="label">Domain</span>
-          <select className="input" value={domain} onChange={(e) => setDomain(e.target.value)}>
-            <option value="jumia">jumia</option><option value="konga">konga</option><option value="all">all</option>
-          </select>
-        </div>
-        <div>
-          <span className="label">Top-K</span>
-          <input type="number" min={1} max={10} value={k}
-                 onChange={(e) => setK(Number(e.target.value))} className="input"/>
-        </div>
-        <ModelSelect label="Re-ranker" value={model} onChange={setModel} taskKind="rank"/>
-      </div>
-
-      <button className="btn-primary flex items-center gap-2" onClick={run} disabled={loading || !persona}>
-        {loading ? <Spinner label="Reasoning + ranking..."/> : (<><MessageSquare size={16}/> Generate</>)}
-      </button>
-
-      {err && <div className="card border-red-700 text-red-300 text-sm">{err}</div>}
-
-      {data && (
-        <div className="card space-y-4">
-          <FallbackBanner reason={data.rerank_fallback_reason}/>
-          <ResponseFlags cold={data.cold_start} cross={data.cross_domain} multi={data.multi_turn}/>
-          {data.extracted_constraints && data.extracted_constraints.length > 0 && (
-            <div>
-              <span className="label">Extracted constraints</span>
-              <div className="flex flex-wrap gap-2">
-                {data.extracted_constraints.map((c) => (
-                  <code key={c} className="px-2 py-1 bg-ink-800 rounded text-xs text-naija-300 font-mono">{c}</code>
-                ))}
-              </div>
-            </div>
-          )}
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">{data.recommendations.length} recommendations</h3>
-            <span className="text-xs text-ink-400">{data.latency_ms} ms</span>
-          </div>
-          <div className="space-y-2">
-            {data.recommendations.map((item) => <RecCard key={item.product_id} item={item}/>)}
-          </div>
-          <ReasoningTrace trace={data.reasoning_trace}/>
+      {showPersonaPicker && (
+        <div className="card">
+          <PersonaPicker personas={personas} selected={persona} onChange={(p) => {
+            setPersona(p); setShowPersonaPicker(false);
+          }}/>
         </div>
       )}
+
+      {/* ── Chat window ───────────────────────────────────────────────── */}
+      <div ref={scrollRef}
+           className="card h-[60vh] overflow-y-auto flex flex-col gap-4">
+        {messages.map((m) => (
+          <ChatBubble key={m.id} msg={m}/>
+        ))}
+        {sending && (
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-naija-700 flex items-center justify-center flex-shrink-0 text-sm">🇳🇬</div>
+            <div className="bg-ink-800 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[80%]">
+              <Spinner label="thinking..."/>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Input bar ─────────────────────────────────────────────────── */}
+      <div className="card flex items-end gap-2">
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              send();
+            }
+          }}
+          rows={2}
+          placeholder='Type a message... e.g. "I want a phone for my mum, under ₦100k, easy to use"'
+          className="input flex-1 resize-none"
+          disabled={sending}
+        />
+        <button onClick={send} disabled={!input.trim() || sending}
+                className="btn-primary flex items-center gap-2 self-stretch">
+          <Wand2 size={16}/> Send
+        </button>
+      </div>
+      <div className="text-xs text-ink-500 px-2">
+        ⏎ to send · ⇧⏎ for new line · constraints (budget, recipient, category) are extracted automatically and used as hard filters on retrieval
+      </div>
+    </div>
+  );
+}
+
+
+function ChatBubble({ msg }: { msg: ChatMessageItem }) {
+  const isUser = msg.role === "user";
+  return (
+    <div className={`flex items-start gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm ${
+        isUser ? "bg-ink-700" : "bg-naija-700"
+      }`}>
+        {isUser ? "👤" : "🇳🇬"}
+      </div>
+      <div className={`max-w-[80%] flex flex-col gap-2 ${isUser ? "items-end" : "items-start"}`}>
+        <div className={`px-4 py-3 rounded-2xl ${
+          isUser
+            ? "bg-naija-600 text-white rounded-tr-sm"
+            : "bg-ink-800 text-ink-100 rounded-tl-sm"
+        }`}>
+          <p className="whitespace-pre-wrap leading-relaxed text-sm">{msg.content}</p>
+        </div>
+
+        {/* Extracted constraints + filters under agent messages with recs */}
+        {!isUser && msg.constraints && Object.values(msg.constraints).some(Boolean) && (
+          <div className="flex flex-wrap gap-1.5 px-1">
+            {Object.entries(msg.constraints).map(([k, v]) => {
+              if (!v || (Array.isArray(v) && v.length === 0)) return null;
+              const display = Array.isArray(v) ? v.join(", ") : String(v);
+              return (
+                <code key={k} className="text-[10px] px-2 py-0.5 bg-ink-900 text-naija-300 rounded-full font-mono">
+                  {k}={display}
+                </code>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Inline recommendation cards */}
+        {!isUser && msg.recommendations && msg.recommendations.length > 0 && (
+          <div className="w-full space-y-2 mt-1">
+            {msg.recommendations.map((item) => <RecCard key={item.product_id} item={item}/>)}
+            {msg.fallback && (
+              <div className="text-[10px] text-amber-300/80 px-1 italic">
+                ⚠ rerank fell back to pre-rank · {msg.fallback.slice(0, 100)}
+              </div>
+            )}
+          </div>
+        )}
+
+        {!isUser && msg.latency_ms != null && (
+          <span className="text-[10px] text-ink-500 px-1">{msg.latency_ms} ms</span>
+        )}
+      </div>
     </div>
   );
 }
@@ -746,7 +833,7 @@ type TabKey = "review" | "recommend" | "multiturn";
 const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   { key: "review",    label: "Simulate Review", icon: <Sparkles size={14}/> },
   { key: "recommend", label: "Recommend",        icon: <Target size={14}/> },
-  { key: "multiturn", label: "Multi-turn",       icon: <MessageSquare size={14}/> },
+  { key: "multiturn", label: "Chat",             icon: <MessageSquare size={14}/> },
 ];
 
 export default function App() {
@@ -815,7 +902,7 @@ export default function App() {
         </nav>
         {tab === "review"    && <TabReview     personas={personas}/>}
         {tab === "recommend" && <TabRecommend  personas={personas}/>}
-        {tab === "multiturn" && <TabMultiTurn  personas={personas}/>}
+        {tab === "multiturn" && <TabChat       personas={personas}/>}
       </main>
       <footer className="border-t border-ink-800 mt-12">
         <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between text-xs text-ink-500">

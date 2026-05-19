@@ -70,6 +70,30 @@ export const api = {
       backbone_override: backboneOverride,
     }),
 
+  chat: async (opts: {
+    history: ConversationTurn[];
+    persona?: Persona | null;
+    orchestrator_override?: string;
+    reranker_override?: string;
+    k?: number;
+    include_reasoning?: boolean;
+  }) => {
+    const r = await fetch(`${BASE}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        history: opts.history,
+        persona: opts.persona ?? null,
+        orchestrator_override: opts.orchestrator_override,
+        reranker_override: opts.reranker_override,
+        k: opts.k ?? 5,
+        include_reasoning: opts.include_reasoning ?? false,
+      }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).slice(0, 200)}`);
+    return r.json() as Promise<import("./types").ChatResponse>;
+  },
+
   recommend: (opts: {
     persona: Persona;
     candidate_set?: string[];
