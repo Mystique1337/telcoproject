@@ -14,22 +14,25 @@ export interface ModelOption {
 }
 
 export const MODELS: ModelOption[] = [
+  // ── Our fine-tune ────────────────────────────────────────────────────
   {
     label: "NaijaReviewer-8B",
     spec: "lmstudio:naija-reviewer-8b",
     badge: "🇳🇬 fine-tune · local",
     bestFor: "review",   // Task A only — emits prose, not JSON
   },
+
+  // ── Frontier (closed-source) ────────────────────────────────────────
   {
     label: "Claude Sonnet 4",
     spec: "anthropic:claude-sonnet-4-20250514",
-    badge: "Anthropic · API",
+    badge: "Anthropic · frontier",
     bestFor: "both",
   },
   {
     label: "GPT-4o",
     spec: "openai:gpt-4o",
-    badge: "OpenAI · API",
+    badge: "OpenAI · frontier",
     bestFor: "both",
   },
   {
@@ -38,16 +41,60 @@ export const MODELS: ModelOption[] = [
     badge: "OpenAI · cheap",
     bestFor: "both",
   },
+
+  // ── Open-source via Ollama Cloud (hosted) ────────────────────────────
   {
-    label: "Llama 3.3 70B",
+    label: "GPT-OSS 120B",
+    spec: "ollama-cloud:gpt-oss:120b",
+    badge: "Ollama Cloud · open",
+    bestFor: "both",
+  },
+  {
+    label: "Qwen3 Coder 480B",
+    spec: "ollama-cloud:qwen3-coder:480b",
+    badge: "Ollama Cloud · open",
+    bestFor: "both",
+  },
+  {
+    label: "DeepSeek V3.1 671B",
+    spec: "ollama-cloud:deepseek-v3.1:671b",
+    badge: "Ollama Cloud · paid sub",
+    bestFor: "both",
+  },
+
+  // ── Open-source via HuggingFace Inference ───────────────────────────
+  {
+    label: "Llama 3.3 70B (HF)",
+    spec: "hf:meta-llama/Llama-3.3-70B-Instruct",
+    badge: "HF Inference · open",
+    bestFor: "both",
+  },
+  {
+    label: "Qwen 2.5 72B (HF)",
+    spec: "hf:Qwen/Qwen2.5-72B-Instruct",
+    badge: "HF Inference · open",
+    bestFor: "both",
+  },
+  {
+    label: "Mixtral 8x7B (HF)",
+    spec: "hf:mistralai/Mixtral-8x7B-Instruct-v0.1",
+    badge: "HF Inference · open",
+    bestFor: "both",
+  },
+
+  // ── Open-source via NVIDIA NIM (free tier) ──────────────────────────
+  {
+    label: "Llama 3.3 70B (NIM)",
     spec: "nvidia:meta/llama-3.3-70b-instruct",
     badge: "NIM · free tier",
     bestFor: "both",
   },
+
+  // ── Local Ollama / base ────────────────────────────────────────────
   {
     label: "Llama 3.1 8B base",
     spec: "ollama:llama3.1:8b-instruct",
-    badge: "Ollama · base",
+    badge: "local Ollama · base",
     bestFor: "both",
   },
 ];

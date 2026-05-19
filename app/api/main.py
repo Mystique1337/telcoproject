@@ -7,7 +7,20 @@ Run in Docker: `make demo`
 from __future__ import annotations
 
 import logging
+import os
 from contextlib import asynccontextmanager
+from pathlib import Path
+
+# Load .env at import time so os.getenv("OLLAMA_API_KEY") etc. work in the
+# LLM client. (pydantic-settings only loads fields declared in app/config.py,
+# but the LLM client reads provider keys directly via os.getenv.)
+try:
+    from dotenv import load_dotenv
+    _ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
+    if _ENV_PATH.exists():
+        load_dotenv(_ENV_PATH, override=False)
+except ImportError:
+    pass
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

@@ -370,22 +370,17 @@ Persona:
 Candidates:
 {candidate_lines}
 
-Return JSON of the form:
-{{
-  "ranked": [
-    {{"product_id": "...", "score": 0.92, "rationale": "one short sentence"}},
-    ...
-  ]
-}}
+Return ONLY this JSON (no markdown fences, no prose before or after):
+{{"ranked":[{{"product_id":"...","score":0.92,"rationale":"6-15 word reason"}}]}}
 
-Rank from BEST fit to WORST. Include ALL candidates. Score must be in [0.0, 1.0].
-Rationale: one short sentence naming WHICH persona feature OR constraint drove the score.
+Rank from BEST fit to WORST. Include the top {min(k * 2, 15)} candidates only (not all 30).
+Score in [0.0, 1.0]. Keep each rationale ≤ 15 words.
 """.strip()
 
     fallback_reason: str | None = None
     try:
         result = await client.complete_json(
-            prompt=prompt, system=system, max_tokens=2000, temperature=0.4
+            prompt=prompt, system=system, max_tokens=3500, temperature=0.4
         )
         ranked_raw = result.get("ranked", [])
         if not isinstance(ranked_raw, list) or len(ranked_raw) == 0:
