@@ -67,8 +67,14 @@ BACKBONES_TASK1 = {
     # "base_llama_3_1":   "ollama:llama3.1:8b-instruct",
 }
 BACKBONES_TASK2 = {
-    "claude_sonnet_4":    "anthropic:claude-sonnet-4-20250514",
-    "naija_reviewer_8b":  "lmstudio:naija-reviewer-8b",
+    # Frontier (closed-source)
+    "claude_sonnet_4":     "anthropic:claude-sonnet-4-20250514",
+    # Our fine-tune (Task A model — included to demonstrate the fallback path)
+    "naija_reviewer_8b":   "lmstudio:naija-reviewer-8b",
+    # Open-source heavyweights via Ollama Cloud + HF Inference
+    "llama_3_3_70b_hf":    "hf:meta-llama/Llama-3.3-70B-Instruct",
+    "qwen_2_5_72b_hf":     "hf:Qwen/Qwen2.5-72B-Instruct",
+    "gpt_oss_120b_ocloud": "ollama-cloud:gpt-oss:120b",
 }
 
 # Concurrency on API calls

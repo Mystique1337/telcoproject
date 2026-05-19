@@ -124,22 +124,38 @@ Opens at `http://localhost:8501`. Tab 1 — side-by-side compare (NaijaReviewer 
 
 Everything writes to `Drive/MyDrive/naija-persona-agent/`. If Colab disconnects mid-run, **just re-open the notebook and Run all again** — corpus stages skip if their JSONL exists, training resumes from the last `checkpoint-XXXX`, the merged model skips if already present.
 
-## Switch the local backbone
+## Switch the backbone — 11 supported models
 
-`.env`:
+| Provider class | Spec format | Models | Auth |
+|---|---|---|---|
+| 🇳🇬 NaijaReviewer-8B (Task A) | `lmstudio:naija-reviewer-8b` | our fine-tune via LM Studio | none (local) |
+| Anthropic | `anthropic:claude-sonnet-4-20250514` | Claude Sonnet 4 | `ANTHROPIC_API_KEY` |
+| OpenAI | `openai:gpt-4o`, `openai:gpt-4o-mini` | GPT-4o family | `OPENAI_API_KEY` |
+| **Ollama Cloud** (open-source) | `ollama-cloud:gpt-oss:120b`, `ollama-cloud:qwen3-coder:480b` | GPT-OSS 120B, Qwen3-Coder | `OLLAMA_API_KEY` |
+| **HF Inference** (open-source) | `hf:meta-llama/Llama-3.3-70B-Instruct`, `hf:Qwen/Qwen2.5-72B-Instruct`, `hf:mistralai/Mixtral-8x7B-Instruct-v0.1` | Llama 3.3 70B, Qwen 2.5 72B, Mixtral | `HF_TOKEN` |
+| NVIDIA NIM (free tier) | `nvidia:meta/llama-3.3-70b-instruct` | Llama 3.3 70B | `NVIDIA_API_KEY` |
+| Ollama (local) | `ollama:llama3.1:8b-instruct` | any local Ollama model | none |
+
+Set the default in `.env`:
 
 ```bash
-# Default — fine-tune via LM Studio (recommended)
-TASK1_BACKBONE=lmstudio:naija-reviewer-8b
-
-# Or — vanilla Claude
-TASK1_BACKBONE=anthropic:claude-sonnet-4-20250514
-
-# Or — vanilla GPT-4o
-TASK1_BACKBONE=openai:gpt-4o
+TASK1_BACKBONE=lmstudio:naija-reviewer-8b      # review generation (Task A)
+TASK2_RERANKER=anthropic:claude-sonnet-4-20250514  # ranking (Task B — frontier recommended)
 ```
 
-Restart `make serve`. Per-request `backbone_override` overrides this on individual calls.
+Restart `make serve`. Per-request `backbone_override` / `reranker_override` fields in the request body override the defaults — judges can A/B between any two models on the same persona × product without restart.
+
+## Vector retrieval — Pinecone (recommended) or Chroma (local)
+
+The recommend agent uses **Pinecone serverless with `llama-text-embed-v2`** (1024-dim, asymmetric `passage`/`query` retrieval) when `PINECONE_API_KEY` is set in `.env` and the index is populated. Otherwise falls back to local Chroma, then to persona-aware disk sampling.
+
+```bash
+# Populate Pinecone (one-time, ~7 min for 6,657 products)
+python scripts/build_pinecone_index.py
+
+# Or, local-only flow with Chroma
+python scripts/build_product_index.py --provider local
+```
 
 ## Evaluation
 

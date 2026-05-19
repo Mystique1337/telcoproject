@@ -21,12 +21,16 @@ We respond within 30 minutes during evaluation week.
 | Deliverable | Path / URL |
 |---|---|
 | **1. Single-file agent** (AgentSociety-compatible) | `submission/naija_agent.py` |
-| **2. REST API service** (FastAPI) | `app/api/main.py` → `http://[host]:8765` |
-| **3. Solution paper** | `paper/paper.tex` (compiles to `paper/paper.pdf`) |
-| **4. Code repository** (MIT) | <https://github.com/Mystique1337/telcoproject> |
-| **5. Open-weight model** | <https://huggingface.co/Shinzmann/naija-reviewer-8b-v2-Q4_K_M-GGUF> |
-| **6. Judge demo** (Streamlit) | `demo/streamlit_app.py` (5 personas, side-by-side compare) |
-| **7. Eval harness** | `scripts/eval_all.py` (rubric metrics **and** official AgentSociety metrics) |
+| **2. REST API service** (FastAPI on `:8765`) | `app/api/main.py` — 11 model providers, two-tab UI |
+| **3. Polished web UI** (React + Tailwind, served by FastAPI) | open `http://localhost:8765` |
+| **4. Solution paper** | `paper/paper.tex` → `make paper` |
+| **5. Code repository** (MIT) | <https://github.com/Mystique1337/telcoproject> |
+| **6. Open-weight model** | <https://huggingface.co/Shinzmann/naija-reviewer-8b-v2-Q4_K_M-GGUF> |
+| **7. Production vector index** | Pinecone (`naija-persona` index, 6,657 products, `llama-text-embed-v2` 1024-d asymmetric) |
+| **8. Eval harness** | `scripts/eval_all.py` (rubric + official AgentSociety metrics, bootstrap CIs) |
+| **9. 4-condition ablation** | `scripts/eval_ablation.py` → `paper/results_ablation.{json,md}` |
+| **10. Self-audit** | `scripts/eval_audit.py` → `paper/audit_report.md` |
+| **11. Human eval workflow** | `paper/human_eval_template.xlsx` + `scripts/aggregate_human_eval_xlsx.py` |
 
 ## Mode 1 — AgentSociety simulator (recommended if judges use the official harness)
 
@@ -102,9 +106,31 @@ curl -X POST http://localhost:8765/recommend \
   -d @data/sample/requests/recommend_tunde.json
 ```
 
-Each endpoint accepts a `backbone_override` / `reranker_override` field so judges can A/B between NaijaReviewer-8B, Claude, GPT-4o, or any other registered model on the same request — no redeploy needed.
+Each endpoint accepts a `backbone_override` / `reranker_override` field — judges can A/B between 11 backbones on the same request, no redeploy.
 
-### Streamlit demo (visual compare)
+**Quick A/B between frontier and open-source on Task B:**
+```bash
+# Frontier
+curl -X POST http://localhost:8765/recommend ... \
+  -d '{"persona":{...},"reranker_override":"anthropic:claude-sonnet-4-20250514","k":5}'
+
+# Open-source via HuggingFace
+curl -X POST http://localhost:8765/recommend ... \
+  -d '{"persona":{...},"reranker_override":"hf:meta-llama/Llama-3.3-70B-Instruct","k":5}'
+
+# Open-source 120B via Ollama Cloud
+curl -X POST http://localhost:8765/recommend ... \
+  -d '{"persona":{...},"reranker_override":"ollama-cloud:gpt-oss:120b","k":5}'
+```
+
+### React web UI (the polished judge demo)
+
+Open `http://localhost:8765` (the FastAPI server serves the built React SPA at root). Three tabs:
+- **Simulate Review** — persona-filter + 6,657-product search + side-by-side model compare
+- **Recommend** — cold-start toggle, cross-domain dropdown, narrative reasoning trace, response flag badges
+- **Multi-turn** — editable conversation history, surfaces extracted constraints, hard-budget guardrail
+
+### Streamlit demo (alternate, deprecated)
 
 ```bash
 streamlit run demo/streamlit_app.py
