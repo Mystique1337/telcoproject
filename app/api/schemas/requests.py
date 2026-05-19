@@ -95,6 +95,16 @@ class RecommendResponse(BaseModel):
     cross_domain: bool | None = None
     multi_turn: bool | None = None
     extracted_constraints: list[str] | None = None
+    rerank_fallback_reason: str | None = Field(
+        default=None,
+        description=(
+            "When the re-ranker LLM did not return parseable JSON, the agent "
+            "falls back to pre-rank order (similarity + popularity + aspect-match) "
+            "and surfaces the reason here. Typically populated when a Task A "
+            "review-generation fine-tune is incorrectly used as the Task B "
+            "re-ranker."
+        ),
+    )
     reasoning_trace: list[dict[str, Any]] | None = None
     latency_ms: int
 

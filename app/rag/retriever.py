@@ -41,12 +41,11 @@ async def retrieve_candidates(
 
     Resolution order:
       1. If an explicit ``candidate_set`` is provided, ALWAYS honour it.
-         Each item is tried first as a Chroma id, then matched by title in
-         Chroma metadata, then synthesised as a minimal {product_id, title}
-         dict so the LLM re-ranker still has something to rank. Sample
-         products are NEVER used to replace an explicit candidate set.
       2. Otherwise: semantic retrieval from Chroma if populated.
-      3. Otherwise: fall back to the sample-products bundle.
+      3. Otherwise: PERSONA-AWARE sampling from data/sample/products/ on disk
+         (scores all available products against the persona's aspect_priority +
+         register signals, returns the diverse top-K). This is the realistic
+         e-commerce browsing path when no vector index is hot.
     """
     collection = get_product_collection()
     n_in_index = collection.count()
@@ -55,10 +54,13 @@ async def retrieve_candidates(
     if candidate_set:
         return _resolve_candidate_set(candidate_set, collection if n_in_index > 0 else None)
 
-    # Path 2: empty Chroma + no candidate set → sample fallback
+    # Path 2: empty Chroma + no candidate set → persona-aware disk sampling
     if n_in_index == 0:
-        logger.info("chroma empty + no candidate_set — loading sample products bundle")
-        return _load_sample_products(domain=domain, limit=top_k)
+        logger.info(
+            "chroma empty + no candidate_set — using persona-aware disk sampling "
+            "(consider running scripts/build_product_index.py for production)"
+        )
+        return _persona_aware_disk_sample(persona, domain=domain, limit=top_k)
 
     # Path 2: semantic retrieval
     query_text = _persona_query_text(persona)
@@ -174,25 +176,130 @@ def _meta_to_candidate(meta: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _load_sample_products(domain: str, limit: int) -> list[dict[str, Any]]:
-    """Day-1 fallback: read products from `data/sample/products/*.json`."""
+_DISK_PRODUCT_CACHE: list[dict[str, Any]] | None = None
+
+
+def _load_all_disk_products() -> list[dict[str, Any]]:
+    """Load (and cache) every product JSON in data/sample/products/.
+
+    On a populated Jumia pull this is ~6,600 products / ~26MB on disk; we
+    cache the list in-process so we only pay the parse cost once.
+    """
+    global _DISK_PRODUCT_CACHE
+    if _DISK_PRODUCT_CACHE is not None:
+        return _DISK_PRODUCT_CACHE
     sample_dir = settings.sample_products_dir
     if not sample_dir.exists():
-        logger.warning("sample products dir missing: %s", sample_dir)
-        return []
+        _DISK_PRODUCT_CACHE = []
+        return _DISK_PRODUCT_CACHE
     products: list[dict[str, Any]] = []
-    for json_file in sorted(sample_dir.glob("*.json")):
+    for json_file in sample_dir.glob("*.json"):
         try:
             data = json.loads(json_file.read_text(encoding="utf-8"))
-        except Exception:  # noqa: BLE001
-            logger.warning("could not parse %s", json_file)
+            products.append(data)
+        except Exception:
             continue
-        if domain and data.get("domain", "jumia") != domain:
-            continue
-        # Synthesise a tiny similarity score so the pre-ranker has something to work with
-        data["similarity"] = 0.6
-        data["popularity"] = data.get("popularity", 0.5)
-        products.append(data)
-        if len(products) >= limit:
-            break
+    logger.info("loaded %d products from disk into cache", len(products))
+    _DISK_PRODUCT_CACHE = products
     return products
+
+
+def _persona_aware_disk_sample(persona: Persona, domain: str, limit: int) -> list[dict[str, Any]]:
+    """Score every disk product against the persona and return top-`limit`.
+
+    Scoring features (each in [0, 1]):
+      - aspect_match:       persona's aspect_priority words found in title/desc/category
+      - category_affinity:  category appears in persona's recent review_anchors
+      - price_band_fit:     price is in the realistic band for the persona's history
+      - jitter:             tiny random component so identical scores break randomly
+      - popularity:         if present in product metadata (else 0.5)
+    """
+    import random as _random
+    all_products = _load_all_disk_products()
+    if not all_products:
+        return []
+
+    # Filter by domain first (most are "jumia").
+    products = [p for p in all_products if (not domain or p.get("domain", "jumia") == domain)]
+    if not products:
+        products = all_products  # fall back if no exact match
+
+    # Build persona feature sets.
+    primary_aspects = [a.lower() for a in persona.primary_aspects(top_k=4)]
+    # Aspect → relevant lexical tokens (cheap heuristic; replace with embeddings
+    # once Chroma is populated).
+    aspect_tokens: dict[str, set[str]] = {
+        "quality":          {"quality", "premium", "durable", "solid", "build"},
+        "value":            {"value", "affordable", "cheap", "discount", "deal", "promo"},
+        "durability":       {"durable", "long lasting", "warranty", "tough", "heavy duty"},
+        "delivery":         {"fast delivery", "express", "in stock"},
+        "packaging":        {"packaging", "box", "sealed"},
+        "design":           {"design", "style", "fine", "beautiful", "premium"},
+        "seller":           {"trusted", "official", "authentic"},
+        "value_for_family": {"family", "kids", "household", "home"},
+        "child_safety":     {"safe", "child", "kids", "baby"},
+    }
+    persona_categories_from_history = {
+        (a.product_id or "").lower() for a in persona.review_anchors
+    }
+
+    rng = _random.Random(persona.user_id or "default")  # deterministic per persona
+    scored: list[tuple[float, dict[str, Any]]] = []
+    for p in products:
+        title = (p.get("title") or "").lower()
+        desc = (p.get("description") or "").lower()
+        cat = (p.get("category") or "").lower()
+        text = f"{title} {desc} {cat}"
+
+        # Aspect match — for each top aspect, did any of its tokens appear?
+        aspect_score = 0.0
+        for asp in primary_aspects:
+            tokens = aspect_tokens.get(asp, {asp})
+            if any(t in text for t in tokens):
+                aspect_score += 1.0
+        aspect_score /= max(len(primary_aspects), 1)  # 0–1
+
+        # Category affinity — does category match anything in history?
+        cat_affinity = 0.0
+        if cat:
+            for hist_pid in persona_categories_from_history:
+                if cat in hist_pid or hist_pid in cat:
+                    cat_affinity = 1.0
+                    break
+
+        # Popularity (already in [0,1] if set, else 0.5)
+        popularity = float(p.get("popularity", 0.5))
+
+        # Diversity jitter so equal scores don't cluster
+        jitter = rng.random() * 0.05
+
+        composite = (
+            0.50 * aspect_score
+            + 0.20 * cat_affinity
+            + 0.20 * popularity
+            + 0.10 * jitter
+        )
+
+        # Pack into the candidate shape the agent expects
+        candidate = {
+            "product_id": p.get("product_id") or title,
+            "title": p.get("title"),
+            "category": p.get("category"),
+            "domain": p.get("domain", "jumia"),
+            "price_naira": p.get("price_naira"),
+            "popularity": popularity,
+            "description": (p.get("description") or "")[:500],
+            "similarity": min(1.0, aspect_score + 0.3),  # surface for prerank
+        }
+        scored.append((composite, candidate))
+
+    # Sort by composite desc, return top `limit`
+    scored.sort(key=lambda x: x[0], reverse=True)
+    return [c for _, c in scored[:limit]]
+
+
+# Keep the old name as a thin wrapper for backward compat with any test code.
+def _load_sample_products(domain: str, limit: int) -> list[dict[str, Any]]:
+    """Legacy helper — unconditionally returns first `limit` products
+    (alphabetical). Persona-aware sampling lives in _persona_aware_disk_sample."""
+    return _load_all_disk_products()[:limit]

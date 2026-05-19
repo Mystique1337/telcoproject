@@ -57,6 +57,7 @@ async def recommend(req: RecommendRequest) -> RecommendResponse:
         cross_domain=result.get("cross_domain"),
         multi_turn=result.get("multi_turn"),
         extracted_constraints=result.get("extracted_constraints"),
+        rerank_fallback_reason=result.get("rerank_fallback_reason"),
         reasoning_trace=result.get("reasoning_trace"),
         latency_ms=elapsed_ms,
     )

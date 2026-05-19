@@ -124,18 +124,21 @@ async def recommend_products(
     # Step 3 — LLM re-rank with intent context (multi-turn aware)
     t1 = time.perf_counter()
     reranker_spec = reranker_override or settings.task2_reranker
-    ranked = await _llm_rerank(
+    ranked, rerank_fallback = await _llm_rerank(
         persona, candidates[:30], k=k, reranker_spec=reranker_spec,
         intent=intent,
     )
     trace.append({
         "node": "llm_rerank",
         "summary": (
-            f"LLM re-ranked top-30 candidates by predicted fit with persona "
-            + ("+ conversation constraints" if multi_turn else "")
-            + f"; reranker={reranker_spec}"
+            (f"LLM re-rank FELL BACK to pre-rank: {rerank_fallback}"
+             if rerank_fallback else
+             "LLM re-ranked top-30 candidates by predicted fit with persona "
+             + ("+ conversation constraints" if multi_turn else "")
+             + f"; reranker={reranker_spec}")
         ),
         "reranker": reranker_spec,
+        "fallback": rerank_fallback,
         "duration_ms": int((time.perf_counter() - t1) * 1000),
     })
 
@@ -180,6 +183,7 @@ async def recommend_products(
         "cross_domain": is_cross_domain,
         "multi_turn": multi_turn,
         "extracted_constraints": intent.get("constraints", []),
+        "rerank_fallback_reason": rerank_fallback,
         "reasoning_trace": trace if include_reasoning else None,
     }
 
@@ -305,13 +309,24 @@ async def _llm_rerank(
     k: int,
     reranker_spec: str | None = None,
     intent: dict[str, Any] | None = None,
-) -> list[dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], str | None]:
     """Use the configured re-ranker LLM to score and rationalise each candidate.
 
     If ``intent`` carries multi-turn constraints (budget, recipient, category),
     we fold them explicitly into the prompt so the re-ranker honours them.
+
+    Returns: (ranked_items, fallback_reason).
+        fallback_reason is None on full LLM rerank, or a short string when we
+        had to degrade to pre-rank order (e.g. NaijaReviewer-8B is a Task A
+        fine-tune and emits prose instead of strict JSON for ranking).
     """
-    client = get_llm_client(reranker_spec or settings.task2_reranker)
+    spec = reranker_spec or settings.task2_reranker
+    client = get_llm_client(spec)
+
+    # NaijaReviewer-8B is a review-generation fine-tune; the rerank JSON
+    # contract is out-of-distribution for it. Emit a clear caveat instead of
+    # silently producing degraded output.
+    is_naija_reviewer = "naija-reviewer" in spec.lower()
 
     candidate_lines = "\n".join(
         f"{i}. id={c['product_id']} | title={c.get('title','')[:80]} | "
@@ -367,23 +382,42 @@ Rank from BEST fit to WORST. Include ALL candidates. Score must be in [0.0, 1.0]
 Rationale: one short sentence naming WHICH persona feature OR constraint drove the score.
 """.strip()
 
+    fallback_reason: str | None = None
     try:
         result = await client.complete_json(
             prompt=prompt, system=system, max_tokens=2000, temperature=0.4
         )
         ranked_raw = result.get("ranked", [])
+        if not isinstance(ranked_raw, list) or len(ranked_raw) == 0:
+            raise LLMError(f"reranker returned empty/invalid 'ranked' field")
     except LLMError as exc:
-        logger.warning("LLM re-rank failed (%s); falling back to prerank order", exc)
-        return [
+        fallback_reason = (
+            f"Re-ranker '{spec}' did not return parseable JSON ({str(exc)[:80]}). "
+            + (
+                "NaijaReviewer-8B is a Task A (review-generation) fine-tune and "
+                "emits prose, not the strict JSON contract this Task B "
+                "re-ranker expects. Pre-rank score used instead. For best Task B "
+                "results pick Claude or GPT-4o as re-ranker."
+                if is_naija_reviewer
+                else "Pre-rank score (similarity + popularity + aspect-match) used instead."
+            )
+        )
+        logger.warning("LLM re-rank fallback fired: %s", fallback_reason)
+        fallback_items = [
             {
                 "product_id": c["product_id"],
                 "title": c.get("title"),
-                "score": c["prerank_score"],
-                "rationale": "Pre-rank score (LLM re-rank unavailable).",
-                "serendipity_score": None,
+                "score": float(c["prerank_score"]),
+                "rationale": (
+                    f"Pre-rank: similarity={c.get('similarity',0):.2f}, "
+                    f"popularity={c.get('popularity',0):.2f}, "
+                    f"aspect-match score-contribution. LLM re-rank fell back."
+                ),
+                "serendipity_score": _serendipity(c, persona),
             }
             for c in candidates[:k]
         ]
+        return fallback_items, fallback_reason
 
     # Hydrate with title from candidates
     by_id = {c["product_id"]: c for c in candidates}
@@ -401,7 +435,7 @@ Rationale: one short sentence naming WHICH persona feature OR constraint drove t
                 "serendipity_score": _serendipity(c, persona),
             }
         )
-    return hydrated
+    return hydrated, fallback_reason
 
 
 def _serendipity(candidate: dict[str, Any], persona: Persona) -> float:

@@ -70,8 +70,20 @@ export interface RecommendResponse {
   cross_domain?: boolean | null;
   multi_turn?: boolean | null;
   extracted_constraints?: string[] | null;
+  rerank_fallback_reason?: string | null;
   reasoning_trace?: TraceNode[] | null;
   latency_ms: number;
+}
+
+export interface ProductSearchResponse {
+  total: number;
+  limit: number;
+  products: Product[];
+}
+
+export interface PersonasResponse {
+  count: number;
+  personas: Persona[];
 }
 
 export interface ConversationTurn {

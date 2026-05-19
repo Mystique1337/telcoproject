@@ -9,6 +9,8 @@ export interface ModelOption {
   label: string;
   spec: string;
   badge?: string;
+  /** Which task this model is good at. Used to surface guidance in the UI. */
+  bestFor: "review" | "rank" | "both";
 }
 
 export const MODELS: ModelOption[] = [
@@ -16,33 +18,47 @@ export const MODELS: ModelOption[] = [
     label: "NaijaReviewer-8B",
     spec: "lmstudio:naija-reviewer-8b",
     badge: "🇳🇬 fine-tune · local",
+    bestFor: "review",   // Task A only — emits prose, not JSON
   },
   {
     label: "Claude Sonnet 4",
     spec: "anthropic:claude-sonnet-4-20250514",
     badge: "Anthropic · API",
+    bestFor: "both",
   },
   {
     label: "GPT-4o",
     spec: "openai:gpt-4o",
     badge: "OpenAI · API",
+    bestFor: "both",
   },
   {
     label: "GPT-4o mini",
     spec: "openai:gpt-4o-mini",
     badge: "OpenAI · cheap",
+    bestFor: "both",
   },
   {
     label: "Llama 3.3 70B",
     spec: "nvidia:meta/llama-3.3-70b-instruct",
     badge: "NIM · free tier",
+    bestFor: "both",
   },
   {
     label: "Llama 3.1 8B base",
     spec: "ollama:llama3.1:8b-instruct",
     badge: "Ollama · base",
+    bestFor: "both",
   },
 ];
+
+export function modelLabel(spec: string): string {
+  return MODELS.find((m) => m.spec === spec)?.label ?? spec;
+}
+
+export function modelBestFor(spec: string): "review" | "rank" | "both" | undefined {
+  return MODELS.find((m) => m.spec === spec)?.bestFor;
+}
 
 // Live eval numbers — read from paper/results.json. Falls back to a tiny
 // known-good baseline if the file isn't reachable (so the UI is never broken

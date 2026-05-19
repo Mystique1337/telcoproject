@@ -1,26 +1,31 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   AlertCircle,
-  BookOpen,
+  AlertTriangle,
   Bot,
   CheckCircle2,
   ChevronDown,
   Github,
+  Info,
+  Loader2,
   MessageSquare,
+  Package,
   Plus,
   RefreshCcw,
   Search,
   Sparkles,
   Star,
+  Tag,
   Target,
   Trash2,
   TrendingUp,
   Users,
+  Wand2,
 } from "lucide-react";
 
 import { api } from "./api";
-import { EVAL_FALLBACK, MODELS } from "./data";
+import { EVAL_FALLBACK, MODELS, modelBestFor, modelLabel } from "./data";
 import type {
   ConversationTurn,
   HealthResponse,
@@ -37,26 +42,26 @@ import type {
 // =========================================================================
 
 function Badge({
-  children,
-  tone = "default",
+  children, tone = "default",
 }: {
   children: React.ReactNode;
-  tone?: "default" | "success" | "warn" | "info" | "naija";
+  tone?: "default" | "success" | "warn" | "info" | "naija" | "danger";
 }) {
   const tones: Record<string, string> = {
     default: "bg-ink-800 text-ink-200 border border-ink-700",
     success: "bg-naija-900/40 text-naija-300 border border-naija-700/50",
-    warn: "bg-amber-900/40 text-amber-200 border border-amber-700/40",
-    info: "bg-sky-900/40 text-sky-200 border border-sky-700/40",
-    naija: "bg-naija-600 text-white",
+    warn:    "bg-amber-900/40 text-amber-200 border border-amber-700/40",
+    info:    "bg-sky-900/40 text-sky-200 border border-sky-700/40",
+    naija:   "bg-naija-600 text-white",
+    danger:  "bg-red-900/40 text-red-300 border border-red-700/40",
   };
   return <span className={`badge ${tones[tone]}`}>{children}</span>;
 }
 
 function Spinner({ label }: { label?: string }) {
   return (
-    <div className="flex items-center gap-3 text-ink-300">
-      <div className="w-4 h-4 border-2 border-naija-500/60 border-t-naija-300 rounded-full animate-spin" />
+    <div className="flex items-center gap-3 text-ink-200">
+      <Loader2 size={16} className="animate-spin" />
       <span className="text-sm">{label ?? "Working..."}</span>
     </div>
   );
@@ -66,11 +71,8 @@ function StarRating({ rating }: { rating: number }) {
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((n) => (
-        <Star
-          key={n}
-          size={16}
-          className={n <= rating ? "fill-amber-400 text-amber-400" : "text-ink-700"}
-        />
+        <Star key={n} size={16}
+              className={n <= rating ? "fill-amber-400 text-amber-400" : "text-ink-700"} />
       ))}
       <span className="ml-2 text-sm text-ink-300">{rating}/5</span>
     </div>
@@ -82,35 +84,22 @@ function ReasoningTrace({ trace }: { trace: TraceNode[] | null | undefined }) {
   if (!trace || trace.length === 0) return null;
   return (
     <div className="mt-4 border-t border-ink-700/60 pt-3">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 text-sm text-ink-300 hover:text-ink-100 transition-colors"
-      >
-        <ChevronDown
-          size={16}
-          className={`transition-transform ${open ? "rotate-180" : ""}`}
-        />
+      <button onClick={() => setOpen(!open)}
+              className="flex items-center gap-2 text-sm text-ink-300 hover:text-ink-100 transition-colors">
+        <ChevronDown size={16} className={`transition-transform ${open ? "rotate-180" : ""}`} />
         <Bot size={14} /> Agentic reasoning trace · {trace.length} steps
       </button>
       {open && (
         <ol className="mt-3 space-y-3 text-sm">
           {trace.map((node, i) => (
             <li key={i} className="border-l-2 border-naija-700/60 pl-3">
-              <div className="text-ink-200 font-medium">
-                {i + 1}. {node.node ?? "step"}
-              </div>
-              {node.summary ? (
-                <div className="text-ink-300 text-xs mt-1 leading-relaxed">
-                  {String(node.summary)}
-                </div>
-              ) : (
-                <div className="text-ink-400 text-xs mt-1 font-mono">
-                  {Object.entries(node)
-                    .filter(([k]) => k !== "node")
-                    .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
-                    .join(" · ")}
-                </div>
-              )}
+              <div className="text-ink-200 font-medium">{i + 1}. {node.node ?? "step"}</div>
+              {node.summary
+                ? <div className="text-ink-300 text-xs mt-1 leading-relaxed">{String(node.summary)}</div>
+                : <div className="text-ink-400 text-xs mt-1 font-mono">
+                    {Object.entries(node).filter(([k]) => k !== "node")
+                      .map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(" · ")}
+                  </div>}
             </li>
           ))}
         </ol>
@@ -119,15 +108,8 @@ function ReasoningTrace({ trace }: { trace: TraceNode[] | null | undefined }) {
   );
 }
 
-function ResponseFlags({
-  cold,
-  cross,
-  multi,
-}: {
-  cold?: boolean | null;
-  cross?: boolean | null;
-  multi?: boolean | null;
-}) {
+function ResponseFlags({ cold, cross, multi }:
+  { cold?: boolean | null; cross?: boolean | null; multi?: boolean | null }) {
   if (!cold && !cross && !multi) return null;
   return (
     <div className="flex flex-wrap gap-2 mt-2">
@@ -138,9 +120,31 @@ function ResponseFlags({
   );
 }
 
+function FallbackBanner({ reason }: { reason: string | null | undefined }) {
+  if (!reason) return null;
+  return (
+    <div className="border border-amber-700/40 bg-amber-900/20 rounded-lg p-3 flex gap-3 text-sm">
+      <AlertTriangle size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
+      <div className="text-amber-100">
+        <div className="font-medium mb-1">Re-rank fell back to pre-rank</div>
+        <div className="text-xs text-amber-200/90 leading-relaxed">{reason}</div>
+      </div>
+    </div>
+  );
+}
+
+function useDebounced<T>(value: T, ms = 300): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+  return debounced;
+}
+
 
 // =========================================================================
-// Header + sidebar bits
+// Header + Hero stats
 // =========================================================================
 
 function Header({ health }: { health: HealthResponse | null }) {
@@ -148,65 +152,28 @@ function Header({ health }: { health: HealthResponse | null }) {
     <header className="border-b border-ink-800 bg-ink-950/80 backdrop-blur-md sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-naija-600 to-naija-800 flex items-center justify-center text-2xl">
-            🇳🇬
-          </div>
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-naija-600 to-naija-800 flex items-center justify-center text-2xl">🇳🇬</div>
           <div>
-            <h1 className="text-lg font-bold text-ink-50 tracking-tight">
-              Naija Persona Agent
-            </h1>
-            <p className="text-xs text-ink-400">
-              Nigerian-context LLM agent · review simulation + recommendation
-            </p>
+            <h1 className="text-lg font-bold text-ink-50 tracking-tight">Naija Persona Agent</h1>
+            <p className="text-xs text-ink-400">Nigerian-context LLM agent · review simulation + recommendation</p>
           </div>
         </div>
-
         <div className="flex items-center gap-2">
-          {health ? (
-            <Badge tone="success">
-              <CheckCircle2 size={12} /> API connected
-            </Badge>
-          ) : (
-            <Badge tone="warn">
-              <AlertCircle size={12} /> API offline
-            </Badge>
-          )}
-          <a
-            href="https://github.com/Mystique1337/telcoproject"
-            target="_blank"
-            rel="noreferrer"
-            className="btn-ghost flex items-center gap-2 text-sm"
-          >
-            <Github size={14} /> Code
-          </a>
-          <a
-            href="https://huggingface.co/Shinzmann/naija-reviewer-8b-v2-Q4_K_M-GGUF"
-            target="_blank"
-            rel="noreferrer"
-            className="btn-ghost flex items-center gap-2 text-sm"
-          >
-            🤗 Model
-          </a>
+          {health
+            ? <Badge tone="success"><CheckCircle2 size={12}/> API connected</Badge>
+            : <Badge tone="warn"><AlertCircle size={12}/> API offline</Badge>}
+          <a href="https://github.com/Mystique1337/telcoproject" target="_blank" rel="noreferrer"
+             className="btn-ghost flex items-center gap-2 text-sm"><Github size={14}/> Code</a>
+          <a href="https://huggingface.co/Shinzmann/naija-reviewer-8b-v2-Q4_K_M-GGUF"
+             target="_blank" rel="noreferrer" className="btn-ghost flex items-center gap-2 text-sm">🤗 Model</a>
         </div>
       </div>
     </header>
   );
 }
 
-
-function StatTile({
-  icon,
-  label,
-  value,
-  sub,
-  positive,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  sub?: string;
-  positive?: boolean;
-}) {
+function StatTile({ icon, label, value, sub, positive }:
+  { icon: React.ReactNode; label: string; value: string; sub?: string; positive?: boolean }) {
   return (
     <div className="card flex flex-col gap-2">
       <div className="flex items-center justify-between">
@@ -214,81 +181,42 @@ function StatTile({
         <span className="text-ink-500">{icon}</span>
       </div>
       <div className="text-2xl font-bold text-ink-50 tabular-nums">{value}</div>
-      {sub && (
-        <div className={`text-xs ${positive ? "text-naija-300" : "text-ink-400"}`}>
-          {sub}
-        </div>
-      )}
+      {sub && <div className={`text-xs ${positive ? "text-naija-300" : "text-ink-400"}`}>{sub}</div>}
     </div>
   );
 }
 
-
-function HeroStats({
-  personasCount,
-  productsCount,
-  evalData,
-}: {
-  personasCount: number;
-  productsCount: number;
-  evalData: typeof EVAL_FALLBACK;
-}) {
+function HeroStats({ personasCount, productsCount, evalData }:
+  { personasCount: number; productsCount: number; evalData: typeof EVAL_FALLBACK }) {
   const rmseDelta = evalData.naija_rmse && evalData.claude_rmse
-    ? (((evalData.claude_rmse - evalData.naija_rmse) / evalData.claude_rmse) * 100).toFixed(1)
-    : "?";
+    ? (((evalData.claude_rmse - evalData.naija_rmse) / evalData.claude_rmse) * 100).toFixed(1) : "?";
   const ndcgDelta = evalData.naija_ndcg10 && evalData.claude_ndcg10
-    ? (((evalData.naija_ndcg10 - evalData.claude_ndcg10) / evalData.claude_ndcg10) * 100).toFixed(0)
-    : "?";
-
+    ? (((evalData.naija_ndcg10 - evalData.claude_ndcg10) / evalData.claude_ndcg10) * 100).toFixed(0) : "?";
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <StatTile
-        icon={<Users size={16} />}
-        label="Personas"
-        value={String(personasCount)}
-        sub="6 zones × 4 register tiers"
-      />
-      <StatTile
-        icon={<BookOpen size={16} />}
-        label="Products"
-        value={productsCount.toLocaleString()}
-        sub="real Jumia catalogue"
-      />
-      <StatTile
-        icon={<Target size={16} />}
-        label="Rating RMSE"
-        value={evalData.naija_rmse?.toFixed(3) ?? "—"}
-        sub={`vs Claude ${evalData.claude_rmse?.toFixed(3)} · −${rmseDelta}%`}
-        positive
-      />
-      <StatTile
-        icon={<TrendingUp size={16} />}
-        label="NDCG@10"
-        value={evalData.naija_ndcg10?.toFixed(3) ?? "—"}
-        sub={`vs Claude ${evalData.claude_ndcg10?.toFixed(3)} · +${ndcgDelta}%`}
-        positive
-      />
+      <StatTile icon={<Users size={16}/>} label="Personas"
+                value={String(personasCount)} sub="6 zones × 4 register tiers"/>
+      <StatTile icon={<Package size={16}/>} label="Products"
+                value={productsCount.toLocaleString()} sub="real Jumia catalogue"/>
+      <StatTile icon={<Target size={16}/>} label="Rating RMSE ↓"
+                value={evalData.naija_rmse?.toFixed(3) ?? "—"}
+                sub={`vs Claude ${evalData.claude_rmse?.toFixed(3)} · −${rmseDelta}%`} positive/>
+      <StatTile icon={<TrendingUp size={16}/>} label="NDCG@10 ↑"
+                value={evalData.naija_ndcg10?.toFixed(3) ?? "—"}
+                sub={`vs Claude ${evalData.claude_ndcg10?.toFixed(3)} · +${ndcgDelta}%`} positive/>
     </div>
   );
 }
 
 
 // =========================================================================
-// Persona + Product pickers
+// Persona picker (uses local personas array — already loaded once)
 // =========================================================================
 
-function PersonaPicker({
-  personas,
-  selected,
-  onChange,
-}: {
-  personas: Persona[];
-  selected: Persona | null;
-  onChange: (p: Persona) => void;
-}) {
-  const [tier, setTier] = useState<string>("all");
+function PersonaPicker({ personas, selected, onChange }:
+  { personas: Persona[]; selected: Persona | null; onChange: (p: Persona) => void }) {
+  const [tier, setTier] = useState("all");
   const [search, setSearch] = useState("");
-
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
     return personas.filter((p) => {
@@ -303,11 +231,7 @@ function PersonaPicker({
     <div className="space-y-3">
       <span className="label">Persona</span>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-        <select
-          className="input"
-          value={tier}
-          onChange={(e) => setTier(e.target.value)}
-        >
+        <select className="input" value={tier} onChange={(e) => setTier(e.target.value)}>
           <option value="all">All register tiers</option>
           <option value="nigerian_pidgin">Nigerian Pidgin</option>
           <option value="code_mixed">Code-mixed</option>
@@ -315,36 +239,22 @@ function PersonaPicker({
           <option value="standard_english">Standard English</option>
         </select>
         <div className="relative md:col-span-2">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500" />
-          <input
-            className="input pl-9"
-            placeholder="Search persona — lagos, kano, fintech, trader..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500"/>
+          <input className="input pl-9" placeholder="Search persona — lagos, kano, fintech, trader..."
+                 value={search} onChange={(e) => setSearch(e.target.value)}/>
         </div>
       </div>
-
-      <div className="text-xs text-ink-400">
-        {filtered.length} / {personas.length} match
-      </div>
-
+      <div className="text-xs text-ink-400">{filtered.length} / {personas.length} match</div>
       <div className="max-h-72 overflow-y-auto border border-ink-700 rounded-lg divide-y divide-ink-800">
         {filtered.map((p) => {
           const active = selected?.user_id === p.user_id;
           return (
-            <button
-              key={p.user_id}
-              onClick={() => onChange(p)}
-              className={`w-full text-left px-4 py-3 hover:bg-ink-800 transition-colors ${
-                active ? "bg-naija-900/30 border-l-2 border-naija-500" : ""
-              }`}
-            >
+            <button key={p.user_id} onClick={() => onChange(p)}
+                    className={`w-full text-left px-4 py-3 hover:bg-ink-800 transition-colors ${
+                      active ? "bg-naija-900/30 border-l-2 border-naija-500" : ""}`}>
               <div className="flex items-center justify-between">
                 <span className="font-medium text-ink-100">{p.user_id}</span>
-                <Badge tone={active ? "naija" : "default"}>
-                  {p.register_tier.replace("_", " ")}
-                </Badge>
+                <Badge tone={active ? "naija" : "default"}>{p.register_tier.replace("_", " ")}</Badge>
               </div>
               <div className="text-xs text-ink-400 mt-1">
                 {p.demographics?.location} · {p.demographics?.occupation}
@@ -352,102 +262,94 @@ function PersonaPicker({
             </button>
           );
         })}
-        {filtered.length === 0 && (
-          <div className="text-sm text-ink-400 p-4 text-center">No personas match</div>
-        )}
+        {filtered.length === 0 && <div className="text-sm text-ink-400 p-4 text-center">No personas match</div>}
       </div>
     </div>
   );
 }
 
 
-function ProductPicker({
-  products,
-  selected,
-  onChange,
-}: {
-  products: Product[];
-  selected: Product | null;
-  onChange: (p: Product) => void;
-}) {
-  const [category, setCategory] = useState<string>("all");
+// =========================================================================
+// Product picker — SERVER-SIDE search (no 300-cap)
+// =========================================================================
+
+function ProductPicker({ selected, onChange }:
+  { selected: Product | null; onChange: (p: Product) => void }) {
   const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("all");
+  const debouncedSearch = useDebounced(search, 250);
+  const [items, setItems] = useState<Product[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<{ name: string; n: number }[]>([]);
 
-  const categories = useMemo(() => {
-    const c = new Set<string>();
-    products.forEach((p) => p.category && c.add(p.category));
-    return Array.from(c).sort();
-  }, [products]);
+  useEffect(() => {
+    api.categories().then((d) => setCategories(d.categories ?? [])).catch(() => {});
+  }, []);
 
-  const filtered = useMemo(() => {
-    const s = search.toLowerCase();
-    return products
-      .filter((p) => {
-        if (category !== "all" && p.category !== category) return false;
-        if (!s) return true;
-        return (p.title ?? "").toLowerCase().includes(s);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    api.searchProducts({ search: debouncedSearch, category, limit: 80 })
+      .then((d) => {
+        if (cancelled) return;
+        setItems((d.products as Product[]) ?? []);
+        setTotal(d.total ?? 0);
       })
-      .slice(0, 200);
-  }, [products, category, search]);
+      .catch(() => { if (!cancelled) { setItems([]); setTotal(0); } })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [debouncedSearch, category]);
 
   return (
     <div className="space-y-3">
-      <span className="label">Product</span>
+      <div className="flex items-center justify-between">
+        <span className="label !mb-0">Product</span>
+        <span className="text-xs text-ink-400 flex items-center gap-1.5">
+          {loading && <Loader2 size={11} className="animate-spin"/>}
+          {total > 0
+            ? `showing ${Math.min(items.length, 80)} of ${total.toLocaleString()}`
+            : "no matches"}
+        </span>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-        <select
-          className="input"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
-          <option value="all">All categories</option>
+        <select className="input" value={category} onChange={(e) => setCategory(e.target.value)}>
+          <option value="all">All categories ({categories.reduce((a, c) => a + c.n, 0).toLocaleString()})</option>
           {categories.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
+            <option key={c.name} value={c.name}>{c.name} ({c.n})</option>
           ))}
         </select>
         <div className="relative md:col-span-2">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500" />
-          <input
-            className="input pl-9"
-            placeholder="Search by title — tecno, blender, anikulapo..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500"/>
+          <input className="input pl-9" placeholder="Search 6,657 products — tecno, blender, ankara..."
+                 value={search} onChange={(e) => setSearch(e.target.value)} autoFocus={false}/>
         </div>
       </div>
-
-      <div className="text-xs text-ink-400">
-        showing {filtered.length} of {products.length}
-      </div>
-
-      <div className="max-h-72 overflow-y-auto border border-ink-700 rounded-lg divide-y divide-ink-800">
-        {filtered.map((p) => {
+      <div className="max-h-80 overflow-y-auto border border-ink-700 rounded-lg divide-y divide-ink-800">
+        {items.map((p) => {
           const active = selected?.product_id === p.product_id;
           return (
-            <button
-              key={p.product_id}
-              onClick={() => onChange(p)}
-              className={`w-full text-left px-4 py-3 hover:bg-ink-800 transition-colors ${
-                active ? "bg-naija-900/30 border-l-2 border-naija-500" : ""
-              }`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-medium text-ink-100 text-sm line-clamp-1">
-                  {p.title}
-                </span>
+            <button key={p.product_id} onClick={() => onChange(p)}
+                    className={`w-full text-left px-4 py-3 hover:bg-ink-800 transition-colors ${
+                      active ? "bg-naija-900/30 border-l-2 border-naija-500" : ""}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-ink-100 text-sm line-clamp-2 leading-snug">{p.title}</div>
+                  <div className="text-xs text-ink-400 mt-1 flex items-center gap-2">
+                    <Tag size={10}/> {p.category}
+                  </div>
+                </div>
                 {p.price_naira != null && (
-                  <span className="text-xs text-naija-300 whitespace-nowrap">
+                  <span className="text-xs text-naija-300 whitespace-nowrap font-mono">
                     ₦{Number(p.price_naira).toLocaleString()}
                   </span>
                 )}
               </div>
-              <div className="text-xs text-ink-400 mt-1">{p.category}</div>
             </button>
           );
         })}
-        {filtered.length === 0 && (
-          <div className="text-sm text-ink-400 p-4 text-center">No products match</div>
+        {!loading && items.length === 0 && (
+          <div className="text-sm text-ink-400 p-4 text-center">No products match — try a different search</div>
         )}
       </div>
     </div>
@@ -455,29 +357,42 @@ function ProductPicker({
 }
 
 
-function ModelSelect({
-  value,
-  onChange,
-  label,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  label: string;
-}) {
+// =========================================================================
+// Model select with task-fit guidance
+// =========================================================================
+
+function ModelSelect({ value, onChange, label, taskKind }:
+  { value: string; onChange: (v: string) => void; label: string;
+    taskKind: "review" | "rank" }) {
+  const best = modelBestFor(value);
+  const mismatch =
+    (taskKind === "rank" && best === "review") ||
+    (taskKind === "review" && best === "rank");
+
   return (
-    <div>
+    <div className="space-y-2">
       <span className="label">{label}</span>
-      <select
-        className="input"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      >
-        {MODELS.map((m) => (
-          <option key={m.spec} value={m.spec}>
-            {m.label} {m.badge ? `— ${m.badge}` : ""}
-          </option>
-        ))}
+      <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
+        {MODELS.map((m) => {
+          const rec = m.bestFor === taskKind || m.bestFor === "both";
+          return (
+            <option key={m.spec} value={m.spec}>
+              {m.label} — {m.badge}{rec ? "" : " · ⚠ not for " + taskKind}
+            </option>
+          );
+        })}
       </select>
+      {mismatch && taskKind === "rank" && (
+        <div className="text-xs flex items-start gap-2 px-3 py-2 rounded-md bg-amber-900/20 border border-amber-700/30 text-amber-200">
+          <Info size={14} className="flex-shrink-0 mt-0.5"/>
+          <span>
+            <strong>{modelLabel(value)}</strong> is a Task A (review-generation) fine-tune.
+            It emits prose, not the strict JSON contract Task B ranking needs. The agent
+            will fall back to pre-rank order. <strong>For best Task B results pick Claude
+            Sonnet 4 or GPT-4o.</strong>
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -487,15 +402,9 @@ function ModelSelect({
 // Tab: Simulate Review (Task A)
 // =========================================================================
 
-function ReviewCard({
-  data,
-  modelLabel,
-}: {
-  data: SimulateReviewResponse;
-  modelLabel: string;
-}) {
+function ReviewCard({ data, modelLabel }: { data: SimulateReviewResponse; modelLabel: string }) {
   return (
-    <div className="card space-y-3 relative">
+    <div className="card space-y-3">
       <div className="flex items-center justify-between gap-3">
         <Badge tone="naija">{modelLabel}</Badge>
         <div className="flex items-center gap-3 text-xs text-ink-400">
@@ -503,22 +412,15 @@ function ReviewCard({
           <span>{data.latency_ms} ms</span>
         </div>
       </div>
-      <StarRating rating={data.rating} />
+      <StarRating rating={data.rating}/>
       <p className="text-ink-100 leading-relaxed">{data.review}</p>
       <p className="text-xs text-ink-400 italic">💡 {data.rationale}</p>
-      <ReasoningTrace trace={data.reasoning_trace} />
+      <ReasoningTrace trace={data.reasoning_trace}/>
     </div>
   );
 }
 
-
-function TabReview({
-  personas,
-  products,
-}: {
-  personas: Persona[];
-  products: Product[];
-}) {
+function TabReview({ personas }: { personas: Persona[] }) {
   const [persona, setPersona] = useState<Persona | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
   const [modelA, setModelA] = useState(MODELS[0].spec);
@@ -530,11 +432,7 @@ function TabReview({
   const [errB, setErrB] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Auto-select first persona + product on mount
-  useEffect(() => {
-    if (!persona && personas.length) setPersona(personas[0]);
-    if (!product && products.length) setProduct(products[0]);
-  }, [personas, products]);
+  useEffect(() => { if (!persona && personas.length) setPersona(personas[0]); }, [personas]);
 
   async function run() {
     if (!persona || !product) return;
@@ -548,40 +446,28 @@ function TabReview({
     setLoading(false);
   }
 
-  const labelA = MODELS.find((m) => m.spec === modelA)?.label ?? modelA;
-  const labelB = MODELS.find((m) => m.spec === modelB)?.label ?? modelB;
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card"><PersonaPicker personas={personas} selected={persona} onChange={setPersona} /></div>
-        <div className="card"><ProductPicker products={products} selected={product} onChange={setProduct} /></div>
+        <div className="card"><PersonaPicker personas={personas} selected={persona} onChange={setPersona}/></div>
+        <div className="card"><ProductPicker selected={product} onChange={setProduct}/></div>
       </div>
 
       <div className="card space-y-4">
         <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={compare}
-            onChange={(e) => setCompare(e.target.checked)}
-            className="w-4 h-4 accent-naija-500"
-          />
+          <input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)}
+                 className="w-4 h-4 accent-naija-500"/>
           <span className="text-sm text-ink-200">
             Compare side-by-side <span className="text-ink-400">— pit two backbones on the same input</span>
           </span>
         </label>
-
         <div className={`grid gap-4 ${compare ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
-          <ModelSelect label={compare ? "Model A (left)" : "Model"} value={modelA} onChange={setModelA} />
-          {compare && <ModelSelect label="Model B (right)" value={modelB} onChange={setModelB} />}
+          <ModelSelect label={compare ? "Model A (left)" : "Model"} value={modelA} onChange={setModelA} taskKind="review"/>
+          {compare && <ModelSelect label="Model B (right)" value={modelB} onChange={setModelB} taskKind="review"/>}
         </div>
-
-        <button
-          className="btn-primary flex items-center gap-2 w-full md:w-auto"
-          onClick={run}
-          disabled={loading || !persona || !product}
-        >
-          {loading ? <Spinner label="Generating review..." /> : (<><Sparkles size={16} /> Generate Review</>)}
+        <button className="btn-primary flex items-center gap-2 w-full md:w-auto"
+                onClick={run} disabled={loading || !persona || !product}>
+          {loading ? <Spinner label="Generating review..."/> : (<><Sparkles size={16}/> Generate Review</>)}
         </button>
       </div>
 
@@ -589,16 +475,41 @@ function TabReview({
         <div className={`grid gap-4 ${compare ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
           <div>
             {errA && <div className="card border-red-700 text-red-300 text-sm">{errA}</div>}
-            {dataA && <ReviewCard data={dataA} modelLabel={labelA} />}
+            {dataA && <ReviewCard data={dataA} modelLabel={modelLabel(modelA)}/>}
           </div>
           {compare && (
             <div>
               {errB && <div className="card border-red-700 text-red-300 text-sm">{errB}</div>}
-              {dataB && <ReviewCard data={dataB} modelLabel={labelB} />}
+              {dataB && <ReviewCard data={dataB} modelLabel={modelLabel(modelB)}/>}
             </div>
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+
+// =========================================================================
+// Product result card (used in Recommend + Multi-turn)
+// =========================================================================
+
+function RecCard({ item }: { item: RecommendResponse["recommendations"][number] }) {
+  return (
+    <div className="border border-ink-700 hover:border-naija-600/50 transition-colors rounded-lg p-4 flex items-start gap-4 bg-ink-900/30">
+      <div className="w-10 h-10 rounded-lg bg-naija-900/40 text-naija-300 flex items-center justify-center font-bold flex-shrink-0">
+        #{item.rank}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium text-ink-100 leading-snug">
+          {item.title ?? item.product_id}
+        </div>
+        <div className="text-xs text-ink-300 mt-1.5 italic leading-relaxed">💡 {item.rationale}</div>
+      </div>
+      <div className="text-right flex-shrink-0 ml-2">
+        <div className="text-base font-mono text-naija-300 font-semibold">{item.score.toFixed(2)}</div>
+        <div className="text-[10px] text-ink-500 uppercase tracking-wider">score</div>
+      </div>
     </div>
   );
 }
@@ -613,27 +524,22 @@ function TabRecommend({ personas }: { personas: Persona[] }) {
   const [coldStart, setColdStart] = useState(false);
   const [domain, setDomain] = useState("jumia");
   const [k, setK] = useState(5);
-  const [model, setModel] = useState(MODELS[0].spec);
+  // Default to Claude — the right model for Task B re-ranking
+  const [model, setModel] = useState(MODELS[1].spec);
   const [data, setData] = useState<RecommendResponse | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!persona && personas.length) setPersona(personas[0]);
-  }, [personas]);
+  useEffect(() => { if (!persona && personas.length) setPersona(personas[0]); }, [personas]);
 
   async function run() {
     if (!persona) return;
     setLoading(true); setErr(null); setData(null);
     const active: Persona = coldStart
-      ? { ...persona, history_count: 0, review_anchors: [] }
-      : persona;
+      ? { ...persona, history_count: 0, review_anchors: [] } : persona;
     try {
       const resp = await api.recommend({
-        persona: active,
-        domain,
-        k,
-        reranker_override: model,
+        persona: active, domain, k, reranker_override: model,
       });
       setData(resp);
     } catch (e) {
@@ -644,84 +550,55 @@ function TabRecommend({ personas }: { personas: Persona[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="card"><PersonaPicker personas={personas} selected={persona} onChange={setPersona} /></div>
+      <div className="card"><PersonaPicker personas={personas} selected={persona} onChange={setPersona}/></div>
 
-      <div className="card grid grid-cols-1 md:grid-cols-4 gap-4">
-        <label className="flex items-start gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={coldStart}
-            onChange={(e) => setColdStart(e.target.checked)}
-            className="w-4 h-4 mt-1 accent-naija-500"
-          />
+      <div className="card space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input type="checkbox" checked={coldStart} onChange={(e) => setColdStart(e.target.checked)}
+                   className="w-4 h-4 mt-1 accent-naija-500"/>
+            <div>
+              <div className="text-sm text-ink-200">🧊 Force cold-start</div>
+              <div className="text-xs text-ink-400">wipe history + anchors</div>
+            </div>
+          </label>
           <div>
-            <div className="text-sm text-ink-200">🧊 Force cold-start</div>
-            <div className="text-xs text-ink-400">wipe history + anchors</div>
+            <span className="label">Domain</span>
+            <select className="input" value={domain} onChange={(e) => setDomain(e.target.value)}>
+              <option value="jumia">jumia</option>
+              <option value="konga">konga</option>
+              <option value="nollywood">nollywood</option>
+              <option value="all">all (cross-domain)</option>
+            </select>
           </div>
-        </label>
-        <div>
-          <span className="label">Domain</span>
-          <select className="input" value={domain} onChange={(e) => setDomain(e.target.value)}>
-            <option value="jumia">jumia</option>
-            <option value="konga">konga</option>
-            <option value="nollywood">nollywood</option>
-            <option value="all">all (cross-domain)</option>
-          </select>
+          <div>
+            <span className="label">Top-K</span>
+            <input type="number" min={1} max={10} value={k}
+                   onChange={(e) => setK(Number(e.target.value))} className="input"/>
+          </div>
+          <ModelSelect label="Re-ranker" value={model} onChange={setModel} taskKind="rank"/>
         </div>
-        <div>
-          <span className="label">Top-K</span>
-          <input
-            type="number"
-            min={1}
-            max={10}
-            value={k}
-            onChange={(e) => setK(Number(e.target.value))}
-            className="input"
-          />
-        </div>
-        <ModelSelect label="Re-ranker" value={model} onChange={setModel} />
+        <button className="btn-primary flex items-center gap-2" onClick={run} disabled={loading || !persona}>
+          {loading ? <Spinner label="Ranking..."/> : (<><Target size={16}/> Generate Recommendations</>)}
+        </button>
       </div>
-
-      <button
-        className="btn-primary flex items-center gap-2"
-        onClick={run}
-        disabled={loading || !persona}
-      >
-        {loading ? <Spinner label="Ranking..." /> : (<><Target size={16} /> Generate Recommendations</>)}
-      </button>
 
       {err && <div className="card border-red-700 text-red-300 text-sm">{err}</div>}
 
       {data && (
         <div className="card space-y-4">
+          <FallbackBanner reason={data.rerank_fallback_reason}/>
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">{data.recommendations.length} recommendations</h3>
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Wand2 size={18}/> {data.recommendations.length} recommendations
+            </h3>
             <span className="text-xs text-ink-400">{data.latency_ms} ms</span>
           </div>
-          <ResponseFlags cold={data.cold_start} cross={data.cross_domain} multi={data.multi_turn} />
+          <ResponseFlags cold={data.cold_start} cross={data.cross_domain} multi={data.multi_turn}/>
           <div className="space-y-2">
-            {data.recommendations.map((item) => (
-              <div
-                key={item.product_id}
-                className="border border-ink-700 rounded-lg p-3 flex items-start gap-3"
-              >
-                <div className="w-10 h-10 rounded-lg bg-naija-900/40 text-naija-300 flex items-center justify-center font-bold flex-shrink-0">
-                  #{item.rank}
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-ink-100 line-clamp-1">
-                    {item.title ?? item.product_id}
-                  </div>
-                  <div className="text-xs text-ink-400 mt-0.5">💡 {item.rationale}</div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <div className="text-sm font-mono text-naija-300">{item.score.toFixed(2)}</div>
-                  <div className="text-[10px] text-ink-500 uppercase">score</div>
-                </div>
-              </div>
-            ))}
+            {data.recommendations.map((item) => <RecCard key={item.product_id} item={item}/>)}
           </div>
-          <ReasoningTrace trace={data.reasoning_trace} />
+          <ReasoningTrace trace={data.reasoning_trace}/>
         </div>
       )}
     </div>
@@ -730,14 +607,14 @@ function TabRecommend({ personas }: { personas: Persona[] }) {
 
 
 // =========================================================================
-// Tab: Multi-turn (Task B with conversation history)
+// Tab: Multi-turn
 // =========================================================================
 
 function TabMultiTurn({ personas }: { personas: Persona[] }) {
   const [persona, setPersona] = useState<Persona | null>(null);
   const [domain, setDomain] = useState("jumia");
   const [k, setK] = useState(5);
-  const [model, setModel] = useState(MODELS[0].spec);
+  const [model, setModel] = useState(MODELS[1].spec);  // default Claude
   const [turns, setTurns] = useState<ConversationTurn[]>([
     { role: "user", content: "I want a phone for my mum" },
     { role: "assistant", content: "Got it — any budget or features she cares about?" },
@@ -747,23 +624,14 @@ function TabMultiTurn({ personas }: { personas: Persona[] }) {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!persona && personas.length) setPersona(personas[0]);
-  }, [personas]);
-
-  function updateTurn(i: number, patch: Partial<ConversationTurn>) {
-    setTurns(turns.map((t, idx) => (idx === i ? { ...t, ...patch } : t)));
-  }
+  useEffect(() => { if (!persona && personas.length) setPersona(personas[0]); }, [personas]);
 
   async function run() {
     if (!persona) return;
     setLoading(true); setErr(null); setData(null);
     try {
       const resp = await api.recommend({
-        persona,
-        domain,
-        k,
-        reranker_override: model,
+        persona, domain, k, reranker_override: model,
         conversation_history: turns.filter((t) => t.content.trim()),
       });
       setData(resp);
@@ -775,63 +643,47 @@ function TabMultiTurn({ personas }: { personas: Persona[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="card"><PersonaPicker personas={personas} selected={persona} onChange={setPersona} /></div>
+      <div className="card"><PersonaPicker personas={personas} selected={persona} onChange={setPersona}/></div>
 
       <div className="card space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold flex items-center gap-2">
-            <MessageSquare size={18} /> Conversation history
+            <MessageSquare size={18}/> Conversation history
           </h3>
-          <button
-            className="btn-ghost text-xs flex items-center gap-1"
-            onClick={() => setTurns([
-              { role: "user", content: "I want a phone for my mum" },
-              { role: "assistant", content: "Got it — any budget or features she cares about?" },
-              { role: "user", content: "Under ₦100k, durable, big buttons preferred" },
-            ])}
-          >
-            <RefreshCcw size={12} /> Reset demo
+          <button className="btn-ghost text-xs flex items-center gap-1"
+                  onClick={() => setTurns([
+                    { role: "user", content: "I want a phone for my mum" },
+                    { role: "assistant", content: "Got it — any budget or features she cares about?" },
+                    { role: "user", content: "Under ₦100k, durable, big buttons preferred" },
+                  ])}>
+            <RefreshCcw size={12}/> Reset demo
           </button>
         </div>
         <div className="space-y-2">
           {turns.map((t, i) => (
             <div key={i} className="flex items-stretch gap-2">
-              <select
-                className="input w-32 flex-shrink-0"
-                value={t.role}
-                onChange={(e) => updateTurn(i, { role: e.target.value as "user" | "assistant" })}
-              >
+              <select className="input w-32 flex-shrink-0" value={t.role}
+                      onChange={(e) => setTurns(turns.map((x, idx) => idx === i ? {...x, role: e.target.value as any} : x))}>
                 <option value="user">user</option>
                 <option value="assistant">assistant</option>
               </select>
-              <input
-                className="input flex-1"
-                value={t.content}
-                onChange={(e) => updateTurn(i, { content: e.target.value })}
-                placeholder="Type a turn…"
-              />
-              <button
-                className="btn-ghost px-3"
-                onClick={() => setTurns(turns.filter((_, idx) => idx !== i))}
-                title="Remove turn"
-              >
-                <Trash2 size={14} />
+              <input className="input flex-1" value={t.content}
+                     onChange={(e) => setTurns(turns.map((x, idx) => idx === i ? {...x, content: e.target.value} : x))}
+                     placeholder="Type a turn..."/>
+              <button className="btn-ghost px-3" onClick={() => setTurns(turns.filter((_, idx) => idx !== i))}>
+                <Trash2 size={14}/>
               </button>
             </div>
           ))}
         </div>
         <div className="flex gap-2">
-          <button
-            className="btn-ghost text-xs flex items-center gap-1"
-            onClick={() => setTurns([...turns, { role: "user", content: "" }])}
-          >
-            <Plus size={12} /> Add user turn
+          <button className="btn-ghost text-xs flex items-center gap-1"
+                  onClick={() => setTurns([...turns, { role: "user", content: "" }])}>
+            <Plus size={12}/> Add user turn
           </button>
-          <button
-            className="btn-ghost text-xs flex items-center gap-1"
-            onClick={() => setTurns([...turns, { role: "assistant", content: "" }])}
-          >
-            <Plus size={12} /> Add assistant turn
+          <button className="btn-ghost text-xs flex items-center gap-1"
+                  onClick={() => setTurns([...turns, { role: "assistant", content: "" }])}>
+            <Plus size={12}/> Add assistant turn
           </button>
         </div>
       </div>
@@ -840,40 +692,33 @@ function TabMultiTurn({ personas }: { personas: Persona[] }) {
         <div>
           <span className="label">Domain</span>
           <select className="input" value={domain} onChange={(e) => setDomain(e.target.value)}>
-            <option value="jumia">jumia</option>
-            <option value="konga">konga</option>
-            <option value="all">all (cross-domain)</option>
+            <option value="jumia">jumia</option><option value="konga">konga</option><option value="all">all</option>
           </select>
         </div>
         <div>
           <span className="label">Top-K</span>
           <input type="number" min={1} max={10} value={k}
-                 onChange={(e) => setK(Number(e.target.value))} className="input" />
+                 onChange={(e) => setK(Number(e.target.value))} className="input"/>
         </div>
-        <ModelSelect label="Re-ranker" value={model} onChange={setModel} />
+        <ModelSelect label="Re-ranker" value={model} onChange={setModel} taskKind="rank"/>
       </div>
 
-      <button
-        className="btn-primary flex items-center gap-2"
-        onClick={run}
-        disabled={loading || !persona}
-      >
-        {loading ? <Spinner label="Reasoning + ranking..." /> : (<><MessageSquare size={16} /> Generate</>)}
+      <button className="btn-primary flex items-center gap-2" onClick={run} disabled={loading || !persona}>
+        {loading ? <Spinner label="Reasoning + ranking..."/> : (<><MessageSquare size={16}/> Generate</>)}
       </button>
 
       {err && <div className="card border-red-700 text-red-300 text-sm">{err}</div>}
 
       {data && (
         <div className="card space-y-4">
-          <ResponseFlags cold={data.cold_start} cross={data.cross_domain} multi={data.multi_turn} />
+          <FallbackBanner reason={data.rerank_fallback_reason}/>
+          <ResponseFlags cold={data.cold_start} cross={data.cross_domain} multi={data.multi_turn}/>
           {data.extracted_constraints && data.extracted_constraints.length > 0 && (
             <div>
               <span className="label">Extracted constraints</span>
               <div className="flex flex-wrap gap-2">
                 {data.extracted_constraints.map((c) => (
-                  <code key={c} className="px-2 py-1 bg-ink-800 rounded text-xs text-naija-300 font-mono">
-                    {c}
-                  </code>
+                  <code key={c} className="px-2 py-1 bg-ink-800 rounded text-xs text-naija-300 font-mono">{c}</code>
                 ))}
               </div>
             </div>
@@ -883,28 +728,9 @@ function TabMultiTurn({ personas }: { personas: Persona[] }) {
             <span className="text-xs text-ink-400">{data.latency_ms} ms</span>
           </div>
           <div className="space-y-2">
-            {data.recommendations.map((item) => (
-              <div
-                key={item.product_id}
-                className="border border-ink-700 rounded-lg p-3 flex items-start gap-3"
-              >
-                <div className="w-10 h-10 rounded-lg bg-naija-900/40 text-naija-300 flex items-center justify-center font-bold flex-shrink-0">
-                  #{item.rank}
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-ink-100 line-clamp-1">
-                    {item.title ?? item.product_id}
-                  </div>
-                  <div className="text-xs text-ink-400 mt-0.5">💡 {item.rationale}</div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <div className="text-sm font-mono text-naija-300">{item.score.toFixed(2)}</div>
-                  <div className="text-[10px] text-ink-500 uppercase">score</div>
-                </div>
-              </div>
-            ))}
+            {data.recommendations.map((item) => <RecCard key={item.product_id} item={item}/>)}
           </div>
-          <ReasoningTrace trace={data.reasoning_trace} />
+          <ReasoningTrace trace={data.reasoning_trace}/>
         </div>
       )}
     </div>
@@ -917,36 +743,32 @@ function TabMultiTurn({ personas }: { personas: Persona[] }) {
 // =========================================================================
 
 type TabKey = "review" | "recommend" | "multiturn";
-
 const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-  { key: "review",     label: "Simulate Review",       icon: <Sparkles size={14} /> },
-  { key: "recommend",  label: "Recommend",             icon: <Target size={14} /> },
-  { key: "multiturn",  label: "Multi-turn",            icon: <MessageSquare size={14} /> },
+  { key: "review",    label: "Simulate Review", icon: <Sparkles size={14}/> },
+  { key: "recommend", label: "Recommend",        icon: <Target size={14}/> },
+  { key: "multiturn", label: "Multi-turn",       icon: <MessageSquare size={14}/> },
 ];
-
 
 export default function App() {
   const [tab, setTab] = useState<TabKey>("review");
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [personas, setPersonas] = useState<Persona[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [productsTotal, setProductsTotal] = useState(0);
   const [evalData, setEvalData] = useState(EVAL_FALLBACK);
 
   useEffect(() => {
     api.health().then(setHealth).catch(() => setHealth(null));
 
-    fetch("/catalog/personas")
-      .then((r) => r.json())
+    fetch("/catalog/personas").then((r) => r.json())
       .then((d) => setPersonas(d.personas ?? []))
       .catch(() => setPersonas([]));
 
-    fetch("/catalog/products?limit=300")
-      .then((r) => r.json())
-      .then((d) => setProducts(d.products ?? []))
-      .catch(() => setProducts([]));
+    // Just need the total count for the hero stat — server search drives the picker.
+    api.searchProducts({ limit: 1 })
+      .then((d) => setProductsTotal(d.total ?? 0))
+      .catch(() => setProductsTotal(0));
 
-    fetch("/catalog/eval-summary")
-      .then((r) => r.json())
+    fetch("/catalog/eval-summary").then((r) => r.json())
       .then((d) => {
         if (d.available && d.task1?.naija) {
           setEvalData({
@@ -962,58 +784,43 @@ export default function App() {
             n_task2: d.task2?.n,
           });
         }
-      })
-      .catch(() => { /* keep fallback */ });
+      }).catch(() => {});
   }, []);
 
   return (
     <div className="min-h-screen bg-ink-950">
-      <Header health={health} />
-
+      <Header health={health}/>
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        {/* Hero stats */}
         <section>
-          <HeroStats
-            personasCount={personas.length}
-            productsCount={products.length || 6657}
-            evalData={evalData}
-          />
+          <HeroStats personasCount={personas.length}
+                     productsCount={productsTotal || 6657}
+                     evalData={evalData}/>
         </section>
-
-        {/* Tab bar */}
         <nav className="flex items-center gap-1 border-b border-ink-800">
           {TABS.map((t) => {
             const active = tab === t.key;
             return (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm transition-colors border-b-2 -mb-px ${
-                  active
-                    ? "border-naija-500 text-ink-50"
-                    : "border-transparent text-ink-400 hover:text-ink-200"
-                }`}
-              >
+              <button key={t.key} onClick={() => setTab(t.key)}
+                      className={`flex items-center gap-2 px-4 py-3 text-sm transition-colors border-b-2 -mb-px ${
+                        active ? "border-naija-500 text-ink-50"
+                               : "border-transparent text-ink-400 hover:text-ink-200"}`}>
                 {t.icon} {t.label}
               </button>
             );
           })}
           <div className="ml-auto text-xs text-ink-500 flex items-center gap-2 pb-3">
-            <Activity size={12} />
-            {personas.length} personas · {(products.length || 6657).toLocaleString()} products
+            <Activity size={12}/>
+            {personas.length} personas · {(productsTotal || 6657).toLocaleString()} products
           </div>
         </nav>
-
-        {/* Tab content */}
-        {tab === "review"    && <TabReview     personas={personas} products={products} />}
-        {tab === "recommend" && <TabRecommend  personas={personas} />}
-        {tab === "multiturn" && <TabMultiTurn  personas={personas} />}
+        {tab === "review"    && <TabReview     personas={personas}/>}
+        {tab === "recommend" && <TabRecommend  personas={personas}/>}
+        {tab === "multiturn" && <TabMultiTurn  personas={personas}/>}
       </main>
-
       <footer className="border-t border-ink-800 mt-12">
         <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between text-xs text-ink-500">
           <span>Open-source · Bluechip Tech Hackathon submission · Team Ashinze · Franca</span>
-          <span className="font-mono">naija-persona-agent · v0.1</span>
+          <span className="font-mono">naija-persona-agent · v0.2</span>
         </div>
       </footer>
     </div>

@@ -37,6 +37,26 @@ async function getJson<T>(path: string): Promise<T> {
 export const api = {
   health: () => getJson<HealthResponse>("/health"),
 
+  /** Server-side product search (no arbitrary cap on the client side). */
+  searchProducts: async (
+    opts: { search?: string; category?: string; limit?: number } = {},
+  ) => {
+    const params = new URLSearchParams();
+    if (opts.search) params.set("search", opts.search);
+    if (opts.category && opts.category !== "all") params.set("category", opts.category);
+    params.set("limit", String(opts.limit ?? 80));
+    const r = await fetch(`${BASE}/catalog/products?${params}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json() as Promise<{ total: number; limit: number; products: any[] }>;
+  },
+
+  /** Categories with counts. */
+  categories: async () => {
+    const r = await fetch(`${BASE}/catalog/categories`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json() as Promise<{ count: number; categories: { name: string; n: number }[] }>;
+  },
+
   simulateReview: (
     persona: Persona,
     product: Product,
