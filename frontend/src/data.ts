@@ -19,7 +19,10 @@ export const MODELS: ModelOption[] = [
     label: "NaijaReviewer-8B",
     spec: "lmstudio:naija-reviewer-8b",
     badge: "🇳🇬 fine-tune · local",
-    bestFor: "review",   // Task A only — emits prose, not JSON
+    // Updated 2026-05-19: with the new bulletproof JSON parser + tightened
+    // rerank prompt, Naija reliably returns parseable JSON for Task B.
+    // Empirically TOP RANKER on v2 B-eval (NDCG@10 0.588 vs Claude 0.433).
+    bestFor: "both",
   },
 
   // ── Frontier (closed-source) ────────────────────────────────────────

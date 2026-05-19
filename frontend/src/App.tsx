@@ -377,19 +377,20 @@ function ModelSelect({ value, onChange, label, taskKind }:
           const rec = m.bestFor === taskKind || m.bestFor === "both";
           return (
             <option key={m.spec} value={m.spec}>
-              {m.label} — {m.badge}{rec ? "" : " · ⚠ not for " + taskKind}
+              {m.label} — {m.badge}{rec ? "" : " · ⚠ best for " + m.bestFor}
             </option>
           );
         })}
       </select>
-      {mismatch && taskKind === "rank" && (
+      {mismatch && (
         <div className="text-xs flex items-start gap-2 px-3 py-2 rounded-md bg-amber-900/20 border border-amber-700/30 text-amber-200">
           <Info size={14} className="flex-shrink-0 mt-0.5"/>
           <span>
-            <strong>{modelLabel(value)}</strong> is a Task A (review-generation) fine-tune.
-            It emits prose, not the strict JSON contract Task B ranking needs. The agent
-            will fall back to pre-rank order. <strong>For best Task B results pick Claude
-            Sonnet 4 or GPT-4o.</strong>
+            <strong>{modelLabel(value)}</strong> is best at {best}. If output isn't
+            parseable for the {taskKind} contract, the agent falls back to pre-rank
+            (similarity + popularity + aspect-match) — still high quality given
+            Pinecone llama-text-embed-v2 retrieval, but you lose LLM-side semantic
+            ranking.
           </span>
         </div>
       )}
