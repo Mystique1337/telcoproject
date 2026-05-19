@@ -11,6 +11,8 @@ import {
   Loader2,
   MessageSquare,
   Package,
+  Pause,
+  Play,
   Plus,
   RefreshCcw,
   Search,
@@ -21,6 +23,7 @@ import {
   Trash2,
   TrendingUp,
   Users,
+  Volume2,
   Wand2,
 } from "lucide-react";
 
@@ -403,6 +406,85 @@ function ModelSelect({ value, onChange, label, taskKind }:
 // Tab: Simulate Review (Task A)
 // =========================================================================
 
+// 16 Nigerian voices from YarnGPT
+const NAIJA_VOICES = [
+  "Idera", "Emma", "Zainab", "Osagie", "Wura", "Jude",
+  "Chinenye", "Tayo", "Regina", "Femi", "Adaora", "Umar",
+  "Mary", "Nonso", "Remi", "Adam",
+];
+
+
+function ListenButton({ text }: { text: string }) {
+  const [voice, setVoice] = useState("Idera");
+  const [loading, setLoading] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  async function generate() {
+    if (loading) return;
+    setLoading(true); setError(null);
+    try {
+      const r = await fetch("/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, voice, response_format: "mp3" }),
+      });
+      if (!r.ok) {
+        const detail = await r.text();
+        throw new Error(`HTTP ${r.status}: ${detail.slice(0, 120)}`);
+      }
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      setAudioUrl(url);
+      // Auto-play
+      setTimeout(() => audioRef.current?.play().catch(() => {}), 50);
+    } catch (e) {
+      setError(String(e));
+    }
+    setLoading(false);
+  }
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <select
+        className="bg-ink-900 border border-ink-700 rounded text-xs px-2 py-1 text-ink-200"
+        value={voice}
+        onChange={(e) => { setVoice(e.target.value); setAudioUrl(null); }}
+        disabled={loading}
+      >
+        {NAIJA_VOICES.map((v) => <option key={v} value={v}>{v}</option>)}
+      </select>
+      <button
+        onClick={generate}
+        disabled={loading || !text}
+        className="text-xs flex items-center gap-1.5 px-3 py-1 rounded-md bg-naija-700/40 hover:bg-naija-700/60 border border-naija-700/40 text-naija-100 disabled:opacity-50"
+        title="Hear this in a Nigerian voice (YarnGPT)"
+      >
+        {loading
+          ? <><Loader2 size={12} className="animate-spin"/> Synthesising…</>
+          : <><Volume2 size={12}/> Listen</>}
+      </button>
+      {audioUrl && (
+        <audio
+          ref={audioRef}
+          src={audioUrl}
+          controls
+          className="h-8 max-w-full flex-1 min-w-[180px]"
+        />
+      )}
+      {error && (
+        <span className="text-[10px] text-amber-300/90 italic">
+          {error.includes("503") || error.includes("YARNGPT_API_KEY")
+            ? "Set YARNGPT_API_KEY in .env"
+            : error}
+        </span>
+      )}
+    </div>
+  );
+}
+
+
 function ReviewCard({ data, modelLabel }: { data: SimulateReviewResponse; modelLabel: string }) {
   return (
     <div className="card space-y-3">
@@ -415,6 +497,7 @@ function ReviewCard({ data, modelLabel }: { data: SimulateReviewResponse; modelL
       </div>
       <StarRating rating={data.rating}/>
       <p className="text-ink-100 leading-relaxed">{data.review}</p>
+      <ListenButton text={data.review}/>
       <p className="text-xs text-ink-400 italic">💡 {data.rationale}</p>
       <ReasoningTrace trace={data.reasoning_trace}/>
     </div>

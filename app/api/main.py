@@ -25,7 +25,7 @@ except ImportError:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import simulate_review, recommend, elicit, health, catalog, chat
+from app.api.routers import simulate_review, recommend, elicit, health, catalog, chat, tts
 from app.config import get_settings
 
 settings = get_settings()
@@ -67,6 +67,7 @@ app.include_router(recommend.router)
 app.include_router(elicit.router)
 app.include_router(catalog.router)
 app.include_router(chat.router)
+app.include_router(tts.router)
 
 
 # ── Static frontend (React build) ─────────────────────────────────────────
