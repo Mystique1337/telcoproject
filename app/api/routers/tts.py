@@ -23,11 +23,28 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/tts", tags=["tts"])
 
 YARNGPT_BASE = os.getenv("YARNGPT_BASE_URL", "https://yarngpt.ai/api/v1").rstrip("/")
-YARNGPT_VOICES = [
-    "Idera", "Emma", "Zainab", "Osagie", "Wura", "Jude",
-    "Chinenye", "Tayo", "Regina", "Femi", "Adaora", "Umar",
-    "Mary", "Nonso", "Remi", "Adam",
+
+# 16 Nigerian voices from YarnGPT with their character descriptions
+# (per official docs at https://yarngpt.ai/api-docs)
+YARNGPT_VOICE_DETAILS: list[dict[str, str]] = [
+    {"name": "Idera",    "description": "Melodic, gentle"},
+    {"name": "Emma",     "description": "Authoritative, deep"},
+    {"name": "Zainab",   "description": "Soothing, gentle"},
+    {"name": "Osagie",   "description": "Smooth, calm"},
+    {"name": "Wura",     "description": "Young, sweet"},
+    {"name": "Jude",     "description": "Warm, confident"},
+    {"name": "Chinenye", "description": "Engaging, warm"},
+    {"name": "Tayo",     "description": "Upbeat, energetic"},
+    {"name": "Regina",   "description": "Mature, warm"},
+    {"name": "Femi",     "description": "Rich, reassuring"},
+    {"name": "Adaora",   "description": "Warm, engaging"},
+    {"name": "Umar",     "description": "Calm, smooth"},
+    {"name": "Mary",     "description": "Energetic, youthful"},
+    {"name": "Nonso",    "description": "Bold, resonant"},
+    {"name": "Remi",     "description": "Melodious, warm"},
+    {"name": "Adam",     "description": "Deep, clear"},
 ]
+YARNGPT_VOICES = [v["name"] for v in YARNGPT_VOICE_DETAILS]
 
 
 class TTSRequest(BaseModel):
@@ -93,9 +110,14 @@ async def tts(req: TTSRequest) -> Response:
 
 @router.get("/voices")
 async def list_voices() -> dict:
-    """List available Nigerian voices (for the UI dropdown)."""
+    """List available Nigerian voices (for the UI dropdown).
+
+    Each voice has a `name` and a one-line character description from the
+    YarnGPT docs (gentle / authoritative / soothing / etc.).
+    """
     return {
-        "voices": YARNGPT_VOICES,
+        "voices": YARNGPT_VOICES,             # backward-compat: list of names
+        "voice_details": YARNGPT_VOICE_DETAILS,  # name + description pairs
         "default": "Idera",
         "formats": ["mp3", "wav", "opus", "flac"],
         "configured": bool(os.getenv("YARNGPT_API_KEY")),

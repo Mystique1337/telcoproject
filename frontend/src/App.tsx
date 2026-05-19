@@ -406,11 +406,25 @@ function ModelSelect({ value, onChange, label, taskKind }:
 // Tab: Simulate Review (Task A)
 // =========================================================================
 
-// 16 Nigerian voices from YarnGPT
-const NAIJA_VOICES = [
-  "Idera", "Emma", "Zainab", "Osagie", "Wura", "Jude",
-  "Chinenye", "Tayo", "Regina", "Femi", "Adaora", "Umar",
-  "Mary", "Nonso", "Remi", "Adam",
+// 16 Nigerian voices from YarnGPT with character descriptions
+// (per https://yarngpt.ai/api-docs)
+const NAIJA_VOICES: { name: string; description: string }[] = [
+  { name: "Idera",    description: "Melodic, gentle"      },
+  { name: "Emma",     description: "Authoritative, deep"  },
+  { name: "Zainab",   description: "Soothing, gentle"     },
+  { name: "Osagie",   description: "Smooth, calm"         },
+  { name: "Wura",     description: "Young, sweet"         },
+  { name: "Jude",     description: "Warm, confident"      },
+  { name: "Chinenye", description: "Engaging, warm"       },
+  { name: "Tayo",     description: "Upbeat, energetic"    },
+  { name: "Regina",   description: "Mature, warm"         },
+  { name: "Femi",     description: "Rich, reassuring"     },
+  { name: "Adaora",   description: "Warm, engaging"       },
+  { name: "Umar",     description: "Calm, smooth"         },
+  { name: "Mary",     description: "Energetic, youthful"  },
+  { name: "Nonso",    description: "Bold, resonant"       },
+  { name: "Remi",     description: "Melodious, warm"      },
+  { name: "Adam",     description: "Deep, clear"          },
 ];
 
 
@@ -452,8 +466,13 @@ function ListenButton({ text }: { text: string }) {
         value={voice}
         onChange={(e) => { setVoice(e.target.value); setAudioUrl(null); }}
         disabled={loading}
+        title="Pick a Nigerian voice character"
       >
-        {NAIJA_VOICES.map((v) => <option key={v} value={v}>{v}</option>)}
+        {NAIJA_VOICES.map((v) => (
+          <option key={v.name} value={v.name}>
+            {v.name} — {v.description}
+          </option>
+        ))}
       </select>
       <button
         onClick={generate}
