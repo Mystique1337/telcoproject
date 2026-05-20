@@ -203,6 +203,8 @@ class LLMClient:
             return await self._anthropic(prompt, system, max_tokens, temperature, stop)
         if self.provider == "openai":
             return await self._openai(prompt, system, max_tokens, temperature, stop)
+        if self.provider == "freemodel":
+            return await self._freemodel(prompt, system, max_tokens, temperature, stop)
         if self.provider == "ollama":
             return await self._ollama(prompt, system, max_tokens, temperature, stop)
         if self.provider == "nvidia":
@@ -301,18 +303,31 @@ class LLMClient:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
 
+        # GPT-5 / o1 / o3 series use `max_completion_tokens` and do not accept
+        # `temperature`. Detect by model name prefix and adapt.
+        is_reasoning_model = (
+            self.model.startswith("gpt-5")
+            or self.model.startswith("o1")
+            or self.model.startswith("o3")
+        )
         payload: dict[str, Any] = {
             "model": self.model,
-            "max_tokens": max_tokens,
-            "temperature": temperature,
             "messages": messages,
         }
+        if is_reasoning_model:
+            payload["max_completion_tokens"] = max_tokens
+            # temperature defaults to 1.0 on these and is non-tunable
+        else:
+            payload["max_tokens"] = max_tokens
+            payload["temperature"] = temperature
         if stop:
             payload["stop"] = stop
 
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        # Honour OPENAI_BASE_URL for freemodel.dev / Azure-OpenAI / etc.
+        base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
+        async with httpx.AsyncClient(timeout=120.0) as client:
             resp = await client.post(
-                "https://api.openai.com/v1/chat/completions",
+                f"{base_url}/chat/completions",
                 headers={
                     "Authorization": f"Bearer {self.settings.openai_api_key}",
                     "Content-Type": "application/json",
@@ -321,6 +336,53 @@ class LLMClient:
             )
             if resp.status_code != 200:
                 raise LLMError(f"OpenAI API {resp.status_code}: {resp.text[:300]}")
+            data = resp.json()
+            return data["choices"][0]["message"]["content"]
+
+    async def _freemodel(
+        self,
+        prompt: str,
+        system: str | None,
+        max_tokens: int,
+        temperature: float,
+        stop: list[str] | None,
+    ) -> str:
+        """freemodel.dev — OpenAI-compatible gateway. Uses its own API key
+        (FREE_MODEL_API_KEY) and base URL. Same chat/completions wire format
+        as OpenAI, including the GPT-5/reasoning-model token-budget split."""
+        if not self.settings.freemodel_api_key:
+            raise LLMError("FREE_MODEL_API_KEY not set")
+        messages: list[dict[str, str]] = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        is_reasoning_model = (
+            self.model.startswith("gpt-5")
+            or self.model.startswith("o1")
+            or self.model.startswith("o3")
+        )
+        payload: dict[str, Any] = {"model": self.model, "messages": messages}
+        if is_reasoning_model:
+            payload["max_completion_tokens"] = max_tokens
+        else:
+            payload["max_tokens"] = max_tokens
+            payload["temperature"] = temperature
+        if stop:
+            payload["stop"] = stop
+
+        base_url = self.settings.freemodel_base_url.rstrip("/")
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            resp = await client.post(
+                f"{base_url}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.settings.freemodel_api_key}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+            )
+            if resp.status_code != 200:
+                raise LLMError(f"freemodel.dev {resp.status_code}: {resp.text[:300]}")
             data = resp.json()
             return data["choices"][0]["message"]["content"]
 

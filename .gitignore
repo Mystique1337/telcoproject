@@ -99,3 +99,5 @@ data/sample/products/*.json
 frontend/dist/
 frontend/node_modules/
 frontend/tsconfig.tsbuildinfo
+\[1_0]_\[TAM_ESCO_SKILLS_EXTRACTOR_V2].ipynb
+.env.bak

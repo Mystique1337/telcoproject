@@ -17,6 +17,8 @@ import time
 from pathlib import Path
 from typing import Any
 
+import httpx
+
 from app.api.schemas.persona import Persona
 from app.api.schemas.product import Product
 from app.config import get_settings
@@ -121,11 +123,36 @@ async def recommend_products(
         "strategy": "cold_start" if is_cold_start else "history_grounded",
     })
 
+    # Step 2.5 — Cohere cross-encoder pre-rerank (fast, multilingual,
+    # cheaper than LLM rerank). Narrows top-30 → top-N (default 15) so the
+    # LLM rerank stage works on a tighter, already-relevance-filtered pool.
+    # Skipped automatically if COHERE_API_KEY not set or if there are too
+    # few candidates to narrow.
+    t_cohere = time.perf_counter()
+    pool_for_llm = candidates[:30]
+    cohere_top_n = settings.cohere_rerank_top_n
+    pool_for_llm, cohere_fallback = await _cohere_pre_rerank(
+        pool_for_llm, persona, top_n=cohere_top_n,
+    )
+    trace.append({
+        "node": "cohere_pre_rerank",
+        "summary": (
+            (f"Cohere pre-rerank skipped: {cohere_fallback}"
+             if cohere_fallback else
+             f"Cohere ({settings.cohere_rerank_model}) narrowed "
+             f"{min(30, len(candidates))} → {len(pool_for_llm)} by persona-flavored query")
+        ),
+        "model": settings.cohere_rerank_model,
+        "top_n": cohere_top_n,
+        "fallback": cohere_fallback,
+        "duration_ms": int((time.perf_counter() - t_cohere) * 1000),
+    })
+
     # Step 3 — LLM re-rank with intent context (multi-turn aware)
     t1 = time.perf_counter()
     reranker_spec = reranker_override or settings.task2_reranker
     ranked, rerank_fallback = await _llm_rerank(
-        persona, candidates[:30], k=k, reranker_spec=reranker_spec,
+        persona, pool_for_llm, k=k, reranker_spec=reranker_spec,
         intent=intent,
     )
     trace.append({
@@ -167,6 +194,8 @@ async def recommend_products(
                 **{
                     "product_id": c["product_id"],
                     "title": c.get("title"),
+                    "price_naira": c.get("price_naira"),
+                    "category": c.get("category"),
                     "score": -c.get("score", 0.0),
                     "rationale": "Mismatch with persona's primary aspects.",
                     "rank": i + 1,
@@ -299,6 +328,94 @@ def _prerank(candidates: list[dict[str, Any]], persona: Persona,
 
 
 # --------------------------------------------------------------------------- #
+# Stage 2.5 — Cohere cross-encoder pre-rerank                                  #
+# --------------------------------------------------------------------------- #
+
+
+def _build_cohere_query(persona: Persona) -> str:
+    """Flatten persona into a query string Cohere's cross-encoder can score
+    documents against. Mirrors the retrieval-stage query construction but
+    weighted toward the signals Cohere can actually use (text), not the
+    structured numerics."""
+    parts: list[str] = []
+    if getattr(persona, "occupation", None):
+        parts.append(str(persona.occupation))
+    if getattr(persona, "location", None):
+        parts.append(str(persona.location))
+    aspects = persona.primary_aspects(top_k=3)
+    if aspects:
+        parts.append("looking for: " + ", ".join(aspects))
+    if persona.hedonic_utilitarian > 0.6:
+        parts.append("hedonic / pleasure-driven purchase")
+    elif persona.hedonic_utilitarian < 0.4:
+        parts.append("utility / practical purchase")
+    if persona.communal_individual > 0.6:
+        parts.append("for family or community use")
+    elif persona.communal_individual < 0.4:
+        parts.append("for personal use")
+    return " | ".join(parts) or "Nigerian shopper"
+
+
+async def _cohere_pre_rerank(
+    candidates: list[dict[str, Any]], persona: Persona, top_n: int
+) -> tuple[list[dict[str, Any]], str | None]:
+    """Cross-encoder pre-rerank using Cohere rerank-v3.5. Narrows the
+    candidate pool from len(candidates) → top_n before the LLM rerank.
+
+    Returns (narrowed_candidates, fallback_reason).
+    On any failure, returns the original candidates and a fallback string.
+    """
+    if not settings.cohere_api_key:
+        return candidates, "no COHERE_API_KEY set"
+    if len(candidates) <= top_n:
+        return candidates, None  # nothing to narrow
+
+    query = _build_cohere_query(persona)
+    # Cohere wants document strings — use title + truncated description
+    docs = []
+    for c in candidates:
+        title = c.get("title", "") or ""
+        desc = c.get("description", "") or ""
+        docs.append(f"{title}. {desc[:400]}".strip())
+
+    payload = {
+        "model": settings.cohere_rerank_model,
+        "query": query,
+        "documents": docs,
+        "top_n": min(top_n, len(docs)),
+    }
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(
+                "https://api.cohere.com/v2/rerank",
+                headers={
+                    "Authorization": f"Bearer {settings.cohere_api_key}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+            )
+            if resp.status_code != 200:
+                return candidates, f"cohere {resp.status_code}: {resp.text[:150]}"
+            data = resp.json()
+            results = data.get("results", [])
+            if not results:
+                return candidates, "cohere returned empty results"
+            # Build narrowed list in cohere's ranked order, attach score
+            narrowed: list[dict[str, Any]] = []
+            for r in results:
+                idx = r.get("index")
+                score = r.get("relevance_score")
+                if idx is None or idx >= len(candidates):
+                    continue
+                c = dict(candidates[idx])
+                c["cohere_score"] = float(score) if score is not None else 0.0
+                narrowed.append(c)
+            return narrowed, None
+    except Exception as e:  # noqa: BLE001
+        return candidates, f"cohere call failed: {type(e).__name__}: {str(e)[:120]}"
+
+
+# --------------------------------------------------------------------------- #
 # LLM re-rank                                                                  #
 # --------------------------------------------------------------------------- #
 
@@ -328,8 +445,12 @@ async def _llm_rerank(
     # silently producing degraded output.
     is_naija_reviewer = "naija-reviewer" in spec.lower()
 
+    # Reference candidates by 1-based index, NOT by echoing the product_id.
+    # Long Jumia slug IDs get mangled or hallucinated by the LLM; an integer
+    # index is impossible to mangle and forces the model to pick from the
+    # actual candidate set (no inventing plausible-but-absent products).
     candidate_lines = "\n".join(
-        f"{i}. id={c['product_id']} | title={c.get('title','')[:80]} | "
+        f"[{i + 1}] title={c.get('title','')[:90]} | "
         f"category={c.get('category','')} | price=₦{c.get('price_naira','?')}"
         for i, c in enumerate(candidates)
     )
@@ -337,11 +458,12 @@ async def _llm_rerank(
     system = (
         "You are recommending products to a Nigerian user. You are given the user's "
         "persona (cognitive dimensions + register + aspect priorities), optional "
-        "conversation constraints from prior turns, and a candidate list. Score each "
-        "candidate 0.0–1.0 for fit. Be sensitive to register, communal vs individual "
-        "framing, hedonic vs utilitarian disposition, the aspects the user emphasises, "
-        "AND any explicit budget / recipient / category constraints from prior turns. "
-        "Return STRICT JSON."
+        "conversation constraints from prior turns, and a numbered candidate list. "
+        "Score each candidate 0.0–1.0 for fit. Be sensitive to register, communal vs "
+        "individual framing, hedonic vs utilitarian disposition, the aspects the user "
+        "emphasises, AND any explicit budget / recipient / category constraints from "
+        "prior turns. You MUST only choose from the numbered candidates given — never "
+        "invent a product that is not in the list. Return STRICT JSON."
     )
 
     constraints_block = ""
@@ -371,10 +493,12 @@ Candidates:
 {candidate_lines}
 
 Return ONLY this JSON (no markdown fences, no prose before or after):
-{{"ranked":[{{"product_id":"...","score":0.92,"rationale":"6-15 word reason"}}]}}
+{{"ranked":[{{"index":3,"score":0.92,"rationale":"6-15 word reason"}}]}}
 
-Rank from BEST fit to WORST. Include the top {min(k * 2, 15)} candidates only (not all 30).
-Score in [0.0, 1.0]. Keep each rationale ≤ 15 words.
+"index" is the [N] number of the candidate above. Use ONLY indices that appear
+in the list. Rank from BEST fit to WORST. Include the top {min(k * 2, 15)}
+candidates only (not all {len(candidates)}). Score in [0.0, 1.0]. Keep each
+rationale ≤ 15 words.
 """.strip()
 
     fallback_reason: str | None = None
@@ -402,6 +526,8 @@ Score in [0.0, 1.0]. Keep each rationale ≤ 15 words.
             {
                 "product_id": c["product_id"],
                 "title": c.get("title"),
+                "price_naira": c.get("price_naira"),
+                "category": c.get("category"),
                 "score": float(c["prerank_score"]),
                 "rationale": (
                     f"Pre-rank: similarity={c.get('similarity',0):.2f}, "
@@ -414,22 +540,60 @@ Score in [0.0, 1.0]. Keep each rationale ≤ 15 words.
         ]
         return fallback_items, fallback_reason
 
-    # Hydrate with title from candidates
+    # Hydrate by the 1-based index the model returned. Index is robust to
+    # ID-mangling and forces selection from the actual candidate set. We keep
+    # a product_id path for backwards-compat in case a model still echoes ids.
+    def _norm(pid: str) -> str:
+        return "".join(ch for ch in str(pid).lower() if ch.isalnum())
+
     by_id = {c["product_id"]: c for c in candidates}
+    by_norm = {_norm(c["product_id"]): c for c in candidates}
+    seen: set[str] = set()
     hydrated: list[dict[str, Any]] = []
     for item in ranked_raw:
-        c = by_id.get(item.get("product_id"))
-        if not c:
+        c = None
+        idx = item.get("index")
+        if isinstance(idx, (int, float)) and 1 <= int(idx) <= len(candidates):
+            c = candidates[int(idx) - 1]
+        elif item.get("product_id") is not None:  # backwards-compat
+            pid = item["product_id"]
+            c = by_id.get(pid) or by_norm.get(_norm(pid))
+        if not c or c["product_id"] in seen:
             continue
+        seen.add(c["product_id"])
         hydrated.append(
             {
-                "product_id": item["product_id"],
+                "product_id": c["product_id"],
                 "title": c.get("title"),
+                "price_naira": c.get("price_naira"),
+                "category": c.get("category"),
                 "score": float(item.get("score", 0.0)),
                 "rationale": item.get("rationale", ""),
                 "serendipity_score": _serendipity(c, persona),
             }
         )
+
+    # Safety net: reranker returned a non-empty list but nothing hydrated.
+    # With index-based referencing this should be rare; keep the net so we
+    # never return an empty recommendation set.
+    if not hydrated:
+        fallback_reason = (
+            "reranker returned no valid candidate indices; fell back to pre-rank order"
+        )
+        logger.warning("LLM re-rank hydration empty: %s", fallback_reason)
+        hydrated = [
+            {
+                "product_id": c["product_id"],
+                "title": c.get("title"),
+                "price_naira": c.get("price_naira"),
+                "category": c.get("category"),
+                "score": float(c.get("prerank_score", 0.0)),
+                "rationale": "Closest match by similarity + popularity + aspect fit.",
+                "serendipity_score": _serendipity(c, persona),
+            }
+            for c in candidates[:k]
+        ]
+
     return hydrated, fallback_reason
 
 

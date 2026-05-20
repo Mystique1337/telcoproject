@@ -20,6 +20,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=False,
+        populate_by_name=True,
     )
 
     # --- App ---
@@ -30,6 +31,18 @@ class Settings(BaseSettings):
     # --- LLM API keys ---
     anthropic_api_key: str | None = None
     openai_api_key: str | None = None
+    # freemodel.dev — OpenAI-compatible gateway providing GPT-5/5.5 and other
+    # frontier models at promotional pricing. Lives next to openai_api_key so
+    # both can coexist; pick per call via the `freemodel:` provider prefix.
+    # Env name: FREE_MODEL_APIKEY (the docs use that exact form).
+    freemodel_api_key: str | None = Field(default=None, alias="FREE_MODEL_API_KEY")
+    freemodel_base_url: str = "https://api.freemodel.dev/v1"
+    # Cohere — used as the Stage-2.5 cross-encoder pre-reranker between
+    # Pinecone retrieval and the LLM rerank stage. Cheap + fast (~200ms,
+    # multilingual). Narrows top-30 → top-N before the persona-aware LLM call.
+    cohere_api_key: str | None = None
+    cohere_rerank_model: str = "rerank-v3.5"
+    cohere_rerank_top_n: int = 15  # narrow 30 → 15 before LLM rerank
     nvidia_api_key: str | None = None
     nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
     # NVIDIA model for synthetic + rating refinement — override if your account

@@ -171,10 +171,11 @@ Constraints extracted so far:
 Decide the next action and return ONLY this JSON shape:
 
 {{
-  "action":     "ask" | "recommend" | "refine",
-  "message":    "<one short sentence to send back to the user>",
-  "question":   "<if action=ask, the SINGLE most important clarifying question>",
-  "filters":    {{
+  "action":       "ask" | "recommend" | "refine",
+  "message":      "<one short sentence to send back to the user>",
+  "question":     "<if action=ask, the SINGLE most important clarifying question>",
+  "search_query": "<a SHORT, clean product-search phrase distilled from what the user wants, e.g. 'educational learning tablet for kids' — NO budget, NO filler words like 'I want', just the product intent. Required when action is recommend/refine.>",
+  "filters":      {{
     "category":    "<jumia category slug if user has clearly indicated one, else null>",
     "max_price":   <integer Naira if user gave a budget, else null>,
     "min_price":   <integer Naira if user gave a floor, else null>,
@@ -186,6 +187,9 @@ Rules:
 - If the user has NOT specified a CATEGORY or BUDGET, you usually want action="ask".
 - If they have both, action="recommend".
 - If they explicitly asked for "more options" / "show me alternatives", action="refine".
+- `search_query` must capture the actual product intent in 3-8 words, with NO
+  budget figures and NO conversational filler. E.g. user said "I want toys ...
+  kids ... 13 ... educational" → search_query="educational toys for kids".
 - Your `message` should sound like a friendly Nigerian shopping assistant.
 - For Pidgin / code-mixed users, you may use light Pidgin in the message
   (e.g. "abeg" / "no wahala" / "make I check well well") — match their register.
@@ -273,7 +277,8 @@ async def _retrieve_with_filters(persona: Persona | None,
                                    history: list[dict[str, str]],
                                    filters: dict[str, Any],
                                    keywords: list[str],
-                                   top_k: int = 30) -> list[dict[str, Any]]:
+                                   top_k: int = 30,
+                                   search_query: str | None = None) -> list[dict[str, Any]]:
     """Query Pinecone with hard filters. Falls back to existing retriever if
     Pinecone isn't configured."""
     if not pinecone_store.pinecone_available() or pinecone_store.index_count() == 0:
@@ -285,17 +290,23 @@ async def _retrieve_with_filters(persona: Persona | None,
             candidate_set=None, top_k=top_k,
         )
 
-    # Build a richer query from history (last 3 turns) + keywords + persona hints
-    convo_text = " ".join(
-        (t.get("content") or "") for t in history[-3:]
-    )
+    # Prefer the orchestrator's distilled `search_query` (clean product intent,
+    # no budget/filler). Fall back to USER-turns-only text if absent — never use
+    # raw conversation incl. assistant scaffolding ("Type?"/"Age?") which pulls junk.
+    if search_query:
+        base = search_query
+    else:
+        base = " ".join(
+            (t.get("content") or "") for t in history if t.get("role") == "user"
+        )
     persona_hint = ""
     if persona:
         d = persona.demographics or {}
         if d.get("occupation"):
             persona_hint = f"for a {d['occupation']}"
+    cat_hint = str(filters.get("category") or "")
     kw_str = " ".join(keywords) if keywords else ""
-    query_text = f"{convo_text} {persona_hint} {kw_str} Nigerian product".strip()
+    query_text = f"{cat_hint} {base} {persona_hint} {kw_str}".strip()
 
     pc_filter = _build_pinecone_filter(filters)
     return pinecone_store.query_products(
@@ -333,6 +344,67 @@ def _pinecone_query_with_filter(query_text: str, top_k: int,
         if len(out) >= top_k:
             break
     return out
+
+
+async def _retrieve_with_relaxation(
+    persona: Persona | None,
+    history: list[dict[str, str]],
+    filters: dict[str, Any],
+    keywords: list[str],
+    top_k: int = 30,
+    search_query: str | None = None,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Retrieve with progressive filter relaxation.
+
+    The orchestrator often guesses a `category` label (e.g. "educational",
+    "toys") that does not exist in the catalogue's fixed taxonomy, so a strict
+    `category $eq` match returns zero rows even when semantically-relevant
+    products exist. Rather than give up, we relax constraints in priority
+    order, folding any dropped category into the semantic query so retrieval
+    still biases toward it:
+
+      1. Full filters (category + price).
+      2. Drop the hard category filter, keep budget (most common fix).
+      3. Drop price too — pure semantic, last resort.
+
+    Returns (candidates, relaxation_steps). `relaxation_steps` is a list of
+    human-readable strings describing what was loosened (empty if the strict
+    filter worked).
+    """
+    steps: list[str] = []
+    cat = filters.get("category")
+
+    # Attempt 1 — strict
+    cands = await _retrieve_with_filters(persona, history, filters, keywords, top_k,
+                                          search_query=search_query)
+    if cands:
+        return cands, steps
+
+    # Attempt 2 — drop category hard filter, keep it as a semantic hint + keep budget
+    if cat:
+        relaxed = {**filters, "category": None}
+        kw2 = keywords + [str(cat)]
+        cands = await _retrieve_with_filters(persona, history, relaxed, kw2, top_k,
+                                              search_query=search_query)
+        if cands:
+            steps.append(
+                f"there's no exact '{cat}' category in the catalogue, so I searched by meaning"
+            )
+            return cands, steps
+
+    # Attempt 3 — drop price too (pure semantic, last resort)
+    relaxed = {k: v for k, v in filters.items() if k not in ("category", "max_price")}
+    kw2 = keywords + ([str(cat)] if cat else [])
+    cands = await _retrieve_with_filters(persona, history, relaxed, kw2, top_k,
+                                          search_query=search_query)
+    if cands:
+        if cat:
+            steps.append(f"there's no exact '{cat}' category, so I searched by meaning")
+        if filters.get("max_price"):
+            steps.append("widened the search beyond the stated budget")
+        return cands, steps
+
+    return [], steps
 
 
 def _default_persona(history: list[dict[str, str]]) -> Persona:
@@ -430,27 +502,30 @@ async def chat_step(
     # Step 3b/c: retrieve + rank + return recs
     if persona is None:
         persona = _default_persona(history)
-    candidates = await _retrieve_with_filters(
+    search_query = decision.get("search_query")
+    candidates, relaxation_steps = await _retrieve_with_relaxation(
         persona, history, filters, constraints.get("keywords", []),
-        top_k=30,
+        top_k=30, search_query=search_query,
     )
     trace.append({
         "node": "filtered_retrieval",
         "summary": (
             f"Pulled {len(candidates)} candidates "
-            f"after hard filter "
             f"(category={filters.get('category')}, max_price={filters.get('max_price')}, "
             f"exclude={len(filters.get('exclude_ids', []))})"
+            + (f"; relaxed: {'; '.join(relaxation_steps)}" if relaxation_steps else "")
         ),
         "n_candidates": len(candidates),
+        "relaxation": relaxation_steps,
     })
 
     if not candidates:
         return {
             "action": "ask",
             "message": (
-                "I couldn't find anything matching those exact filters — "
-                "would you like to widen the budget or change the category?"
+                "I searched the whole catalogue and still couldn't find a good "
+                "match for that — could you try a different item or category? "
+                "For example, tell me the brand or a similar product you have in mind."
             ),
             "recommendations": [],
             "extracted_constraints": constraints,
@@ -473,9 +548,14 @@ async def chat_step(
         "fallback": fb_reason,
     })
 
+    final_message = message or "Here are my top picks:"
+    if relaxation_steps:
+        note = "I couldn't find an exact match — " + "; ".join(relaxation_steps) + "."
+        final_message = f"{note} Here are the closest options:"
+
     return {
         "action": action,
-        "message": message or "Here are my top picks:",
+        "message": final_message,
         "recommendations": recommendations,
         "extracted_constraints": constraints,
         "filters_applied": filters,

@@ -887,6 +887,18 @@ function RecCard({ item }: { item: RecommendResponse["recommendations"][number] 
         <div className="text-sm font-medium text-ink-100 leading-snug">
           {item.title ?? item.product_id}
         </div>
+        <div className="flex flex-wrap items-center gap-2 mt-1.5">
+          {item.price_naira != null && (
+            <span className="text-sm font-mono font-semibold text-emerald-300 tabular-nums">
+              ₦{Number(item.price_naira).toLocaleString()}
+            </span>
+          )}
+          {item.category && (
+            <span className="text-[10px] uppercase tracking-wider text-ink-400 border border-ink-700 rounded px-1.5 py-0.5">
+              {item.category}
+            </span>
+          )}
+        </div>
         <div className="text-xs text-ink-300 mt-1.5 italic leading-relaxed">💡 {item.rationale}</div>
       </div>
       <div className="text-right flex-shrink-0 ml-2">

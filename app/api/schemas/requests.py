@@ -118,6 +118,8 @@ class RecommendRequest(BaseModel):
 class RecommendItem(BaseModel):
     product_id: str
     title: str | None = None
+    price_naira: float | None = None
+    category: str | None = None
     score: float
     rationale: str
     serendipity_score: float | None = None

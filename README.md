@@ -149,6 +149,10 @@ Restart `make serve`. Per-request `backbone_override` / `reranker_override` fiel
 
 The recommend agent uses **Pinecone serverless with `llama-text-embed-v2`** (1024-dim, asymmetric `passage`/`query` retrieval) when `PINECONE_API_KEY` is set in `.env` and the index is populated. Otherwise falls back to local Chroma, then to persona-aware disk sampling.
 
+## Stage-2.5 cross-encoder pre-rerank — Cohere (optional)
+
+Between the prerank step and the LLM rerank step, the agent optionally runs a **Cohere `rerank-v3.5`** cross-encoder pass to narrow 30 → 15 candidates by persona-flavored query. Adds ~200–600ms and tightens the LLM rerank's input pool. Auto-skips if `COHERE_API_KEY` is not set in `.env`. Reasoning trace exposes the stage with its model, top-N, duration, and any fallback reason.
+
 ```bash
 # Populate Pinecone (one-time, ~7 min for 6,657 products)
 python scripts/build_pinecone_index.py

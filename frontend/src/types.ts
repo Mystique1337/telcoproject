@@ -57,6 +57,8 @@ export interface SimulateReviewResponse {
 export interface RecommendItem {
   product_id: string;
   title?: string;
+  price_naira?: number | null;
+  category?: string | null;
   score: number;
   rationale: string;
   serendipity_score?: number | null;
