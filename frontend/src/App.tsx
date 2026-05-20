@@ -428,6 +428,10 @@ const NAIJA_VOICES: { name: string; description: string }[] = [
 ];
 
 
+// YarnGPT renders a touch slow; ~1.08x reads as natural conversational pace
+// without audible pitch shift. Tweak here if it sounds off.
+const NATURAL_TTS_RATE = 1.08;
+
 function ListenButton({ text, persona }: { text: string; persona?: Persona | null }) {
   const [voice, setVoice] = useState("Idera");
   const [autoMatched, setAutoMatched] = useState(false);
@@ -479,8 +483,14 @@ function ListenButton({ text, persona }: { text: string; persona?: Persona | nul
       const blob = await r.blob();
       const url = URL.createObjectURL(blob);
       setAudioUrl(url);
-      // Auto-play
-      setTimeout(() => audioRef.current?.play().catch(() => {}), 50);
+      // Auto-play at a natural pace. YarnGPT renders slightly slow, so a small
+      // tempo nudge reads as natural without audible pitch artifacts.
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.playbackRate = NATURAL_TTS_RATE;
+          audioRef.current.play().catch(() => {});
+        }
+      }, 50);
     } catch (e) {
       setError(String(e));
     }
@@ -522,6 +532,7 @@ function ListenButton({ text, persona }: { text: string; persona?: Persona | nul
           ref={audioRef}
           src={audioUrl}
           controls
+          onLoadedMetadata={(e) => { e.currentTarget.playbackRate = NATURAL_TTS_RATE; }}
           className="h-8 max-w-full flex-1 min-w-[180px]"
         />
       )}

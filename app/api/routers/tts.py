@@ -10,6 +10,7 @@ Auth: requires YARNGPT_API_KEY in the environment.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from typing import Literal
@@ -269,37 +270,45 @@ async def tts(req: TTSRequest) -> Response:
             status_code=400,
             detail=f"Unknown voice '{req.voice}'. Available: {YARNGPT_VOICES}",
         )
-    try:
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            r = await client.post(
-                f"{YARNGPT_BASE}/tts",
+    payload = {
+        "text": req.text,
+        "voice": req.voice,
+        "response_format": req.response_format,
+    }
+    headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+
+    # Retry transient network/DNS failures (e.g. intermittent getaddrinfo errors
+    # when the upstream host briefly fails to resolve).
+    last_err: Exception | None = None
+    for attempt in range(3):
+        try:
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                r = await client.post(f"{YARNGPT_BASE}/tts", headers=headers, json=payload)
+            if r.status_code != 200:
+                logger.warning("yarngpt %d: %s", r.status_code, r.text[:200])
+                raise HTTPException(
+                    status_code=502,
+                    detail=f"YarnGPT upstream {r.status_code}: {r.text[:200]}",
+                )
+            return Response(
+                content=r.content,
+                media_type=_AUDIO_MIME[req.response_format],
                 headers={
-                    "Authorization": f"Bearer {key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "text": req.text,
-                    "voice": req.voice,
-                    "response_format": req.response_format,
+                    "Content-Disposition": f'inline; filename="speech.{req.response_format}"',
+                    "Cache-Control": "no-store",
                 },
             )
-        if r.status_code != 200:
-            logger.warning("yarngpt %d: %s", r.status_code, r.text[:200])
-            raise HTTPException(
-                status_code=502,
-                detail=f"YarnGPT upstream {r.status_code}: {r.text[:200]}",
-            )
-        return Response(
-            content=r.content,
-            media_type=_AUDIO_MIME[req.response_format],
-            headers={
-                "Content-Disposition": f'inline; filename="speech.{req.response_format}"',
-                "Cache-Control": "no-store",
-            },
-        )
-    except httpx.RequestError as e:
-        logger.exception("yarngpt request failed")
-        raise HTTPException(status_code=502, detail=f"YarnGPT network error: {e}") from e
+        except httpx.RequestError as e:
+            last_err = e
+            logger.warning("yarngpt network error (attempt %d/3): %s", attempt + 1, e)
+            if attempt < 2:
+                await asyncio.sleep(1.0 * (attempt + 1))
+
+    logger.exception("yarngpt request failed after retries")
+    raise HTTPException(
+        status_code=502,
+        detail=f"YarnGPT network error after 3 attempts: {last_err}",
+    ) from last_err
 
 
 @router.post("/voice-for-persona")
