@@ -129,6 +129,8 @@ def _sanitize_metadata(p: dict[str, Any]) -> dict[str, Any]:
         "domain":      coerce(p.get("domain"), "jumia"),
         "price_naira": coerce(float(p.get("price_naira")) if p.get("price_naira") is not None else None, 0.0),
         "popularity":  coerce(float(p.get("popularity", 0.5)), 0.5),
+        "seller":      coerce(p.get("seller"), ""),
+        "brand":       coerce(p.get("brand"), ""),
         # store first 500 chars of description for retrieval-time display
         "description": coerce(((p.get("description") or "")[:500]), ""),
     }
@@ -207,6 +209,8 @@ def query_products(query_text: str,
             "domain": m.get("domain", "jumia"),
             "price_naira": m.get("price_naira"),
             "popularity": float(m.get("popularity", 0.5)),
+            "seller": m.get("seller") or None,
+            "brand": m.get("brand") or None,
             "description": m.get("description", ""),
             "similarity": score,
         })

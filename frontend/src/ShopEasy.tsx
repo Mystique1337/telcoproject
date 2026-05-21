@@ -139,6 +139,10 @@ function OrderPage({ p, t, onClose }: { p: ShopProduct; t: Record<string, string
               <>
                 <div className="text-[10px] uppercase tracking-wide text-ink-400">{p.category}</div>
                 <h2 className="text-lg font-bold text-ink-50 mt-1 leading-snug">{p.title}</h2>
+                <div className="text-[11px] text-ink-400 mt-1.5 flex items-center gap-1.5">
+                  <Check size={11} className="text-naija-400" />
+                  Sold by <span className="text-ink-200">{p.seller || "Verified ShopEasy Seller"}</span>
+                </div>
                 <div className="text-2xl font-bold text-naija-300 mt-3">{naira(p.price_naira)}</div>
                 {p.description && <p className="text-sm text-ink-300 mt-3 leading-relaxed line-clamp-4">{p.description}</p>}
                 <div className="flex items-center gap-3 mt-5">
@@ -247,8 +251,10 @@ function ChatPanel({ lang, persona, onOpen }:
 
   async function sendImage(file: File) {
     if (sending) return;
+    const note = input.trim();
+    setInput("");
     setSending(true);
-    setMsgs((m) => [...m, { id: "u" + Date.now(), role: "user", content: "📷 Sent a photo" }]);
+    setMsgs((m) => [...m, { id: "u" + Date.now(), role: "user", content: note ? `📷 Photo + "${note}"` : "📷 Sent a photo" }]);
     try {
       const b64 = await new Promise<string>((res, rej) => {
         const fr = new FileReader();
@@ -256,7 +262,7 @@ function ChatPanel({ lang, persona, onOpen }:
         fr.onerror = rej;
         fr.readAsDataURL(file);
       });
-      const r = await api.shopVisualSearch(b64, file.type || "image/jpeg", 6, persona?.user_id ?? null);
+      const r = await api.shopVisualSearch(b64, file.type || "image/jpeg", 6, persona?.user_id ?? null, null, note || null);
       const recs: ShopProduct[] = (r.products || []).map((x) => ({
         product_id: x.product_id, title: x.title || x.product_id,
         category: x.category, price_naira: x.price_naira, rationale: x.rationale,

@@ -31,6 +31,7 @@ def _to_card(p: dict[str, Any]) -> dict[str, Any]:
         "category": p.get("category"),
         "price_naira": p.get("price_naira"),
         "description": (p.get("description") or "")[:400],
+        "seller": p.get("seller") or p.get("brand") or None,
         "score": round(float(p.get("score", p.get("similarity", 0.0))), 3),
         "rationale": p.get("rationale"),
     }
@@ -87,6 +88,8 @@ class VisualSearchRequest(BaseModel):
     k: int = Field(default=12, ge=1, le=40)
     persona_id: str | None = None
     profile_id: str | None = None
+    note: str | None = Field(default=None, max_length=200,
+                             description="Optional text typed alongside the image, e.g. 'but in red, cheaper'.")
 
 
 @router.post("/search")
@@ -110,9 +113,11 @@ async def visual_search(req: VisualSearchRequest) -> dict[str, Any]:
         raise HTTPException(status_code=502, detail=f"image understanding failed: {exc}") from exc
     if not detected:
         raise HTTPException(status_code=422, detail="could not interpret the image")
-    products = pinecone_store.query_products(detected, top_k=max(req.k, 20), threshold=0.05)
+    # Fold in any text the shopper typed with the photo ("…but cheaper / in red").
+    query = f"{detected}. {req.note.strip()}" if req.note and req.note.strip() else detected
+    products = pinecone_store.query_products(query, top_k=max(req.k, 20), threshold=0.05)
     products, persona = await _personalize(products, req.persona_id, req.profile_id)
-    return {"detected": detected, "query": detected, "persona": persona,
+    return {"detected": detected, "query": query, "persona": persona,
             "products": [_to_card(p) for p in products[:req.k]]}
 
 

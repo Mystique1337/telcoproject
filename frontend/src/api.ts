@@ -146,8 +146,8 @@ export const api = {
   shopSearch: (query: string, k = 12, persona_id?: string | null, profile_id?: string | null) =>
     postJson<import("./types").ShopSearchResponse>("/shop/search", { query, k, persona_id: persona_id || undefined, profile_id: profile_id || undefined }),
 
-  shopVisualSearch: (image_base64: string, mime: string, k = 12, persona_id?: string | null, profile_id?: string | null) =>
-    postJson<import("./types").ShopSearchResponse>("/shop/visual-search", { image_base64, mime, k, persona_id: persona_id || undefined, profile_id: profile_id || undefined }),
+  shopVisualSearch: (image_base64: string, mime: string, k = 12, persona_id?: string | null, profile_id?: string | null, note?: string | null) =>
+    postJson<import("./types").ShopSearchResponse>("/shop/visual-search", { image_base64, mime, k, persona_id: persona_id || undefined, profile_id: profile_id || undefined, note: note || undefined }),
 
   personas: async () => {
     const r = await fetch(`${BASE}/catalog/personas`);

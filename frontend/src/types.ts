@@ -107,6 +107,7 @@ export interface ShopProduct {
   category?: string | null;
   price_naira?: number | null;
   description?: string;
+  seller?: string | null;
   score?: number;
   rationale?: string | null;
 }
