@@ -1,4 +1,4 @@
-// Static config — model registry + eval headline numbers.
+// Static config - model registry + eval headline numbers.
 //
 // Personas and products are NOT bundled here; they're served as JSON from the
 // FastAPI static-files mount or loaded via separate fetches once we wire that.
@@ -110,7 +110,7 @@ export function modelBestFor(spec: string): "review" | "rank" | "both" | undefin
   return MODELS.find((m) => m.spec === spec)?.bestFor;
 }
 
-// Live eval numbers — read from paper/results.json. Falls back to a tiny
+// Live eval numbers - read from paper/results.json. Falls back to a tiny
 // known-good baseline if the file isn't reachable (so the UI is never broken
 // in early environments).
 export const EVAL_FALLBACK = {

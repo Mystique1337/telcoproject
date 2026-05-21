@@ -202,10 +202,10 @@ function HeroStats({ personasCount, productsCount, evalData }:
       <StatTile icon={<Package size={16}/>} label="Products"
                 value={productsCount.toLocaleString()} sub="real Jumia catalogue"/>
       <StatTile icon={<Target size={16}/>} label="Rating RMSE ↓"
-                value={evalData.naija_rmse?.toFixed(3) ?? "—"}
+                value={evalData.naija_rmse?.toFixed(3) ?? " - "}
                 sub={`vs Claude ${evalData.claude_rmse?.toFixed(3)} · −${rmseDelta}%`} positive/>
       <StatTile icon={<TrendingUp size={16}/>} label="NDCG@10 ↑"
-                value={evalData.naija_ndcg10?.toFixed(3) ?? "—"}
+                value={evalData.naija_ndcg10?.toFixed(3) ?? " - "}
                 sub={`vs Claude ${evalData.claude_ndcg10?.toFixed(3)} · +${ndcgDelta}%`} positive/>
     </div>
   );
@@ -213,7 +213,7 @@ function HeroStats({ personasCount, productsCount, evalData }:
 
 
 // =========================================================================
-// Persona picker (uses local personas array — already loaded once)
+// Persona picker (uses local personas array - already loaded once)
 // =========================================================================
 
 function PersonaPicker({ personas, selected, onChange }:
@@ -243,7 +243,7 @@ function PersonaPicker({ personas, selected, onChange }:
         </select>
         <div className="relative md:col-span-2">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500"/>
-          <input className="input pl-9" placeholder="Search persona — lagos, kano, fintech, trader..."
+          <input className="input pl-9" placeholder="Search persona - lagos, kano, fintech, trader..."
                  value={search} onChange={(e) => setSearch(e.target.value)}/>
         </div>
       </div>
@@ -273,7 +273,7 @@ function PersonaPicker({ personas, selected, onChange }:
 
 
 // =========================================================================
-// Product picker — SERVER-SIDE search (no 300-cap)
+// Product picker - SERVER-SIDE search (no 300-cap)
 // =========================================================================
 
 function ProductPicker({ selected, onChange }:
@@ -324,7 +324,7 @@ function ProductPicker({ selected, onChange }:
         </select>
         <div className="relative md:col-span-2">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500"/>
-          <input className="input pl-9" placeholder="Search 6,657 products — tecno, blender, ankara..."
+          <input className="input pl-9" placeholder="Search 6,657 products - tecno, blender, ankara..."
                  value={search} onChange={(e) => setSearch(e.target.value)} autoFocus={false}/>
         </div>
       </div>
@@ -352,7 +352,7 @@ function ProductPicker({ selected, onChange }:
           );
         })}
         {!loading && items.length === 0 && (
-          <div className="text-sm text-ink-400 p-4 text-center">No products match — try a different search</div>
+          <div className="text-sm text-ink-400 p-4 text-center">No products match - try a different search</div>
         )}
       </div>
     </div>
@@ -380,7 +380,7 @@ function ModelSelect({ value, onChange, label, taskKind }:
           const rec = m.bestFor === taskKind || m.bestFor === "both";
           return (
             <option key={m.spec} value={m.spec}>
-              {m.label} — {m.badge}{rec ? "" : " · ⚠ best for " + m.bestFor}
+              {m.label} - {m.badge}{rec ? "" : " · ⚠ best for " + m.bestFor}
             </option>
           );
         })}
@@ -391,7 +391,7 @@ function ModelSelect({ value, onChange, label, taskKind }:
           <span>
             <strong>{modelLabel(value)}</strong> is best at {best}. If output isn't
             parseable for the {taskKind} contract, the agent falls back to pre-rank
-            (similarity + popularity + aspect-match) — still high quality given
+            (similarity + popularity + aspect-match) - still high quality given
             Pinecone llama-text-embed-v2 retrieval, but you lose LLM-side semantic
             ranking.
           </span>
@@ -529,7 +529,7 @@ function ListenButton({
       >
         {NAIJA_VOICES.map((v) => (
           <option key={v.name} value={v.name}>
-            {v.name} — {v.description}
+            {v.name} - {v.description}
           </option>
         ))}
       </select>
@@ -673,7 +673,7 @@ function ReviewCard({ iterations, modelLabel, persona, product, modelSpec, gener
           {iterations.slice(0, -1).map((it, i) => (
             <div key={i} className="border-l-2 border-ink-700 pl-3 text-sm">
               <div className="text-[10px] text-ink-500 mb-1">
-                v{i + 1} {it.refinement ? `— refined with "${it.refinement}"` : "(initial)"} · ★{it.data.rating}
+                v{i + 1} {it.refinement ? ` - refined with "${it.refinement}"` : "(initial)"} · ★{it.data.rating}
               </div>
               <p className="text-ink-300 text-xs leading-relaxed">{it.data.review}</p>
             </div>
@@ -789,7 +789,7 @@ function TabReview({ personas }: { personas: Persona[] }) {
           <input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)}
                  className="w-4 h-4 accent-naija-500"/>
           <span className="text-sm text-ink-200">
-            Compare side-by-side <span className="text-ink-400">— pit two backbones on the same input</span>
+            Compare side-by-side <span className="text-ink-400"> - pit two backbones on the same input</span>
           </span>
         </label>
         <div className={`grid gap-4 ${compare ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
@@ -985,7 +985,7 @@ function TabRecommend({ personas }: { personas: Persona[] }) {
   const [coldStart, setColdStart] = useState(false);
   const [domain, setDomain] = useState("jumia");
   const [k, setK] = useState(5);
-  // Default to Claude — the right model for Task B re-ranking
+  // Default to Claude - the right model for Task B re-ranking
   const [model, setModel] = useState(MODELS[1].spec);
   const [data, setData] = useState<RecommendResponse | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -1115,7 +1115,7 @@ function TabChat({ personas }: { personas: Persona[] }) {
     setInput("");
     setSending(true);
 
-    // Build history payload — strip welcome message if it's the only assistant turn
+    // Build history payload - strip welcome message if it's the only assistant turn
     const history = [...messages, userMsg]
       .filter((m, i) => !(i === 0 && m.id === "welcome"))
       .map((m) => ({ role: m.role, content: m.content }));
@@ -1181,7 +1181,7 @@ function TabChat({ personas }: { personas: Persona[] }) {
           className="bg-ink-900 border border-ink-700 rounded text-xs px-2 py-1.5 text-ink-200"
           value={chatLang ?? ""}
           onChange={(e) => setChatLang((e.target.value || null) as typeof chatLang)}
-          title="Reply language — the assistant responds directly in this language"
+          title="Reply language - the assistant responds directly in this language"
         >
           <option value="">English / Pidgin</option>
           <option value="yoruba">Yorùbá</option>
@@ -1324,7 +1324,7 @@ export default function App() {
       .then((d) => setPersonas(d.personas ?? []))
       .catch(() => setPersonas([]));
 
-    // Just need the total count for the hero stat — server search drives the picker.
+    // Just need the total count for the hero stat - server search drives the picker.
     api.searchProducts({ limit: 1 })
       .then((d) => setProductsTotal(d.total ?? 0))
       .catch(() => setProductsTotal(0));

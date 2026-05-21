@@ -15,7 +15,7 @@ function applyTheme(theme: "light" | "dark") {
   el.classList.toggle("dark", theme === "dark");
 }
 
-// Floating light/dark toggle — present on every surface (not the embed widget).
+// Floating light/dark toggle - present on every surface (not the embed widget).
 function ThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">(
     () => (localStorage.getItem("theme") as "light" | "dark") || "dark",
@@ -33,11 +33,11 @@ function ThemeToggle() {
 }
 
 // Routing across the products, the B2B layer, the embeddable widget + dev lab.
-//   ?widget=1   Widget  — bare embeddable recommendations (for iframes)
-//   (default)   InsideNaija — Task A product (synthetic panel)
-//   #shopeasy   ShopEasy    — Task B product (search + recommend)
-//   #b2b        B2B         — business connect + embed snippet
-//   #lab        App         — original multi-tab developer console
+//   ?widget=1   Widget - bare embeddable recommendations (for iframes)
+//   (default)   InsideNaija - Task A product (synthetic panel)
+//   #shopeasy   ShopEasy - Task B product (search + recommend)
+//   #b2b        B2B - business connect + embed snippet
+//   #lab        App - original multi-tab developer console
 function Root() {
   const [hash, setHash] = useState(window.location.hash);
   useEffect(() => {

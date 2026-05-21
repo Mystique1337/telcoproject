@@ -1,4 +1,4 @@
-// Language selection gate — shown before the main page (product + labs).
+// Language selection gate - shown before the main page (product + labs).
 // Stores the choice in localStorage so it's asked once per browser.
 
 import { useEffect, useState } from "react";

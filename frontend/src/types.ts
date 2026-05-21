@@ -1,4 +1,4 @@
-// API types — must stay in sync with app/api/schemas/
+// API types - must stay in sync with app/api/schemas/
 
 export interface Persona {
   user_id: string;

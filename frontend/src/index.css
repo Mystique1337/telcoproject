@@ -35,7 +35,7 @@ html.light {
   body {
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-  /* Display typeface for headings — distinctive, premium grotesk. */
+  /* Display typeface for headings - distinctive, premium grotesk. */
   h1, h2, h3, .font-display {
     font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
     letter-spacing: -0.02em;

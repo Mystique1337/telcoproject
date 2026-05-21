@@ -1,4 +1,4 @@
-// Passwordless onboarding wizard — builds & stores a persona from a few answers.
+// Passwordless onboarding wizard - builds & stores a persona from a few answers.
 
 import { useState } from "react";
 import { ArrowRight, Check, Loader2, MapPin, Sparkles, User, X } from "lucide-react";
@@ -67,7 +67,7 @@ export function Onboarding({ onClose, onDone }:
           <div>
             <div className="w-11 h-11 rounded-xl bg-naija-600/20 border border-naija-700/40 flex items-center justify-center mb-4"><User size={20} className="text-naija-300" /></div>
             <h2 className="text-xl font-bold text-ink-50">Let's set you up</h2>
-            <p className="text-sm text-ink-400 mt-1 mb-5">No password needed — we just tailor recommendations to you.</p>
+            <p className="text-sm text-ink-400 mt-1 mb-5">No password needed - we just tailor recommendations to you.</p>
             <label className="text-xs text-ink-400">Your name</label>
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Chidi"
                    className="w-full mt-1 mb-3 bg-ink-950 border border-ink-700 focus:border-naija-600 rounded-lg px-3 py-2 text-sm text-ink-100 outline-none" />
@@ -80,7 +80,7 @@ export function Onboarding({ onClose, onDone }:
         {step === 1 && (
           <div>
             <h2 className="text-xl font-bold text-ink-50">A little about you</h2>
-            <p className="text-sm text-ink-400 mt-1 mb-5">Optional — helps us model your taste.</p>
+            <p className="text-sm text-ink-400 mt-1 mb-5">Optional - helps us model your taste.</p>
             <label className="text-xs text-ink-400">Age range</label>
             <div className="flex flex-wrap gap-2 mt-1 mb-4">
               {AGE_RANGES.map((a) => (
@@ -98,7 +98,7 @@ export function Onboarding({ onClose, onDone }:
           <div>
             <div className="w-11 h-11 rounded-xl bg-naija-600/20 border border-naija-700/40 flex items-center justify-center mb-4"><Sparkles size={20} className="text-naija-300" /></div>
             <h2 className="text-xl font-bold text-ink-50">What do you shop for?</h2>
-            <p className="text-sm text-ink-400 mt-1 mb-4">Pick a few — we'll prioritise these.</p>
+            <p className="text-sm text-ink-400 mt-1 mb-4">Pick a few - we'll prioritise these.</p>
             <div className="flex flex-wrap gap-2">
               {INTERESTS.map((i) => (
                 <button key={i} onClick={() => toggle(i)}

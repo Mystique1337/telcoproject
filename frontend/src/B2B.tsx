@@ -1,4 +1,4 @@
-// B2B connect page — a business registers and gets an embeddable widget snippet.
+// B2B connect page - a business registers and gets an embeddable widget snippet.
 
 import { useState } from "react";
 import { ArrowRight, Check, Code2, Copy, Loader2, Store, Zap } from "lucide-react";
@@ -57,8 +57,7 @@ export default function B2B() {
         </h1>
         <p className="text-ink-300 mt-4 max-w-xl mx-auto">
           Connect your business and drop one line of code. Your shoppers get
-          persona-aware product recommendations powered by our Nigerian engine —
-          no ML team required.
+          persona-aware product recommendations powered by our Nigerian engine -           no ML team required.
         </p>
       </section>
 

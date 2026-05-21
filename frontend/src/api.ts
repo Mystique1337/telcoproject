@@ -128,7 +128,7 @@ export const api = {
       conversation_history: opts.conversation_history,
     }),
 
-  /** InsideNaija — run a product across the persona panel. */
+  /** InsideNaija - run a product across the persona panel. */
   panel: (opts: {
     product: Product;
     persona_ids?: string[];

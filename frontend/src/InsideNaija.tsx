@@ -1,4 +1,4 @@
-// InsideNaija — pre-launch synthetic customer panel for the Nigerian market.
+// InsideNaija - pre-launch synthetic customer panel for the Nigerian market.
 // Landing hero (live persona reactions) + the panel dashboard.
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -137,7 +137,7 @@ function ListenButton({ play, loading, speaking }:
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Hero — live persona reaction amplifier
+// Hero - live persona reaction amplifier
 // ─────────────────────────────────────────────────────────────────────────
 
 const HERO_PRODUCT: Product = {
@@ -177,7 +177,7 @@ function Hero({ onTryItOwn }: { onTryItOwn: () => void }) {
       setAgg(res.aggregate);
       setDone(true);
     } catch {
-      /* network hiccup — leave hero idle */
+      /* network hiccup - leave hero idle */
     }
     setRunning(false);
   }
@@ -187,18 +187,18 @@ function Hero({ onTryItOwn }: { onTryItOwn: () => void }) {
       {/* glow */}
       <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-naija-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-12 grid lg:grid-cols-2 gap-12 items-center">
-        {/* Left — pitch */}
+        {/* Left - pitch */}
         <div>
           <div className="inline-flex items-center gap-2 text-xs font-medium text-naija-300 bg-naija-900/40 border border-naija-700/40 rounded-full px-3 py-1 mb-6">
             <Sparkles size={13} /> Pre-launch consumer intelligence
           </div>
           <h1 className="text-5xl md:text-6xl font-extrabold text-ink-50 leading-[1.05] tracking-tight">
             See how <span className="brand-text">Nigeria</span> will react
-            <span className="text-ink-400"> — before you launch.</span>
+            <span className="text-ink-400"> - before you launch.</span>
           </h1>
           <p className="mt-5 text-lg text-ink-300 leading-relaxed max-w-lg">
             Drop in any product and a calibrated panel of 24 Nigerian personas
-            reacts with real ratings and reviews — across every region, register
+            reacts with real ratings and reviews - across every region, register
             and religion. A ₦5M panel study, in 90 seconds.
           </p>
           <div className="mt-8 flex items-center gap-3">
@@ -219,7 +219,7 @@ function Hero({ onTryItOwn }: { onTryItOwn: () => void }) {
           </div>
         </div>
 
-        {/* Right — live reaction panel */}
+        {/* Right - live reaction panel */}
         <div className="bg-ink-900/60 border border-ink-700 rounded-2xl p-5 shadow-2xl backdrop-blur">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -335,7 +335,7 @@ function SectionPhoto({ q, className = "" }: { q: string; className?: string }) 
 
 function HowItWorks({ onTry }: { onTry: () => void }) {
   const steps = [
-    { n: 1, icon: <Package size={20} />, t: "Describe your product", d: "Title, price, a line of detail — or drop a photo. Takes 20 seconds." },
+    { n: 1, icon: <Package size={20} />, t: "Describe your product", d: "Title, price, a line of detail - or drop a photo. Takes 20 seconds." },
     { n: 2, icon: <Users size={20} />, t: "The panel reacts", d: "24 Nigerian personas across 6 zones rate it and write a real review in their own register." },
     { n: 3, icon: <BarChart3 size={20} />, t: "Read the verdict", d: "Predicted rating, buy-likelihood, who's warm/cold, and the recurring praise & concerns." },
   ];
@@ -380,8 +380,8 @@ function WhySection() {
             Vanilla AI flattens "e too much abeg" into bland English and reads
             "Alhamdulillah" as a complaint. InsideNaija is powered by
             <span className="text-naija-300"> NaijaReviewer-8B</span>, fine-tuned on Nigerian
-            reviews, so reactions land in the right register — Pidgin, Yorùbá,
-            Hausa, Igbo — for every region, age and faith.
+            reviews, so reactions land in the right register - Pidgin, Yorùbá,
+            Hausa, Igbo - for every region, age and faith.
           </p>
           <ul className="mt-5 space-y-2.5">
             {["Calibrated to 6 geopolitical zones", "Predicts ratings within ±1.1★ on unseen products", "Hear every reaction in a Nigerian voice"].map((x) => (
@@ -397,7 +397,7 @@ function WhySection() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// The panel app — input + dashboard
+// The panel app - input + dashboard
 // ─────────────────────────────────────────────────────────────────────────
 
 function Bar({ label, value, max, suffix = "", tone = "naija" }:
@@ -443,7 +443,7 @@ function Dashboard({ data }: { data: PanelResponse }) {
   const a = data.aggregate;
   const maxDist = Math.max(...Object.values(a.rating_distribution), 1);
   const verdict = a.avg_rating >= 4 ? { t: "Strong fit", c: "text-emerald-400" }
-    : a.avg_rating >= 3 ? { t: "Mixed — needs work", c: "text-amber-400" }
+    : a.avg_rating >= 3 ? { t: "Mixed - needs work", c: "text-amber-400" }
     : { t: "Weak fit", c: "text-red-400" };
 
   return (
@@ -498,13 +498,13 @@ function Dashboard({ data }: { data: PanelResponse }) {
               <span key={t} className="text-xs bg-emerald-900/30 text-emerald-300 border border-emerald-700/30 rounded-full px-2.5 py-1">
                 <Check size={10} className="inline mr-1" />{t}
               </span>
-            )) : <span className="text-xs text-ink-500">—</span>}
+            )) : <span className="text-xs text-ink-500"> - </span>}
           </div>
           <div className="text-xs text-amber-400 font-medium mb-1">Concerns</div>
           <div className="flex flex-wrap gap-1.5">
             {a.themes.complaints.length ? a.themes.complaints.map((t) => (
               <span key={t} className="text-xs bg-amber-900/30 text-amber-200 border border-amber-700/30 rounded-full px-2.5 py-1">{t}</span>
-            )) : <span className="text-xs text-ink-500">—</span>}
+            )) : <span className="text-xs text-ink-500"> - </span>}
           </div>
         </div>
       </div>
@@ -539,8 +539,7 @@ function Dashboard({ data }: { data: PanelResponse }) {
 
       {/* Methodology / honesty footnote */}
       <div className="text-[11px] text-ink-500 leading-relaxed border-t border-ink-800 pt-4">
-        These are <strong className="text-ink-300">predicted</strong> reactions, not measured ones —
-        the panel simulates how each persona would rate a product it has never seen, calibrated to a
+        These are <strong className="text-ink-300">predicted</strong> reactions, not measured ones -         the panel simulates how each persona would rate a product it has never seen, calibrated to a
         held-out rating error of <strong className="text-ink-300">±{data.rmse_band ?? 1.1}★</strong>.
         Read the cohort signal (which groups react warmer/cooler, recurring concerns) as the durable
         output; treat any single number as a directional estimate.
@@ -661,7 +660,7 @@ function InsightBand() {
         <div className="text-xs font-semibold tracking-widest text-naija-400 uppercase mb-5">Validated by Nigerians</div>
         <p className="text-2xl md:text-[2.1rem] leading-snug font-semibold text-ink-50 tracking-tight">
           Nigerian readers rate our <span className="text-naija-300">8B local model</span> as authentic
-          as frontier AI — <span className="text-ink-300">a statistical tie at 48.5%</span> in blind A/B,
+          as frontier AI - <span className="text-ink-300">a statistical tie at 48.5%</span> in blind A/B,
           while frontier LLM judges (carrying a Western prior) under-rate it.
         </p>
         <div className="mt-8 flex items-center justify-center gap-8 text-sm">
@@ -686,7 +685,7 @@ function ClosingCTA({ onTry }: { onTry: () => void }) {
           Stop guessing how Nigeria will react. Find out in 90 seconds.
         </h2>
         <p className="relative text-white/80 mt-4 max-w-xl mx-auto">
-          Run an unlimited synthetic panel free. No card, no setup — just drop a product.
+          Run an unlimited synthetic panel free. No card, no setup - just drop a product.
         </p>
         <button onClick={onTry}
                 className="relative mt-8 inline-flex items-center gap-2 bg-white hover:bg-white/90 text-naija-800 font-bold rounded-xl px-7 py-3.5 transition-colors">
@@ -715,7 +714,7 @@ export default function InsideNaija() {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-naija-500 to-naija-800 flex items-center justify-center text-lg">🇳🇬</div>
               <span className="font-bold text-ink-50 tracking-tight">Inside<span className="brand-text">Naija</span></span>
             </div>
-            {/* product switcher — two separate products */}
+            {/* product switcher - two separate products */}
             <div className="inline-flex items-center bg-ink-900 border border-ink-700 rounded-lg p-0.5 text-xs">
               <a href="#" className="px-2.5 py-1 rounded-md bg-naija-600 text-white">InsideNaija</a>
               <a href="#shopeasy" className="px-2.5 py-1 rounded-md text-ink-400 hover:text-ink-200 transition-colors">ShopEasy</a>
@@ -749,14 +748,14 @@ export default function InsideNaija() {
             </div>
             <p className="text-sm text-ink-400 max-w-xs leading-relaxed">
               The synthetic Nigerian customer panel. Predict how the market reacts
-              before you launch — across every region, register and religion.
+              before you launch - across every region, register and religion.
             </p>
           </div>
           <div>
             <div className="text-xs font-semibold text-ink-300 uppercase tracking-wider mb-3">Products</div>
             <ul className="space-y-2 text-sm text-ink-400">
-              <li><a href="#" className="hover:text-naija-300">InsideNaija — Panel</a></li>
-              <li><a href="#shopeasy" className="hover:text-naija-300">ShopEasy — Shopping</a></li>
+              <li><a href="#" className="hover:text-naija-300">InsideNaija - Panel</a></li>
+              <li><a href="#shopeasy" className="hover:text-naija-300">ShopEasy - Shopping</a></li>
               <li><a href="#b2b" className="hover:text-naija-300">For Business</a></li>
             </ul>
           </div>

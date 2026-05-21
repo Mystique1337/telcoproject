@@ -7,7 +7,7 @@ import { Loader2, Search, ShoppingBag } from "lucide-react";
 
 interface WProduct { product_id: string; title: string; category?: string | null; price_naira?: number | null; }
 
-function naira(n?: number | null) { return n ? "₦" + Number(n).toLocaleString() : "—"; }
+function naira(n?: number | null) { return n ? "₦" + Number(n).toLocaleString() : " - "; }
 
 function WThumb({ p }: { p: WProduct }) {
   const [url, setUrl] = useState<string | null>(null);
