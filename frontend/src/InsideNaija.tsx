@@ -192,9 +192,9 @@ function Hero({ onTryItOwn }: { onTryItOwn: () => void }) {
           <div className="inline-flex items-center gap-2 text-xs font-medium text-naija-300 bg-naija-900/40 border border-naija-700/40 rounded-full px-3 py-1 mb-6">
             <Sparkles size={13} /> Pre-launch consumer intelligence
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-ink-50 leading-[1.1] tracking-tight">
-            See how <span className="text-naija-400">Nigeria</span> will react —
-            <br /> before you launch.
+          <h1 className="text-5xl md:text-6xl font-extrabold text-ink-50 leading-[1.05] tracking-tight">
+            See how <span className="bg-gradient-to-r from-naija-300 to-naija-500 bg-clip-text text-transparent">Nigeria</span> will react
+            <span className="text-ink-400"> — before you launch.</span>
           </h1>
           <p className="mt-5 text-lg text-ink-300 leading-relaxed max-w-lg">
             Drop in any product and a calibrated panel of 24 Nigerian personas
@@ -650,6 +650,54 @@ function PanelApp() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
+// Premium marketing bands (Cohere-inspired: big type, whitespace, one idea)
+// ─────────────────────────────────────────────────────────────────────────
+
+function InsightBand() {
+  return (
+    <section className="relative overflow-hidden border-y border-ink-800/80">
+      <div className="absolute inset-0 bg-gradient-to-r from-naija-600/[0.07] via-transparent to-amber-500/[0.06] pointer-events-none" />
+      <div className="relative max-w-4xl mx-auto px-6 py-20 text-center">
+        <div className="text-xs font-semibold tracking-widest text-naija-400 uppercase mb-5">Validated by Nigerians</div>
+        <p className="text-2xl md:text-[2.1rem] leading-snug font-semibold text-ink-50 tracking-tight">
+          Nigerian readers rate our <span className="text-naija-300">8B local model</span> as authentic
+          as frontier AI — <span className="text-ink-300">a statistical tie at 48.5%</span> in blind A/B,
+          while frontier LLM judges (carrying a Western prior) under-rate it.
+        </p>
+        <div className="mt-8 flex items-center justify-center gap-8 text-sm">
+          <div><div className="text-3xl font-bold text-naija-300 tabular-nums">48.5%</div><div className="text-xs text-ink-400 mt-1">human win-rate vs Claude</div></div>
+          <div className="w-px h-10 bg-ink-700" />
+          <div><div className="text-3xl font-bold text-naija-300 tabular-nums">−15.5%</div><div className="text-xs text-ink-400 mt-1">rating-error vs frontier</div></div>
+          <div className="w-px h-10 bg-ink-700" />
+          <div><div className="text-3xl font-bold text-naija-300 tabular-nums">$0</div><div className="text-xs text-ink-400 mt-1">per call, runs local</div></div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ClosingCTA({ onTry }: { onTry: () => void }) {
+  return (
+    <section className="max-w-6xl mx-auto px-6 py-16">
+      <div className="relative overflow-hidden rounded-3xl border border-naija-700/50 bg-gradient-to-br from-naija-900/60 via-ink-900 to-ink-900 p-10 md:p-14 text-center">
+        <div className="absolute -top-24 -right-24 w-72 h-72 bg-naija-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <h2 className="relative text-3xl md:text-4xl font-extrabold text-ink-50 tracking-tight max-w-2xl mx-auto leading-tight">
+          Stop guessing how Nigeria will react. Find out in 90 seconds.
+        </h2>
+        <p className="relative text-ink-300 mt-4 max-w-xl mx-auto">
+          Run an unlimited synthetic panel free. No card, no setup — just drop a product.
+        </p>
+        <button onClick={onTry}
+                className="relative mt-8 inline-flex items-center gap-2 bg-naija-500 hover:bg-naija-400 text-ink-950 font-bold rounded-xl px-7 py-3.5 transition-colors">
+          Run a free study <ArrowRight size={18} />
+        </button>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
 // Page shell
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -688,13 +736,45 @@ export default function InsideNaija() {
       <Hero onTryItOwn={scrollToPanel} />
       <ValueStrip />
       <HowItWorks onTry={scrollToPanel} />
+      <InsightBand />
       <WhySection />
       <div ref={panelRef}><PanelApp /></div>
+      <ClosingCTA onTry={scrollToPanel} />
 
-      <footer className="border-t border-ink-800 mt-12">
-        <div className="max-w-6xl mx-auto px-6 py-8 text-xs text-ink-500 flex items-center justify-between flex-wrap gap-3">
-          <span>InsideNaija — synthetic Nigerian customer panel. Powered by NaijaReviewer-8B.</span>
-          <span>Predicts reactions; complements human research, doesn't replace it.</span>
+      <footer className="border-t border-ink-800">
+        <div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-4 gap-8">
+          <div className="md:col-span-2">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-naija-500 to-naija-800 flex items-center justify-center text-base">🇳🇬</div>
+              <span className="font-bold text-ink-50">Inside<span className="text-naija-400">Naija</span></span>
+            </div>
+            <p className="text-sm text-ink-400 max-w-xs leading-relaxed">
+              The synthetic Nigerian customer panel. Predict how the market reacts
+              before you launch — across every region, register and religion.
+            </p>
+          </div>
+          <div>
+            <div className="text-xs font-semibold text-ink-300 uppercase tracking-wider mb-3">Products</div>
+            <ul className="space-y-2 text-sm text-ink-400">
+              <li><a href="#" className="hover:text-naija-300">InsideNaija — Panel</a></li>
+              <li><a href="#shopeasy" className="hover:text-naija-300">ShopEasy — Shopping</a></li>
+              <li><a href="#b2b" className="hover:text-naija-300">For Business</a></li>
+            </ul>
+          </div>
+          <div>
+            <div className="text-xs font-semibold text-ink-300 uppercase tracking-wider mb-3">Engine</div>
+            <ul className="space-y-2 text-sm text-ink-400">
+              <li>NaijaReviewer-8B</li>
+              <li>24 personas · 6 zones</li>
+              <li>5 languages + voice</li>
+            </ul>
+          </div>
+        </div>
+        <div className="border-t border-ink-800/70">
+          <div className="max-w-6xl mx-auto px-6 py-5 text-xs text-ink-500 flex items-center justify-between flex-wrap gap-2">
+            <span>© 2026 InsideNaija. Predicts reactions; complements human research, doesn't replace it.</span>
+            <span>Powered by NaijaReviewer-8B</span>
+          </div>
         </div>
       </footer>
     </div>
