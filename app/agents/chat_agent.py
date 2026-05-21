@@ -106,6 +106,14 @@ _CATEGORY_HINTS = {
 }
 
 
+# Any money mention: ₦-prefixed, or a number with a k/thousand/m/million unit.
+# Bare numbers with no money signal (e.g. an age "13") are ignored.
+_MONEY_RE = re.compile(
+    r"(₦)?\s*([\d,]+(?:\.\d+)?)\s*(k|thousand|m|million)?",
+    re.IGNORECASE,
+)
+
+
 def _coerce_naira(amount: str, unit: str | None) -> int | None:
     try:
         n = float(amount.replace(",", ""))
@@ -117,6 +125,25 @@ def _coerce_naira(amount: str, unit: str | None) -> int | None:
     elif u in ("m", "million"):
         n *= 1_000_000
     return int(n)
+
+
+def _find_budget(content: str) -> int | None:
+    """Latest budget in a single turn. Handles 'budget is now 150k', 'make it
+    ₦150,000', 'raise to 1.5m' — not just 'under 80k'."""
+    m = _BUDGET_RE.search(content)
+    if m:
+        v = _coerce_naira(m.group(1), m.group(2))
+        if v:
+            return v
+    best: int | None = None
+    for mm in _MONEY_RE.finditer(content):
+        naira_sign, amt, unit = mm.group(1), mm.group(2), mm.group(3)
+        if not (naira_sign or unit):
+            continue  # bare number with no money signal — skip (ages, counts…)
+        v = _coerce_naira(amt, unit)
+        if v and v >= 500:
+            best = v  # last money mention in the turn wins
+    return best
 
 
 def _extract_constraints(history: list[dict[str, str]]) -> dict[str, Any]:
@@ -132,24 +159,21 @@ def _extract_constraints(history: list[dict[str, str]]) -> dict[str, Any]:
         if not content:
             continue
 
-        m = _BUDGET_RE.search(content)
-        if m:
-            v = _coerce_naira(m.group(1), m.group(2))
-            if v:
-                budget = v
+        b = _find_budget(content)
+        if b:
+            budget = b  # later turns override earlier (most-recent wins)
 
         m = _RECIPIENT_RE.search(content)
         if m:
             recipient = m.group(1).lower().strip()
 
-        # Category — pick the LAST one that matches; only swap if a clearer
-        # hint appears in this turn
+        # Category — word-boundary match so "ac" doesn't fire inside "actually".
         for cat, words in _CATEGORY_HINTS.items():
-            if any(w in content for w in words):
+            hit = next((w for w in words if re.search(rf"\b{re.escape(w)}\b", content)), None)
+            if hit:
                 category = cat
-                # collect specific keyword hits to bias retrieval
                 for w in words:
-                    if w in content and w not in keywords:
+                    if re.search(rf"\b{re.escape(w)}\b", content) and w not in keywords:
                         keywords.append(w)
                 break
 
