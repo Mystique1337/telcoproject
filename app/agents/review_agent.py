@@ -26,6 +26,11 @@ from app.api.schemas.product import Product
 from app.config import PROJECT_ROOT, get_settings
 from app.llm import get_llm_client
 from app.llm.client import LLMError
+from app.agents.translation import (
+    NIGERIAN_LANGUAGES,
+    is_supported_language,
+    translate_text,
+)
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -120,6 +125,7 @@ async def generate_review(
     length_hint: str | None = None,
     tone_modifier: str | None = None,
     refinement_instructions: str | None = None,
+    target_language: str | None = None,
 ) -> dict[str, Any]:
     """Generate a review + rating for the given persona × product pair.
 
@@ -222,14 +228,57 @@ async def generate_review(
     rationale = _compose_rationale(persona, product, final_rating)
     trace.append({"node": "rationale_composition"})
 
+    review_clean = review_text.strip()
+
+    # Enforce brevity regardless of backbone. The local fine-tune was trained on
+    # longer reviews and tends to ignore length instructions, so we trim to a
+    # realistic sentence count (real Jumia reviews are short). short=1, long=4,
+    # default=2.
+    _max_sentences = {"short": 1, "long": 4}.get(length_hint or "", 2)
+    review_clean = _trim_to_sentences(review_clean, _max_sentences)
+
+    original_review: str | None = None
+    language: str | None = None
+
+    # Optional: translate the finished review into a Nigerian language
+    # (Yoruba / Hausa / Igbo) for display + TTS read-out. Generated first in
+    # the model's strong register, then translated.
+    if is_supported_language(target_language):
+        original_review = review_clean
+        translated = await translate_text(review_clean, target_language)  # type: ignore[arg-type]
+        review_clean = translated
+        language = target_language.lower()  # type: ignore[union-attr]
+        trace.append({
+            "node": "translation",
+            "summary": f"Translated review into {NIGERIAN_LANGUAGES[language]}",
+            "target_language": language,
+        })
+
     return {
         "rating": final_rating,
-        "review": review_text.strip(),
+        "review": review_clean,
         "register_tier": persona.register_tier,
         "rationale": rationale,
         "fallback_reason": fallback_reason,
         "reasoning_trace": trace if include_reasoning else None,
+        "language": language,
+        "original_review": original_review,
     }
+
+
+def _trim_to_sentences(text: str, max_sentences: int) -> str:
+    """Keep at most `max_sentences` sentences (split on . ! ? plus Naija '—').
+    Backbone-agnostic brevity enforcement so reviews read like real short ones."""
+    import re as _re
+    text = text.strip()
+    if not text:
+        return text
+    # Split keeping delimiters, then re-join the first N sentence-ish chunks.
+    parts = _re.split(r"(?<=[.!?])\s+", text)
+    parts = [p for p in parts if p.strip()]
+    if len(parts) <= max_sentences:
+        return text
+    return " ".join(parts[:max_sentences]).strip()
 
 
 def _parse_rating_review(text: str, fallback_rating: int) -> tuple[int, str]:

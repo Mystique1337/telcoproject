@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -54,6 +54,13 @@ class ChatRequest(BaseModel):
     )
     k: int = Field(default=5, ge=1, le=20)
     include_reasoning: bool = False
+    language: Literal["yoruba", "hausa", "igbo"] | None = Field(
+        default=None,
+        description=(
+            "Optional: have the assistant reply directly in a Nigerian language "
+            "(Yoruba / Hausa / Igbo). If unset, replies in English/Pidgin."
+        ),
+    )
 
 
 class ChatResponse(BaseModel):
@@ -78,6 +85,7 @@ async def chat(req: ChatRequest) -> ChatResponse:
             reranker_spec=req.reranker_override,
             include_reasoning=req.include_reasoning,
             k=req.k,
+            language=req.language,
         )
     except Exception as exc:  # noqa: BLE001
         logger.exception("chat step failed")

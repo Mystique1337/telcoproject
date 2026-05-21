@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -64,6 +64,14 @@ class SimulateReviewRequest(BaseModel):
             "'rewrite as 3 stars', 'mention the Owambe use case'."
         ),
     )
+    target_language: Literal["yoruba", "hausa", "igbo"] | None = Field(
+        default=None,
+        description=(
+            "Optional: translate the generated review into a Nigerian language "
+            "(Yoruba / Hausa / Igbo) for display + TTS read-out. The review is "
+            "generated normally first, then translated."
+        ),
+    )
 
 
 class SimulateReviewResponse(BaseModel):
@@ -74,6 +82,14 @@ class SimulateReviewResponse(BaseModel):
     fallback_reason: str | None = None
     reasoning_trace: list[dict[str, Any]] | None = None
     latency_ms: int
+    language: str | None = Field(
+        default=None,
+        description="Set to yoruba/hausa/igbo when the review was translated.",
+    )
+    original_review: str | None = Field(
+        default=None,
+        description="The pre-translation English/Pidgin review, when translated.",
+    )
 
 
 # --------------------------------------------------------------------------- #

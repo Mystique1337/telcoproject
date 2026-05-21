@@ -38,12 +38,17 @@ CONSTRAINTS
 {%- endif %}
 - Do not say the numeric rating inside the review text; let it come through in tone and content.
 - {{ register_instructions }}
+- AUTHENTICITY: write like a real person dropping a quick review on Jumia — NOT
+  marketing copy, NOT an essay. Real reviews are short and blunt. Do NOT restate
+  the product's full name/title; refer to it the way buyers do ("this phone",
+  "the bag", "am", "e", "this one"). Skip greetings, sign-offs and meta-commentary.
+  It's fine to focus on just one thing that mattered and stop there.
 {%- if length_hint == "short" %}
-- LENGTH: 1–2 sentences only. Be terse and impactful.
+- LENGTH: 1 short sentence. Punchy.
 {%- elif length_hint == "long" %}
-- LENGTH: 6–8 sentences. Take time to cover multiple aspects and lived experience.
+- LENGTH: 3–4 sentences max.
 {%- else %}
-- LENGTH: 3–5 sentences.
+- LENGTH: 1–2 sentences. Most real reviews are this short — do not pad.
 {%- endif %}
 {%- if aspect_focus %}
 - ASPECT FOCUS: lead with and centre the review around — {{ aspect_focus }}. Make this the most prominent point.
@@ -51,7 +56,7 @@ CONSTRAINTS
 {%- if tone_modifier %}
 - TONE: write in a {{ tone_modifier }} tone. Stay consistent with the persona, but bias the voice accordingly.
 {%- endif %}
-- Mention at least one of the user's top aspects naturally.
+- You MAY touch one of the user's top aspects if it fits naturally — but don't force it or list several.
 - If communal_individual > 0.6, lean into "we / my family / my people". Otherwise speak as "I".
 - Do NOT add disclaimers, warnings, or meta-commentary.
 - No emojis unless the persona's history clearly uses them.

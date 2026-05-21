@@ -40,6 +40,7 @@ async def simulate_review(req: SimulateReviewRequest) -> SimulateReviewResponse:
             length_hint=req.length_hint,
             tone_modifier=req.tone_modifier,
             refinement_instructions=req.refinement_instructions,
+            target_language=req.target_language,
         )
     except Exception as exc:  # noqa: BLE001
         logger.exception("simulate-review failed")
@@ -54,4 +55,6 @@ async def simulate_review(req: SimulateReviewRequest) -> SimulateReviewResponse:
         fallback_reason=result.get("fallback_reason"),
         reasoning_trace=result.get("reasoning_trace"),
         latency_ms=elapsed_ms,
+        language=result.get("language"),
+        original_review=result.get("original_review"),
     )

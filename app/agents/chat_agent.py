@@ -56,6 +56,15 @@ from app.agents.recommend_agent import (
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
+# Nigerian-language support for the conversational flow. When `language` is set,
+# the orchestrator replies directly in that language (the model does these well).
+_LANG_NAMES: dict[str, str] = {"yoruba": "Yoruba", "hausa": "Hausa", "igbo": "Igbo"}
+_WELCOME_BY_LANG: dict[str, str] = {
+    "yoruba": "Ẹ ku abọ! Kí ni ẹ fẹ́ ra lónìí?",
+    "hausa": "Barka da zuwa! Me kuke son saya yau?",
+    "igbo": "Nnọọ! Gịnị ka ị chọrọ ịzụ taa?",
+}
+
 
 # --------------------------------------------------------------------------- #
 # Constraint extraction (deterministic regex first, LLM fallback)              #
@@ -200,7 +209,8 @@ Rules:
 async def _decide_action(history: list[dict[str, str]],
                           constraints: dict[str, Any],
                           persona: Persona | None,
-                          orchestrator_spec: str) -> dict[str, Any]:
+                          orchestrator_spec: str,
+                          language: str | None = None) -> dict[str, Any]:
     """Ask the orchestrator LLM to pick the next action + craft the message."""
     history_block = "\n".join(
         f"  {t.get('role','user'):>10}: {t.get('content','')[:200]}" for t in history
@@ -214,6 +224,13 @@ async def _decide_action(history: list[dict[str, str]],
     )
     if persona:
         prompt += f"\n\nUser register tier: {register} (match this in `message`)."
+    lang_name = _LANG_NAMES.get((language or "").lower())
+    if lang_name:
+        prompt += (
+            f"\n\nIMPORTANT: Write `message` and `question` ENTIRELY in {lang_name} "
+            f"(correct orthography/diacritics, natural conversational {lang_name}). "
+            f"Keep the JSON field names and `search_query` in English."
+        )
 
     client = get_llm_client(orchestrator_spec)
     try:
@@ -434,6 +451,7 @@ async def chat_step(
     reranker_spec: str | None = None,
     include_reasoning: bool = False,
     k: int = 5,
+    language: str | None = None,
 ) -> dict[str, Any]:
     """One turn of the conversational shopping flow.
 
@@ -454,7 +472,10 @@ async def chat_step(
     if not history:
         return {
             "action": "ask",
-            "message": "Welcome! What are you shopping for today?",
+            "message": _WELCOME_BY_LANG.get(
+                (language or "").lower(),
+                "Welcome! What are you shopping for today?",
+            ),
             "recommendations": [],
             "extracted_constraints": {},
             "filters_applied": {},
@@ -474,7 +495,7 @@ async def chat_step(
     })
 
     # Step 2: orchestrator picks action
-    decision = await _decide_action(history, constraints, persona, orch_spec)
+    decision = await _decide_action(history, constraints, persona, orch_spec, language)
     action = decision.get("action", "ask")
     message = decision.get("message", "")
     question = decision.get("question")
@@ -549,7 +570,9 @@ async def chat_step(
     })
 
     final_message = message or "Here are my top picks:"
-    if relaxation_steps:
+    # The relaxation note is English; only prepend it when replying in English,
+    # otherwise keep the orchestrator's in-language message intact.
+    if relaxation_steps and not _LANG_NAMES.get((language or "").lower()):
         note = "I couldn't find an exact match — " + "; ".join(relaxation_steps) + "."
         final_message = f"{note} Here are the closest options:"
 
