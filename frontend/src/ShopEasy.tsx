@@ -409,7 +409,7 @@ function Store({ lang, profile, onHome, onSignIn }:
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-naija-500 to-naija-800 flex items-center justify-center"><ShoppingCart size={16} className="text-white" /></div>
-              <span className="font-bold text-ink-50 tracking-tight">Shop<span className="text-naija-400">Easy</span></span>
+              <span className="font-bold text-ink-50 tracking-tight">Shop<span className="brand-text">Easy</span></span>
             </div>
             <ProductSwitcher current="shop" />
           </div>
@@ -568,7 +568,7 @@ function Home({ profile, onStart, onSignIn }:
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-naija-500 to-naija-800 flex items-center justify-center"><ShoppingCart size={16} className="text-white" /></div>
-              <span className="font-bold text-ink-50 tracking-tight">Shop<span className="text-naija-400">Easy</span></span>
+              <span className="font-bold text-ink-50 tracking-tight">Shop<span className="brand-text">Easy</span></span>
             </div>
             <ProductSwitcher current="shop" />
           </div>

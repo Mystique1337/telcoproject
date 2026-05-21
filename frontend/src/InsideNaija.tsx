@@ -713,7 +713,7 @@ export default function InsideNaija() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-naija-500 to-naija-800 flex items-center justify-center text-lg">🇳🇬</div>
-              <span className="font-bold text-ink-50 tracking-tight">Inside<span className="text-naija-400">Naija</span></span>
+              <span className="font-bold text-ink-50 tracking-tight">Inside<span className="brand-text">Naija</span></span>
             </div>
             {/* product switcher — two separate products */}
             <div className="inline-flex items-center bg-ink-900 border border-ink-700 rounded-lg p-0.5 text-xs">
@@ -746,7 +746,7 @@ export default function InsideNaija() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-2.5 mb-3">
               <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-naija-500 to-naija-800 flex items-center justify-center text-base">🇳🇬</div>
-              <span className="font-bold text-ink-50">Inside<span className="text-naija-400">Naija</span></span>
+              <span className="font-bold text-ink-50">Inside<span className="brand-text">Naija</span></span>
             </div>
             <p className="text-sm text-ink-400 max-w-xs leading-relaxed">
               The synthetic Nigerian customer panel. Predict how the market reacts

@@ -39,7 +39,7 @@ export default function B2B() {
         <div className="max-w-5xl mx-auto px-6 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-naija-500 to-naija-800 flex items-center justify-center"><Store size={16} className="text-white" /></div>
-            <span className="font-bold text-ink-50">ShopEasy <span className="text-naija-400">for Business</span></span>
+            <span className="font-bold text-ink-50">ShopEasy <span className="brand-text">for Business</span></span>
           </div>
           <nav className="flex items-center gap-4 text-xs">
             <a href="#shopeasy" className="text-ink-400 hover:text-ink-200">Consumer app ↗</a>
@@ -48,12 +48,12 @@ export default function B2B() {
         </div>
       </header>
 
-      <section className="max-w-5xl mx-auto px-6 pt-16 pb-8 text-center">
+      <section className="relative overflow-hidden mesh grain max-w-5xl mx-auto px-6 pt-16 pb-8 text-center rounded-3xl">
         <div className="inline-flex items-center gap-2 text-xs font-medium text-naija-300 bg-naija-900/40 border border-naija-700/40 rounded-full px-3 py-1 mb-5">
           <Zap size={13} /> B2B · embeddable recommendations
         </div>
-        <h1 className="text-3xl md:text-4xl font-extrabold text-ink-50 tracking-tight max-w-2xl mx-auto">
-          Add Nigeria-smart recommendations to your store in one snippet.
+        <h1 className="text-4xl md:text-5xl font-extrabold text-ink-50 tracking-tight max-w-2xl mx-auto leading-[1.05]">
+          Add <span className="brand-text">Nigeria-smart</span> recommendations to your store in one snippet.
         </h1>
         <p className="text-ink-300 mt-4 max-w-xl mx-auto">
           Connect your business and drop one line of code. Your shoppers get
