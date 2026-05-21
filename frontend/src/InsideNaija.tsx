@@ -675,6 +675,7 @@ export default function InsideNaija() {
           </div>
           <nav className="flex items-center gap-4 text-sm">
             <button onClick={scrollToPanel} className="text-ink-300 hover:text-white transition-colors">Run a study</button>
+            <a href="#b2b" className="text-ink-300 hover:text-white transition-colors">For Business</a>
             <a href="#lab" className="text-ink-400 hover:text-ink-200 transition-colors text-xs">Lab ↗</a>
             <button onClick={scrollToPanel}
                     className="bg-naija-600 hover:bg-naija-500 text-white text-sm font-medium rounded-lg px-4 py-1.5 transition-colors">

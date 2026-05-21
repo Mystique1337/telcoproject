@@ -3,14 +3,17 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import InsideNaija from "./InsideNaija";
 import ShopEasy from "./ShopEasy";
+import B2B from "./B2B";
+import Widget from "./Widget";
 import { LanguageGate } from "./LanguageGate";
 import "./index.css";
 
-// Hash router across the two products + the dev lab.
+// Routing across the products, the B2B layer, the embeddable widget + dev lab.
+//   ?widget=1   Widget  — bare embeddable recommendations (for iframes)
 //   (default)   InsideNaija — Task A product (synthetic panel)
 //   #shopeasy   ShopEasy    — Task B product (search + recommend)
+//   #b2b        B2B         — business connect + embed snippet
 //   #lab        App         — original multi-tab developer console
-// ShopEasy + the lab show the language gate before their main page.
 function Root() {
   const [hash, setHash] = useState(window.location.hash);
   useEffect(() => {
@@ -19,7 +22,11 @@ function Root() {
     return () => window.removeEventListener("hashchange", on);
   }, []);
 
+  // Embeddable widget: query-param routed so it works inside an <iframe>.
+  if (new URLSearchParams(window.location.search).has("widget")) return <Widget />;
+
   if (hash === "#shopeasy") return <ShopEasy />;
+  if (hash === "#b2b") return <B2B />;
   if (hash === "#lab") {
     return (
       <LanguageGate storageKey="lab_lang"
