@@ -582,7 +582,7 @@ function Home({ profile, onStart, onSignIn }:
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden mesh grain">
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-naija-600/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-10 grid lg:grid-cols-2 gap-12 items-center">
           <div>
@@ -590,7 +590,7 @@ function Home({ profile, onStart, onSignIn }:
               <SparklesIcon size={13} /> Nigeria's AI shopping assistant
             </div>
             <h1 className="text-4xl md:text-5xl font-extrabold text-ink-50 leading-[1.1] tracking-tight">
-              Shop smarter, <span className="text-naija-400">the Naija way.</span>
+              Shop smarter, <span className="brand-text">the Naija way.</span>
             </h1>
             <p className="mt-5 text-lg text-ink-300 leading-relaxed max-w-lg">
               Type it, snap it, say it, or just chat — in English, Pidgin, Yorùbá,

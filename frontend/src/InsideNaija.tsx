@@ -183,7 +183,7 @@ function Hero({ onTryItOwn }: { onTryItOwn: () => void }) {
   }
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-hidden mesh grain">
       {/* glow */}
       <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-naija-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-12 grid lg:grid-cols-2 gap-12 items-center">
@@ -193,7 +193,7 @@ function Hero({ onTryItOwn }: { onTryItOwn: () => void }) {
             <Sparkles size={13} /> Pre-launch consumer intelligence
           </div>
           <h1 className="text-5xl md:text-6xl font-extrabold text-ink-50 leading-[1.05] tracking-tight">
-            See how <span className="bg-gradient-to-r from-naija-300 to-naija-500 bg-clip-text text-transparent">Nigeria</span> will react
+            See how <span className="brand-text">Nigeria</span> will react
             <span className="text-ink-400"> — before you launch.</span>
           </h1>
           <p className="mt-5 text-lg text-ink-300 leading-relaxed max-w-lg">
