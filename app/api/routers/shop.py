@@ -135,31 +135,42 @@ async def product_image(q: str = Query(..., min_length=1)) -> dict[str, Any]:
     if key in _IMG_CACHE:
         return {"url": _IMG_CACHE[key] or None}
 
-    # Progressively simpler queries: full phrase, then the generic trailing
-    # words (which are usually the product-type + category, e.g. "wireless
-    # earbuds electronics"), then the last two words. Brand/model tokens early
-    # in a title often miss on a CC image index, so the trailing words hit more.
-    words = q.split()
-    attempts = [q]
-    if len(words) > 4:
-        attempts.append(" ".join(words[-4:]))
-    if len(words) > 2:
-        attempts.append(" ".join(words[-2:]))
-
+    # Meaningful query tokens (drop hyphen-joins, units, pure numbers, stopwords).
+    _STOP = {"and", "the", "for", "with", "set", "pcs", "pack", "size", "new",
+             "quality", "original", "product", "ladies", "men", "women"}
+    raw = q.lower().replace("-", " ").replace(",", " ")
+    qtokens = {
+        w for w in raw.split()
+        if len(w) > 2 and not w.isdigit() and w not in _STOP
+        and not any(ch.isdigit() for ch in w)  # drop "256gb", "5000mah" etc.
+    }
+    # Search a clean phrase; over-fetch and pick the result whose title/tags
+    # actually overlap the product words — so we never show an unrelated image.
+    search_q = " ".join(list(qtokens)[:6]) or q
     url: str | None = None
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
-            for attempt in attempts:
-                r = await client.get(
-                    "https://api.openverse.org/v1/images/",
-                    params={"q": attempt, "page_size": 1},
-                    headers={"User-Agent": "InsideNaija-ShopEasy/1.0"},
-                )
-                if r.status_code == 200:
-                    results = r.json().get("results", [])
-                    if results:
-                        url = results[0].get("thumbnail") or results[0].get("url")
-                        break
+            r = await client.get(
+                "https://api.openverse.org/v1/images/",
+                params={"q": search_q, "page_size": 8},
+                headers={"User-Agent": "InsideNaija-ShopEasy/1.0"},
+            )
+            if r.status_code == 200:
+                best_score = 0
+                for res in r.json().get("results", []):
+                    hay = (res.get("title") or "").lower()
+                    hay += " " + " ".join(
+                        (t.get("name") or "") for t in (res.get("tags") or []) if isinstance(t, dict)
+                    ).lower()
+                    haytok = set(hay.replace("-", " ").replace(",", " ").split())
+                    score = len(qtokens & haytok)
+                    if score > best_score:
+                        best_score = score
+                        url = res.get("thumbnail") or res.get("url")
+                # Require at least one real keyword overlap — else fall back to
+                # the category-icon tile on the client (no irrelevant photos).
+                if best_score < 1:
+                    url = None
     except Exception as e:  # noqa: BLE001
         logger.warning("openverse image lookup failed for %r: %s", q, e)
     _IMG_CACHE[key] = url or ""
