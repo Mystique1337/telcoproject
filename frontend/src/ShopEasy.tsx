@@ -1,4 +1,4 @@
-// ShopEasy — Task B shopper-facing storefront.
+// ShopEasy - Task B shopper-facing storefront.
 // Language gate -> search (text or image) -> recommendations with thumbnails
 // -> order page (mock checkout).
 
@@ -6,14 +6,14 @@ import { useEffect, useRef, useState } from "react";
 import {
   Baby, Camera, Check, Gamepad2, Headphones, Home as HomeIcon, ImageIcon, Laptop,
   Loader2, MessageSquare, Music, Package, Search, Shirt, ShoppingBasket,
-  ShoppingCart, Smartphone, Sparkles, Send, Users, X,
+  ShoppingCart, Smartphone, Sparkles, Send, Star, Users, X,
 } from "lucide-react";
 
 import { api } from "./api";
 import { LanguageGate, type AppLang } from "./LanguageGate";
 import { Onboarding, loadProfile, type ShopProfile } from "./Onboarding";
 import { ArrowRight, LogIn, Mic, Sparkles as SparklesIcon } from "lucide-react";
-import type { ConversationTurn, Persona, ShopProduct } from "./types";
+import type { ConversationTurn, PanelReaction, Persona, ShopProduct } from "./types";
 
 // Compact switcher presenting the two products as separate, linkable apps.
 function ProductSwitcher({ current }: { current: "panel" | "shop" }) {
@@ -57,7 +57,7 @@ function hashNum(s: string): number {
   return h;
 }
 function naira(n?: number | null): string {
-  return n ? "₦" + Number(n).toLocaleString() : "—";
+  return n ? "₦" + Number(n).toLocaleString() : " - ";
 }
 
 const CAT_ICON: { match: string[]; Icon: typeof Package }[] = [
@@ -123,28 +123,81 @@ function Thumb({ p, className = "", iconSize = 40 }:
   return <IconTile p={p} className={className} iconSize={iconSize} />;
 }
 
-// ── Order overlay (mock checkout) ────────────────────────────────────────────
-function OrderPage({ p, t, onClose }: { p: ShopProduct; t: Record<string, string>; onClose: () => void }) {
+function StarsRow({ n }: { n: number }) {
+  return (
+    <span className="inline-flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <Star key={i} size={13} className={i <= n ? "fill-amber-400 text-amber-400" : "text-ink-700"} />
+      ))}
+    </span>
+  );
+}
+
+// Parse a description into spec bullets (split on common delimiters).
+function toSpecs(desc?: string): string[] {
+  if (!desc) return [];
+  return desc.split(/[•·,;\n]|\s-\s/).map((s) => s.trim()).filter((s) => s.length > 2).slice(0, 8);
+}
+
+// ── Product detail page (pics + specs + simulated reviews + order) ───────────
+function OrderPage({ p, t, onClose }:
+  { p: ShopProduct; t: Record<string, string>; onClose: () => void }) {
   const [qty, setQty] = useState(1);
   const [placed, setPlaced] = useState(false);
+  const [tab, setTab] = useState<"specs" | "reviews">("specs");
+  const [reviews, setReviews] = useState<PanelReaction[] | null>(null);
+  const [avg, setAvg] = useState<number | null>(null);
+  const [loadingR, setLoadingR] = useState(true);
+  const specs = toSpecs(p.description);
+
+  // Pull a few simulated Nigerian reviews from the panel engine for this product.
+  useEffect(() => {
+    let cancelled = false;
+    const ids = ["chinwe_owerri", "tunde_lagos", "aisha_kano", "blessing_warri", "kelechi_lagos"];
+    api.panel({
+      product: { product_id: p.product_id, title: p.title, category: p.category || undefined,
+                 price_naira: p.price_naira ?? undefined, description: p.description, domain: "jumia" },
+      persona_ids: ids,
+    }).then((r) => {
+      if (cancelled) return;
+      setReviews(r.reactions); setAvg(r.aggregate?.avg_rating ?? null); setLoadingR(false);
+    }).catch(() => { if (!cancelled) setLoadingR(false); });
+    return () => { cancelled = true; };
+  }, [p.product_id]);
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-ink-900 border border-ink-700 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl"
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto" onClick={onClose}>
+      <div className="bg-ink-900 border border-ink-700 rounded-2xl max-w-3xl w-full overflow-hidden shadow-2xl my-8"
            onClick={(e) => e.stopPropagation()}>
-        <div className="grid md:grid-cols-2">
-          <Thumb p={p} className="w-full h-64 md:h-full" />
-          <div className="p-6 relative">
-            <button onClick={onClose} className="absolute top-4 right-4 text-ink-400 hover:text-ink-50"><X size={18} /></button>
-            {!placed ? (
-              <>
-                <div className="text-[10px] uppercase tracking-wide text-ink-400">{p.category}</div>
+        {placed ? (
+          <div className="flex flex-col items-center justify-center text-center py-16 px-6">
+            <div className="w-14 h-14 rounded-full bg-naija-600/20 border border-naija-500 flex items-center justify-center mb-4">
+              <Check size={28} className="text-naija-300" />
+            </div>
+            <div className="text-lg font-bold text-ink-50">{t.placed}</div>
+            <div className="text-sm text-ink-300 mt-1">{qty}× {p.title}</div>
+            <div className="text-xs text-ink-400 mt-3">{t.deliver}</div>
+            <button onClick={onClose} className="mt-6 text-sm text-naija-300 hover:text-naija-200">Done</button>
+          </div>
+        ) : (
+          <>
+            <div className="grid md:grid-cols-2">
+              {/* Pics */}
+              <Thumb p={p} className="w-full h-72 md:h-full min-h-[18rem]" iconSize={64} />
+              {/* Summary + buy */}
+              <div className="p-6 relative">
+                <button onClick={onClose} className="absolute top-4 right-4 text-ink-400 hover:text-ink-50"><X size={18} /></button>
+                <div className="text-[10px] uppercase tracking-wide text-ink-400">{(p.category || "").replace(/-/g, " ")}</div>
                 <h2 className="text-lg font-bold text-ink-50 mt-1 leading-snug">{p.title}</h2>
+                <div className="flex items-center gap-2 mt-2">
+                  {avg != null ? <><StarsRow n={Math.round(avg)} /><span className="text-xs text-ink-400">{avg.toFixed(1)} · {reviews?.length ?? 0} reviews</span></>
+                    : <span className="text-xs text-ink-500">Loading reviews…</span>}
+                </div>
                 <div className="text-[11px] text-ink-400 mt-1.5 flex items-center gap-1.5">
-                  <Check size={11} className="text-naija-400" />
-                  Sold by <span className="text-ink-200">{p.seller || "Verified ShopEasy Seller"}</span>
+                  <Check size={11} className="text-naija-400" /> Sold by <span className="text-ink-200">{p.seller || "Verified ShopEasy Seller"}</span>
                 </div>
                 <div className="text-2xl font-bold text-naija-300 mt-3">{naira(p.price_naira)}</div>
-                {p.description && <p className="text-sm text-ink-300 mt-3 leading-relaxed line-clamp-4">{p.description}</p>}
+                {p.rationale && <div className="text-xs text-naija-300/90 italic mt-2">✓ {p.rationale}</div>}
                 <div className="flex items-center gap-3 mt-5">
                   <span className="text-xs text-ink-400">{t.qty}</span>
                   <div className="flex items-center border border-ink-700 rounded-lg">
@@ -154,23 +207,56 @@ function OrderPage({ p, t, onClose }: { p: ShopProduct; t: Record<string, string
                   </div>
                 </div>
                 <button onClick={() => setPlaced(true)}
-                        className="w-full mt-6 inline-flex items-center justify-center gap-2 bg-naija-600 hover:bg-naija-500 text-white font-semibold rounded-lg py-3 transition-colors">
+                        className="w-full mt-5 inline-flex items-center justify-center gap-2 bg-naija-600 hover:bg-naija-500 text-white font-semibold rounded-lg py-3 transition-colors">
                   <ShoppingCart size={17} /> {t.place} · {naira((p.price_naira || 0) * qty)}
                 </button>
-              </>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center py-10">
-                <div className="w-14 h-14 rounded-full bg-naija-600/20 border border-naija-500 flex items-center justify-center mb-4">
-                  <Check size={28} className="text-naija-300" />
-                </div>
-                <div className="text-lg font-bold text-ink-50">{t.placed}</div>
-                <div className="text-sm text-ink-300 mt-1">{qty}× {p.title}</div>
-                <div className="text-xs text-ink-400 mt-3">{t.deliver}</div>
-                <button onClick={onClose} className="mt-6 text-sm text-naija-300 hover:text-naija-200">Done</button>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+
+            {/* Specs / Reviews tabs */}
+            <div className="border-t border-ink-800 px-6 pt-4 pb-6">
+              <div className="flex gap-4 border-b border-ink-800 mb-4">
+                <button onClick={() => setTab("specs")}
+                        className={`pb-2 text-sm font-medium ${tab === "specs" ? "text-naija-300 border-b-2 border-naija-500" : "text-ink-400 hover:text-ink-200"}`}>Specifications</button>
+                <button onClick={() => setTab("reviews")}
+                        className={`pb-2 text-sm font-medium ${tab === "reviews" ? "text-naija-300 border-b-2 border-naija-500" : "text-ink-400 hover:text-ink-200"}`}>
+                  Reviews {reviews ? `(${reviews.length})` : ""}
+                </button>
+              </div>
+
+              {tab === "specs" && (
+                specs.length ? (
+                  <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-1.5">
+                    {specs.map((s, i) => (
+                      <li key={i} className="text-sm text-ink-300 flex items-start gap-2">
+                        <Check size={13} className="text-naija-400 mt-0.5 flex-shrink-0" /> {s}
+                      </li>
+                    ))}
+                  </ul>
+                ) : <p className="text-sm text-ink-400">{p.description || "No specifications listed."}</p>
+              )}
+
+              {tab === "reviews" && (
+                loadingR ? (
+                  <div className="flex items-center gap-2 text-sm text-ink-400 py-4"><Loader2 size={15} className="animate-spin" /> Gathering Nigerian shopper reviews…</div>
+                ) : reviews && reviews.length ? (
+                  <div className="space-y-3">
+                    <div className="text-[11px] text-ink-500 mb-1">Simulated by a panel of Nigerian personas (InsideNaija engine).</div>
+                    {reviews.map((r) => (
+                      <div key={r.persona_id} className="bg-ink-800/40 rounded-lg p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-ink-100">{personaName(r.persona_id)} <span className="text-[10px] text-ink-400 font-normal">· {r.zone}</span></span>
+                          <StarsRow n={r.rating} />
+                        </div>
+                        <p className="text-sm text-ink-300 mt-1.5 leading-relaxed">"{r.review}"</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : <p className="text-sm text-ink-400">Reviews unavailable right now.</p>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -558,7 +644,7 @@ function Store({ lang, profile, onHome, onSignIn }:
 function Home({ profile, onStart, onSignIn }:
   { profile: ShopProfile | null; onStart: () => void; onSignIn: () => void }) {
   const steps = [
-    { icon: <Search size={18} />, t: "Search any way", d: "Type, snap a photo, talk, or just chat — in your language." },
+    { icon: <Search size={18} />, t: "Search any way", d: "Type, snap a photo, talk, or just chat - in your language." },
     { icon: <SparklesIcon size={18} />, t: "We learn you", d: "Tell us your area & taste once; recommendations get personal." },
     { icon: <ShoppingCart size={18} />, t: "Order in clicks", d: "Real prices, clear picks, pay on delivery." },
   ];
@@ -595,7 +681,7 @@ function Home({ profile, onStart, onSignIn }:
               Shop smarter, <span className="brand-text">the Naija way.</span>
             </h1>
             <p className="mt-5 text-lg text-ink-300 leading-relaxed max-w-lg">
-              Type it, snap it, say it, or just chat — in English, Pidgin, Yorùbá,
+              Type it, snap it, say it, or just chat - in English, Pidgin, Yorùbá,
               Hausa or Igbo. ShopEasy understands what you mean and recommends what
               actually fits you.
             </p>
@@ -637,7 +723,7 @@ function Home({ profile, onStart, onSignIn }:
 
       <footer className="border-t border-ink-800">
         <div className="max-w-6xl mx-auto px-6 py-8 text-xs text-ink-500 flex items-center justify-between flex-wrap gap-3">
-          <span>ShopEasy — AI shopping for the Nigerian market.</span>
+          <span>ShopEasy - AI shopping for the Nigerian market.</span>
           <span>Search by text, photo, voice or chat · 5 languages</span>
         </div>
       </footer>
