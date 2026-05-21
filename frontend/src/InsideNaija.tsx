@@ -208,7 +208,7 @@ function Hero({ onTryItOwn }: { onTryItOwn: () => void }) {
               {running ? "Nigeria is reacting…" : "Watch Nigeria react"}
             </button>
             <button onClick={onTryItOwn}
-                    className="inline-flex items-center gap-2 text-ink-200 hover:text-white font-medium px-4 py-3 transition-colors">
+                    className="inline-flex items-center gap-2 text-ink-200 hover:text-ink-50 font-medium px-4 py-3 transition-colors">
               Try your product <ArrowRight size={16} />
             </button>
           </div>
@@ -328,7 +328,7 @@ function SectionPhoto({ q, className = "" }: { q: string; className?: string }) 
   return (
     <div className={`relative overflow-hidden bg-ink-800 ${className}`}>
       {url && <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />}
-      <div className="absolute inset-0 bg-gradient-to-tr from-ink-950/80 via-ink-950/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-tr from-black/70 via-black/25 to-transparent" />
     </div>
   );
 }
@@ -665,11 +665,11 @@ function InsightBand() {
           while frontier LLM judges (carrying a Western prior) under-rate it.
         </p>
         <div className="mt-8 flex items-center justify-center gap-8 text-sm">
-          <div><div className="text-3xl font-bold text-naija-300 tabular-nums">48.5%</div><div className="text-xs text-ink-400 mt-1">human win-rate vs Claude</div></div>
+          <div><div className="text-3xl font-bold text-naija-700 dark:text-naija-300 tabular-nums">48.5%</div><div className="text-xs text-ink-400 mt-1">human win-rate vs Claude</div></div>
           <div className="w-px h-10 bg-ink-700" />
-          <div><div className="text-3xl font-bold text-naija-300 tabular-nums">−15.5%</div><div className="text-xs text-ink-400 mt-1">rating-error vs frontier</div></div>
+          <div><div className="text-3xl font-bold text-naija-700 dark:text-naija-300 tabular-nums">−15.5%</div><div className="text-xs text-ink-400 mt-1">rating-error vs frontier</div></div>
           <div className="w-px h-10 bg-ink-700" />
-          <div><div className="text-3xl font-bold text-naija-300 tabular-nums">$0</div><div className="text-xs text-ink-400 mt-1">per call, runs local</div></div>
+          <div><div className="text-3xl font-bold text-naija-700 dark:text-naija-300 tabular-nums">$0</div><div className="text-xs text-ink-400 mt-1">per call, runs local</div></div>
         </div>
       </div>
     </section>
@@ -679,17 +679,17 @@ function InsightBand() {
 function ClosingCTA({ onTry }: { onTry: () => void }) {
   return (
     <section className="max-w-6xl mx-auto px-6 py-16">
-      <div className="relative overflow-hidden rounded-3xl border border-naija-700/50 bg-gradient-to-br from-naija-900/60 via-ink-900 to-ink-900 p-10 md:p-14 text-center">
-        <div className="absolute -top-24 -right-24 w-72 h-72 bg-naija-500/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <h2 className="relative text-3xl md:text-4xl font-extrabold text-ink-50 tracking-tight max-w-2xl mx-auto leading-tight">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-naija-700 via-naija-800 to-naija-900 p-10 md:p-14 text-center shadow-2xl">
+        <div className="absolute -top-24 -right-24 w-72 h-72 bg-naija-400/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-amber-400/15 rounded-full blur-3xl pointer-events-none" />
+        <h2 className="relative text-3xl md:text-4xl font-extrabold text-white tracking-tight max-w-2xl mx-auto leading-tight">
           Stop guessing how Nigeria will react. Find out in 90 seconds.
         </h2>
-        <p className="relative text-ink-300 mt-4 max-w-xl mx-auto">
+        <p className="relative text-white/80 mt-4 max-w-xl mx-auto">
           Run an unlimited synthetic panel free. No card, no setup — just drop a product.
         </p>
         <button onClick={onTry}
-                className="relative mt-8 inline-flex items-center gap-2 bg-naija-500 hover:bg-naija-400 text-ink-950 font-bold rounded-xl px-7 py-3.5 transition-colors">
+                className="relative mt-8 inline-flex items-center gap-2 bg-white hover:bg-white/90 text-naija-800 font-bold rounded-xl px-7 py-3.5 transition-colors">
           Run a free study <ArrowRight size={18} />
         </button>
       </div>
@@ -722,8 +722,7 @@ export default function InsideNaija() {
             </div>
           </div>
           <nav className="flex items-center gap-4 text-sm">
-            <button onClick={scrollToPanel} className="text-ink-300 hover:text-white transition-colors">Run a study</button>
-            <a href="#b2b" className="text-ink-300 hover:text-white transition-colors">For Business</a>
+            <button onClick={scrollToPanel} className="text-ink-300 hover:text-ink-50 transition-colors">Run a study</button>
             <a href="#lab" className="text-ink-400 hover:text-ink-200 transition-colors text-xs">Lab ↗</a>
             <button onClick={scrollToPanel}
                     className="bg-naija-600 hover:bg-naija-500 text-white text-sm font-medium rounded-lg px-4 py-1.5 transition-colors">

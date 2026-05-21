@@ -54,7 +54,7 @@ export function Onboarding({ onClose, onDone }:
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-ink-900 border border-ink-700 rounded-2xl max-w-md w-full p-6 shadow-2xl relative"
            onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 text-ink-400 hover:text-white"><X size={18} /></button>
+        <button onClick={onClose} className="absolute top-4 right-4 text-ink-400 hover:text-ink-50"><X size={18} /></button>
 
         {/* progress */}
         <div className="flex gap-1.5 mb-6">

@@ -134,7 +134,7 @@ function OrderPage({ p, t, onClose }: { p: ShopProduct; t: Record<string, string
         <div className="grid md:grid-cols-2">
           <Thumb p={p} className="w-full h-64 md:h-full" />
           <div className="p-6 relative">
-            <button onClick={onClose} className="absolute top-4 right-4 text-ink-400 hover:text-white"><X size={18} /></button>
+            <button onClick={onClose} className="absolute top-4 right-4 text-ink-400 hover:text-ink-50"><X size={18} /></button>
             {!placed ? (
               <>
                 <div className="text-[10px] uppercase tracking-wide text-ink-400">{p.category}</div>
@@ -148,9 +148,9 @@ function OrderPage({ p, t, onClose }: { p: ShopProduct; t: Record<string, string
                 <div className="flex items-center gap-3 mt-5">
                   <span className="text-xs text-ink-400">{t.qty}</span>
                   <div className="flex items-center border border-ink-700 rounded-lg">
-                    <button onClick={() => setQty(Math.max(1, qty - 1))} className="px-3 py-1 text-ink-300 hover:text-white">−</button>
+                    <button onClick={() => setQty(Math.max(1, qty - 1))} className="px-3 py-1 text-ink-300 hover:text-ink-50">−</button>
                     <span className="px-3 text-ink-100 tabular-nums">{qty}</span>
-                    <button onClick={() => setQty(qty + 1)} className="px-3 py-1 text-ink-300 hover:text-white">+</button>
+                    <button onClick={() => setQty(qty + 1)} className="px-3 py-1 text-ink-300 hover:text-ink-50">+</button>
                   </div>
                 </div>
                 <button onClick={() => setPlaced(true)}
@@ -414,7 +414,8 @@ function Store({ lang, profile, onHome, onSignIn }:
             <ProductSwitcher current="shop" />
           </div>
           <nav className="flex items-center gap-3 text-xs">
-            <button onClick={onHome} className="text-ink-300 hover:text-white">Home</button>
+            <button onClick={onHome} className="text-ink-300 hover:text-ink-50">Home</button>
+            <a href="#b2b" className="text-ink-300 hover:text-ink-50">For Business</a>
             <button onClick={() => { localStorage.removeItem("shopeasy_lang"); window.location.reload(); }}
                     className="text-ink-400 hover:text-ink-200 capitalize">{lang} ⌄</button>
             {profile ? (
@@ -436,11 +437,11 @@ function Store({ lang, profile, onHome, onSignIn }:
       <div className="max-w-3xl mx-auto px-6 pt-8 flex justify-center">
         <div className="inline-flex bg-ink-900 border border-ink-700 rounded-lg p-1">
           <button onClick={() => setMode("search")}
-                  className={`text-sm font-medium rounded-md px-4 py-1.5 inline-flex items-center gap-1.5 transition-colors ${mode === "search" ? "bg-naija-600 text-white" : "text-ink-300 hover:text-white"}`}>
+                  className={`text-sm font-medium rounded-md px-4 py-1.5 inline-flex items-center gap-1.5 transition-colors ${mode === "search" ? "bg-naija-600 text-white" : "text-ink-300 hover:text-ink-50"}`}>
             <Search size={14} /> {ct.stab}
           </button>
           <button onClick={() => setMode("chat")}
-                  className={`text-sm font-medium rounded-md px-4 py-1.5 inline-flex items-center gap-1.5 transition-colors ${mode === "chat" ? "bg-naija-600 text-white" : "text-ink-300 hover:text-white"}`}>
+                  className={`text-sm font-medium rounded-md px-4 py-1.5 inline-flex items-center gap-1.5 transition-colors ${mode === "chat" ? "bg-naija-600 text-white" : "text-ink-300 hover:text-ink-50"}`}>
             <MessageSquare size={14} /> {ct.tab}
           </button>
         </div>
@@ -573,7 +574,8 @@ function Home({ profile, onStart, onSignIn }:
             <ProductSwitcher current="shop" />
           </div>
           <nav className="flex items-center gap-3 text-xs">
-            <button onClick={onStart} className="text-ink-300 hover:text-white">Browse</button>
+            <button onClick={onStart} className="text-ink-300 hover:text-ink-50">Browse</button>
+            <a href="#b2b" className="text-ink-300 hover:text-ink-50">For Business</a>
             {profile
               ? <span className="inline-flex items-center gap-1.5 bg-ink-900 border border-ink-700 rounded-full pl-1 pr-3 py-1"><img src={personaAvatar(profile.id)} alt="" className="w-5 h-5 rounded-full" /><span className="text-ink-200">{profile.name}</span></span>
               : <button onClick={onSignIn} className="inline-flex items-center gap-1.5 bg-naija-600 hover:bg-naija-500 text-white rounded-lg px-3 py-1.5 font-medium"><LogIn size={13} /> Sign in</button>}
@@ -604,7 +606,7 @@ function Home({ profile, onStart, onSignIn }:
               </button>
               {!profile && (
                 <button onClick={onSignIn}
-                        className="inline-flex items-center gap-2 text-ink-200 hover:text-white font-medium px-4 py-3">
+                        className="inline-flex items-center gap-2 text-ink-200 hover:text-ink-50 font-medium px-4 py-3">
                   <LogIn size={16} /> Personalise for me
                 </button>
               )}
@@ -654,7 +656,7 @@ function SectionPhotoShop({ q, className = "" }: { q: string; className?: string
   return (
     <div className={`relative overflow-hidden bg-ink-800 ${className}`}>
       {url && <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />}
-      <div className="absolute inset-0 bg-gradient-to-tr from-ink-950/70 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-tr from-black/60 to-transparent" />
     </div>
   );
 }
