@@ -158,6 +158,7 @@ function OrderPage({ p, t, onClose }:
       product: { product_id: p.product_id, title: p.title, category: p.category || undefined,
                  price_naira: p.price_naira ?? undefined, description: p.description, domain: "jumia" },
       persona_ids: ids,
+      backbone_override: "anthropic:claude-sonnet-4-20250514",  // fast reviews for the click
     }).then((r) => {
       if (cancelled) return;
       setReviews(r.reactions); setAvg(r.aggregate?.avg_rating ?? null); setLoadingR(false);
