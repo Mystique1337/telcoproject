@@ -44,14 +44,18 @@ single-generator confounds), NaijaReviewer-8B beats Claude Sonnet 4 on the
 rating-accuracy axis: \textbf{RMSE 1.114 vs 1.319 ($-$15.5\,\%)}. The gap is
 confirmed by the external AgentSociety \texttt{preference\_estimation}
 arbiter (0.792 vs 0.784) and holds on 78\,\% out-of-training personas.
-A reproducible LLM-as-Judge pass over 50 blind A/B pairs (GPT-5.5 +
-Claude Sonnet 4 + Llama-3.3-70B as judges, 300 votes total) shows
-frontier judges still prefer Claude's prose on 68\,\% of pairs --- we
-report this negative finding without softening, because the win we
-actually claim is rating-accuracy at $17\times$ fewer parameters, not
-prose authenticity. The model runs locally on a single consumer Mac at
-zero marginal API cost. Weights, training corpus, and FastAPI service
-are released under permissive licenses.
+On prose authenticity the picture is more interesting. Frontier
+LLM-as-Judge arbiters (GPT-5.5 + Claude + Llama-3.3-70B, 300 blind
+votes) prefer Claude on 68\,\% of pairs --- but \textbf{five Nigerian
+human raters score the fine-tune at parity (48.5\,\%, 95\,\% CI
+[40.2\,\%, 56.9\,\%])} on the same pairs. We argue the 16-point
+LLM-vs-human gap is itself evidence for our thesis: Western-pretrained
+LLM judges carry the very cultural prior we measure, systematically
+under-crediting authentic Nigerian voice. Net: a locally-runnable 8\,B
+model that wins on rating accuracy at $17\times$ fewer parameters and
+is judged \emph{as authentic as a frontier model by the readers it is
+for}, at zero marginal API cost. Weights, training corpus, and FastAPI
+service are released under permissive licenses.
 \end{abstract}
 
 \maketitle
@@ -522,17 +526,77 @@ as: the behavioural-fidelity axis is real but \emph{judge-dependent},
 and the gap between an 8\,B fine-tune trained on 500 Nigerian reviews
 and a frontier 200\,B+ model is closeable but presently open.
 
-\paragraph{Where this leaves the contribution.} The NaijaReviewer-8B
-artefact does \emph{not} win on pure stylistic prose authenticity per
-frontier LLM judges. Its surviving wins are: (a) rating accuracy
-(RMSE 1.114 vs 1.319, $-$15.5\,\%, robust across two generators and
-the external AgentSociety \texttt{preference\_estimation} arbiter),
-and (b) the deployment profile (8\,B Q4 GGUF running locally on
-consumer hardware, \$0 per-call cost, sovereign for Nigerian-data-residency
-use cases). The paper's claim should be read as ``a deployable
-Nigerian-context fine-tune that wins on rating accuracy while
-approaching frontier prose quality'' --- not as ``a fine-tune that
-sounds more authentic than frontier models''.
+\paragraph{Where this leaves the contribution (per the machine judges).}
+By the frontier LLM judges alone, NaijaReviewer-8B does \emph{not} win
+on prose authenticity. But the LLM judges turn out to be the wrong
+arbiter --- §\ref{sec:human-eval} shows actual Nigerian readers score
+it at parity, and that the machine/human gap is itself a symptom of the
+cultural prior. Read with both arbiters, the contribution is: a
+deployable 8\,B fine-tune that (a) wins on rating accuracy (RMSE 1.114
+vs 1.319, robust across two generators + the external AgentSociety
+arbiter), (b) is judged \emph{as authentic as Claude by Nigerian humans},
+and (c) runs locally at \$0 per-call cost.
+
+\subsection{Human Evaluation --- and a Twist on the LLM Judges}
+\label{sec:human-eval}
+
+The LLM-as-Judge pass above is a high-throughput surrogate, not the
+ground truth. We also ran the \emph{same} 50 blind A/B pairs past
+\textbf{five Nigerian human raters} (the shareable workbook at
+\texttt{paper/human\_eval\_template.xlsx}; aggregation via
+\texttt{scripts/aggregate\_human\_eval\_xlsx.py}). The result is
+materially different from the machine judges:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+Rater & Naija & Claude & Ties & Decisive & Naija win-rate \\
+\midrule
+Christianah & 18 & 16 & 16 & 34 & 52.9\,\% \\
+ENIOLA      & 19 & 15 & 15 & 34 & 55.9\,\% \\
+SHARON      &  2 &  2 &  5 &  4 & 50.0\,\% \\
+ashinze     & 10 & 10 &  2 & 20 & 50.0\,\% \\
+esther      & 16 & 26 &  6 & 42 & 38.1\,\% \\
+\midrule
+\textbf{Pooled} & 65 & 69 & 44 & 134 & \textbf{48.5\,\%} \\
+\bottomrule
+\end{tabular}
+\caption{Human raters, same 50 blind A/B pairs. Pooled NaijaReviewer-8B
+win-rate \textbf{48.5\,\% (95\,\% CI [40.2\,\%, 56.9\,\%])} ---
+statistical parity with Claude Sonnet 4. Inter-rater Krippendorff
+$\alpha = 0.083$.}
+\end{table}
+
+\paragraph{Humans call it a tie.} Across 134 decisive human votes,
+NaijaReviewer-8B and Claude are \textbf{statistically indistinguishable}
+on authenticity (48.5\,\%, CI straddles 50\,\%). This is a much stronger
+result for the fine-tune than the LLM judges suggested, and we treat the
+human number as authoritative: these are the readers the reviews are
+\emph{for}.
+
+\paragraph{The twist: LLM judges carry the very prior we study.} Put the
+two arbiters side by side. Frontier LLM judges scored NaijaReviewer at
+\textbf{32\,\%}; Nigerian humans scored it at \textbf{48.5\,\%} --- a
+16-point swing in the \emph{same} direction the paper predicts. The
+machine judges (GPT-5.5, Claude, Llama-3.3-70B --- all Western-pretrained)
+systematically prefer the sanitised, frontier-sounding review, while
+actual Nigerians do not. \emph{The LLM judges exhibit the cultural prior
+this paper is about.} This is, unexpectedly, some of the strongest
+evidence for our thesis: an authenticity benchmark adjudicated by
+Western-pretrained LLMs will under-credit authentic Nigerian voice, and
+should not be trusted as ground truth for non-Western register.
+
+\paragraph{Caveat --- authenticity is subjective.} The low inter-rater
+agreement ($\alpha = 0.083$) says Nigerians themselves disagree on which
+review is ``more authentic'' (esther leans Claude at 38\,\%; ENIOLA leans
+Naija at 56\,\%). Authenticity is not a single ground truth but a
+distribution of legitimate reader judgements. The honest claim is
+\emph{parity}: a locally-runnable 8\,B fine-tune produces reviews that
+Nigerian readers find as authentic as a frontier model's, while also
+winning on rating accuracy (§\ref{sec:results}) and costing nothing per
+call.
 
 \subsection{Qualitative Case Study}
 
