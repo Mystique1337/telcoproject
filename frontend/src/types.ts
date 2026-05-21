@@ -52,6 +52,76 @@ export interface SimulateReviewResponse {
   fallback_reason?: string | null;
   reasoning_trace?: TraceNode[] | null;
   latency_ms: number;
+  language?: string | null;
+  original_review?: string | null;
+}
+
+export type NaijaLanguage = "yoruba" | "hausa" | "igbo";
+
+// ── InsideNaija panel ──────────────────────────────────────────────────────
+export interface PanelReaction {
+  persona_id: string;
+  location?: string | null;
+  zone: string;
+  age_range?: string | null;
+  occupation?: string | null;
+  register_tier: string;
+  rating: number;
+  review: string;
+  language?: string | null;
+  original_review?: string | null;
+  sentiment: "positive" | "neutral" | "negative";
+}
+
+export interface CohortStat {
+  n: number;
+  avg_rating: number;
+  buy_likelihood: number;
+}
+
+export interface PanelAggregate {
+  n_personas: number;
+  avg_rating: number;
+  rating_distribution: Record<string, number>;
+  buy_likelihood: number;
+  sentiment_split: { positive: number; neutral: number; negative: number };
+  by_register: Record<string, CohortStat>;
+  by_zone: Record<string, CohortStat>;
+  by_age: Record<string, CohortStat>;
+  themes: { praised: string[]; complaints: string[] };
+}
+
+export interface PanelResponse {
+  product_title: string;
+  reactions: PanelReaction[];
+  aggregate: PanelAggregate;
+  backbone?: { primary: string; fallback: string; fallback_used: number };
+  rmse_band?: number;
+  latency_ms: number;
+}
+
+// ── ShopEasy ───────────────────────────────────────────────────────────────
+export interface ShopProduct {
+  product_id: string;
+  title: string;
+  category?: string | null;
+  price_naira?: number | null;
+  description?: string;
+  score?: number;
+  rationale?: string | null;
+}
+
+export interface ShopPersonaInfo {
+  user_id: string;
+  register_tier: string;
+  demographics: { age_range?: string; location?: string; occupation?: string };
+}
+
+export interface ShopSearchResponse {
+  query: string;
+  detected?: string;
+  persona?: ShopPersonaInfo | null;
+  products: ShopProduct[];
 }
 
 export interface RecommendItem {

@@ -7,6 +7,7 @@
 import type {
   ConversationTurn,
   HealthResponse,
+  PanelResponse,
   Persona,
   Product,
   RecommendResponse,
@@ -67,6 +68,7 @@ export const api = {
     length_hint?: "short" | "medium" | "long";
     tone_modifier?: string;
     refinement_instructions?: string;
+    target_language?: "yoruba" | "hausa" | "igbo" | null;
   }) =>
     postJson<SimulateReviewResponse>("/simulate-review", {
       persona: opts.persona,
@@ -78,6 +80,7 @@ export const api = {
       length_hint: opts.length_hint || undefined,
       tone_modifier: opts.tone_modifier || undefined,
       refinement_instructions: opts.refinement_instructions || undefined,
+      target_language: opts.target_language || undefined,
     }),
 
   chat: async (opts: {
@@ -87,6 +90,7 @@ export const api = {
     reranker_override?: string;
     k?: number;
     include_reasoning?: boolean;
+    language?: "yoruba" | "hausa" | "igbo" | null;
   }) => {
     const r = await fetch(`${BASE}/chat`, {
       method: "POST",
@@ -98,6 +102,7 @@ export const api = {
         reranker_override: opts.reranker_override,
         k: opts.k ?? 5,
         include_reasoning: opts.include_reasoning ?? false,
+        language: opts.language || undefined,
       }),
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).slice(0, 200)}`);
@@ -122,4 +127,51 @@ export const api = {
       reranker_override: opts.reranker_override,
       conversation_history: opts.conversation_history,
     }),
+
+  /** InsideNaija — run a product across the persona panel. */
+  panel: (opts: {
+    product: Product;
+    persona_ids?: string[];
+    backbone_override?: string;
+    target_language?: "yoruba" | "hausa" | "igbo" | null;
+  }) =>
+    postJson<PanelResponse>("/panel", {
+      product: opts.product,
+      persona_ids: opts.persona_ids,
+      backbone_override: opts.backbone_override,
+      target_language: opts.target_language || undefined,
+    }),
+
+  // ── ShopEasy ──────────────────────────────────────────────────────────
+  shopSearch: (query: string, k = 12, persona_id?: string | null, profile_id?: string | null) =>
+    postJson<import("./types").ShopSearchResponse>("/shop/search", { query, k, persona_id: persona_id || undefined, profile_id: profile_id || undefined }),
+
+  shopVisualSearch: (image_base64: string, mime: string, k = 12, persona_id?: string | null, profile_id?: string | null) =>
+    postJson<import("./types").ShopSearchResponse>("/shop/visual-search", { image_base64, mime, k, persona_id: persona_id || undefined, profile_id: profile_id || undefined }),
+
+  personas: async () => {
+    const r = await fetch(`${BASE}/catalog/personas`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json() as Promise<{ count: number; personas: Persona[] }>;
+  },
+
+  shopProduct: async (id: string) => {
+    const r = await fetch(`${BASE}/shop/product/${encodeURIComponent(id)}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json() as Promise<import("./types").ShopProduct>;
+  },
+
+  // ── Accounts (passwordless) ───────────────────────────────────────────
+  register: (body: {
+    name: string; location: string; age_range?: string;
+    gender?: string; occupation?: string; interests?: string[]; language?: string;
+  }) =>
+    postJson<{ profile_id: string; profile: Record<string, unknown>; persona: Persona; zone: string }>(
+      "/auth/register", body),
+
+  getProfile: async (id: string) => {
+    const r = await fetch(`${BASE}/auth/profile/${encodeURIComponent(id)}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json() as Promise<{ profile_id: string; name: string; profile: Record<string, unknown>; persona: Persona }>;
+  },
 };

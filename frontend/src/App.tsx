@@ -432,7 +432,17 @@ const NAIJA_VOICES: { name: string; description: string }[] = [
 // without audible pitch shift. Tweak here if it sounds off.
 const NATURAL_TTS_RATE = 1.08;
 
-function ListenButton({ text, persona }: { text: string; persona?: Persona | null }) {
+// Default YarnGPT voice per Nigerian language (names whose etymology matches
+// the language, so the accent reads correctly).
+const LANG_VOICE: Record<string, string> = {
+  yoruba: "Femi",
+  hausa: "Zainab",
+  igbo: "Chinenye",
+};
+
+function ListenButton({
+  text, persona, language,
+}: { text: string; persona?: Persona | null; language?: string | null }) {
   const [voice, setVoice] = useState("Idera");
   const [autoMatched, setAutoMatched] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -440,8 +450,19 @@ function ListenButton({ text, persona }: { text: string; persona?: Persona | nul
   const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  // If a Nigerian language is selected, the voice must match the LANGUAGE
+  // (overrides persona auto-match) so the accent is correct.
+  useEffect(() => {
+    if (language && LANG_VOICE[language]) {
+      setVoice(LANG_VOICE[language]);
+      setAutoMatched(true);
+      setAudioUrl(null);
+    }
+  }, [language]);
+
   // Auto-match the voice to the persona on mount / persona change
   useEffect(() => {
+    if (language && LANG_VOICE[language]) return;  // language wins over persona
     if (!persona) return;
     let cancelled = false;
     fetch("/tts/voice-for-persona", {
@@ -465,7 +486,7 @@ function ListenButton({ text, persona }: { text: string; persona?: Persona | nul
       })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [persona?.user_id]);
+  }, [persona?.user_id, language]);
 
   async function generate() {
     if (loading) return;
@@ -597,6 +618,7 @@ function ReviewCard({ iterations, modelLabel, persona, product, modelSpec, gener
         aspect_focus: generationKnobs.aspect_focus,
         length_hint: generationKnobs.length_hint,
         tone_modifier: generationKnobs.tone_modifier,
+        target_language: generationKnobs.target_language ?? undefined,
         refinement_instructions: instr,
       });
       onRefine(instr, resp);
@@ -631,8 +653,17 @@ function ReviewCard({ iterations, modelLabel, persona, product, modelSpec, gener
       )}
 
       <StarRating rating={data.rating}/>
+      {data.language && (
+        <Badge tone="info">🗣 {data.language.charAt(0).toUpperCase() + data.language.slice(1)}</Badge>
+      )}
       <p className="text-ink-100 leading-relaxed">{data.review}</p>
-      <ListenButton text={data.review} persona={persona}/>
+      {data.original_review && (
+        <details className="text-xs text-ink-400">
+          <summary className="cursor-pointer hover:text-ink-200">Show original (English)</summary>
+          <p className="mt-1 italic leading-relaxed">{data.original_review}</p>
+        </details>
+      )}
+      <ListenButton text={data.review} persona={persona} language={data.language}/>
       <p className="text-xs text-ink-400 italic">💡 {data.rationale}</p>
 
       {/* Iteration history */}
@@ -694,6 +725,7 @@ interface GenerationKnobs {
   aspect_focus: string;
   length_hint: "short" | "medium" | "long";
   tone_modifier: string;
+  target_language: "yoruba" | "hausa" | "igbo" | null;  // null = English/Pidgin
 }
 
 function TabReview({ personas }: { personas: Persona[] }) {
@@ -714,6 +746,7 @@ function TabReview({ personas }: { personas: Persona[] }) {
     aspect_focus: "",
     length_hint: "medium",
     tone_modifier: "",
+    target_language: null,
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -730,6 +763,7 @@ function TabReview({ personas }: { personas: Persona[] }) {
       aspect_focus: knobs.aspect_focus || undefined,
       length_hint: knobs.length_hint,
       tone_modifier: knobs.tone_modifier || undefined,
+      target_language: knobs.target_language ?? undefined,
     };
     const callA = api.simulateReview({ ...baseOpts, backbone_override: modelA })
                        .then((d) => setIterA([{ data: d }]))
@@ -799,6 +833,27 @@ function TabReview({ personas }: { personas: Persona[] }) {
                           ? "bg-naija-600 text-white border-naija-600"
                           : "bg-ink-800 text-ink-300 border-ink-700 hover:bg-ink-700"}`}>
                   {l}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className="label">Language</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {([
+                { v: null, label: "EN / Pidgin" },
+                { v: "yoruba", label: "Yorùbá" },
+                { v: "hausa", label: "Hausa" },
+                { v: "igbo", label: "Igbo" },
+              ] as const).map((opt) => (
+                <button key={String(opt.v)}
+                        onClick={() => setKnobs({...knobs, target_language: opt.v})}
+                        className={`text-xs px-2.5 py-1 rounded-md border ${knobs.target_language === opt.v
+                          ? "bg-naija-600 text-white border-naija-600"
+                          : "bg-ink-800 text-ink-300 border-ink-700 hover:bg-ink-700"}`}
+                        title={opt.v ? `Generate, then translate the review into ${opt.label}` : "English / Nigerian Pidgin (no translation)"}>
+                  {opt.label}
                 </button>
               ))}
             </div>
@@ -1030,6 +1085,7 @@ interface ChatMessageItem {
 function TabChat({ personas }: { personas: Persona[] }) {
   const [persona, setPersona] = useState<Persona | null>(null);
   const [model, setModel] = useState(MODELS[1].spec);  // default Claude
+  const [chatLang, setChatLang] = useState<"yoruba" | "hausa" | "igbo" | null>(null);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessageItem[]>([
     {
@@ -1075,6 +1131,7 @@ function TabChat({ personas }: { personas: Persona[] }) {
         reranker_override: model,
         orchestrator_override: model,
         k: 4,
+        language: chatLang,
       });
       setMessages((m) => [...m, {
         id: `a-${Date.now()}`,
@@ -1120,6 +1177,17 @@ function TabChat({ personas }: { personas: Persona[] }) {
         <div className="flex-1 min-w-[200px]">
           <ModelSelect label="" value={model} onChange={setModel} taskKind="rank"/>
         </div>
+        <select
+          className="bg-ink-900 border border-ink-700 rounded text-xs px-2 py-1.5 text-ink-200"
+          value={chatLang ?? ""}
+          onChange={(e) => setChatLang((e.target.value || null) as typeof chatLang)}
+          title="Reply language — the assistant responds directly in this language"
+        >
+          <option value="">English / Pidgin</option>
+          <option value="yoruba">Yorùbá</option>
+          <option value="hausa">Hausa</option>
+          <option value="igbo">Igbo</option>
+        </select>
         <button onClick={reset} className="btn-ghost text-xs flex items-center gap-1">
           <RefreshCcw size={12}/> New chat
         </button>
