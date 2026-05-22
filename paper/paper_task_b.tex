@@ -8,6 +8,12 @@
 
 \usepackage{booktabs}
 \usepackage{enumitem}
+\usepackage{graphicx}
+
+% Placeholder box for diagrams not yet dropped in. Replace the \phfig{...}
+% calls with \includegraphics{...} once the final figures are ready.
+\newcommand{\phfig}[1]{\fbox{\parbox[c][4.6cm][c]{0.9\linewidth}{%
+  \centering\itshape [DIAGRAM PLACEHOLDER]\\[4pt]#1}}}
 
 \title{Persona-Aware Recommendation for Nigerian E-Commerce:\\
        An Agentic Pipeline with an 8B Open-Weight Fine-Tune as Re-Ranker}
@@ -162,6 +168,17 @@ $\sim$20\,k Nigerian product reviews.
 
 % ---------------------------------------------------------------
 \section{Method}
+
+\begin{figure}[t]
+  \centering
+  \phfig{Six-stage recommendation pipeline: persona $\to$ asymmetric dense
+  retrieval (Pinecone, \texttt{llama-text-embed-v2}) $\to$ Cohere
+  \texttt{rerank-v3.5} Stage-2.5 pre-rerank (30$\to$15) $\to$ persona-aware
+  LLM re-rank $\to$ MMR diversity $\to$ ranked list with rationales.}
+  \caption{The six-stage agentic recommendation pipeline. \textbf{TODO:
+  replace the placeholder box with the final pipeline diagram.}}
+  \label{fig:pipeline-b}
+\end{figure}
 
 \subsection{Cognitive Persona Representation}
 
@@ -332,6 +349,16 @@ methodology.
 % ---------------------------------------------------------------
 \section{Results}
 \label{sec:results}
+
+\begin{figure}[t]
+  \centering
+  \phfig{Bar chart: NDCG@10 by re-ranker (NaijaReviewer-8B, GPT-OSS-120B,
+  Claude Sonnet 4, Llama-3.3-70B, Qwen-2.5-72B), annotated with parameter
+  count, showing the 8B fine-tune leading at 9--15$\times$ fewer parameters.}
+  \caption{Task~B NDCG@10 by re-ranker against model size. \textbf{TODO:
+  replace the placeholder box with the final results chart.}}
+  \label{fig:results-b}
+\end{figure}
 
 \subsection{Five-Way Re-Ranker Comparison}
 
@@ -566,6 +593,16 @@ the ShopEasy storefront (text, image, and voice search plus a conversational
 assistant) and an embeddable business widget. The full model build, from
 corpus generation through fine-tuning, GGUF quantisation, and HuggingFace
 publication, is reproducible from the released Colab notebooks.
+
+\paragraph{Resources.} All artifacts are public.
+\begin{itemize}[leftmargin=*,nosep]
+  \item \textbf{Code (GitHub):} \url{https://github.com/Mystique1337/telcoproject}
+  \item \textbf{Live app / demo:} \url{<APP-LINK-PLACEHOLDER>} % TODO: insert deployed app URL
+  \item \textbf{Model (HuggingFace):}
+        \url{https://huggingface.co/Shinzmann/naija-reviewer-8b-v2-Q4_K_M-GGUF}
+  \item \textbf{Training data and large artifacts (Google Drive):}
+        \url{<DRIVE-FOLDER-PLACEHOLDER>} % TODO: insert Drive folder link
+\end{itemize}
 
 % ---------------------------------------------------------------
 \section{Discussion}

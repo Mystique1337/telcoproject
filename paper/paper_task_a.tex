@@ -8,6 +8,12 @@
 
 \usepackage{booktabs}
 \usepackage{enumitem}
+\usepackage{graphicx}
+
+% Placeholder box for diagrams not yet dropped in. Replace the \phfig{...}
+% calls with \includegraphics{...} once the final figures are ready.
+\newcommand{\phfig}[1]{\fbox{\parbox[c][4.6cm][c]{0.9\linewidth}{%
+  \centering\itshape [DIAGRAM PLACEHOLDER]\\[4pt]#1}}}
 
 \title{Recovering the Cultural Prior:\\
        An 8B Open-Weight Fine-Tune for Persona-Aware Nigerian Review Generation}
@@ -150,6 +156,18 @@ Fleiss-$\kappa$ inter-judge agreement.
 % ---------------------------------------------------------------
 \section{Method}
 
+\begin{figure}[t]
+  \centering
+  \phfig{System architecture: the shared cognitive persona (4 behavioural
+  dimensions + Nigerian register tier) conditions register-aware prompting,
+  which drives NaijaReviewer-8B (with a frontier fallback) to emit a rating
+  and review.}
+  \caption{End-to-end architecture for Task~A review generation.
+  \textbf{TODO: replace the placeholder box with the final architecture
+  diagram.}}
+  \label{fig:arch-a}
+\end{figure}
+
 \subsection{Cognitive Persona Representation}
 
 A persona in our system is a 6-field JSON record:
@@ -245,6 +263,16 @@ simulator metrics (\textsf{preference\_estimation},
 % ---------------------------------------------------------------
 \section{Results}
 \label{sec:results}
+
+\begin{figure}[t]
+  \centering
+  \phfig{Bar chart: rating-prediction RMSE (lower is better) and
+  register-tier match (higher is better) for NaijaReviewer-8B vs Claude
+  Sonnet 4, GPT-4o, and base Llama 3.1 8B on the v2 held-out split.}
+  \caption{Task~A headline metrics by backbone. \textbf{TODO: replace the
+  placeholder box with the final results chart.}}
+  \label{fig:results-a}
+\end{figure}
 
 Table~\ref{tab:registerfid} reports a no-ground-truth register-fidelity run
 across the five Nigerian persona archetypes and six representative products,
@@ -691,6 +719,16 @@ an embeddable business widget, all served by one FastAPI deployment. The full
 build pipeline, from corpus generation through QLoRA fine-tuning, GGUF
 quantisation, and HuggingFace publication, is reproducible from the released
 Colab notebooks.
+
+\paragraph{Resources.} All artifacts are public.
+\begin{itemize}[leftmargin=*,nosep]
+  \item \textbf{Code (GitHub):} \url{https://github.com/Mystique1337/telcoproject}
+  \item \textbf{Live app / demo:} \url{<APP-LINK-PLACEHOLDER>} % TODO: insert deployed app URL
+  \item \textbf{Model (HuggingFace):}
+        \url{https://huggingface.co/Shinzmann/naija-reviewer-8b-v2-Q4_K_M-GGUF}
+  \item \textbf{Training data and large artifacts (Google Drive):}
+        \url{<DRIVE-FOLDER-PLACEHOLDER>} % TODO: insert Drive folder link
+\end{itemize}
 
 % ---------------------------------------------------------------
 \section{Discussion}
