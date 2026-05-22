@@ -205,6 +205,8 @@ class LLMClient:
             return await self._openai(prompt, system, max_tokens, temperature, stop)
         if self.provider == "freemodel":
             return await self._freemodel(prompt, system, max_tokens, temperature, stop)
+        if self.provider == "modal":
+            return await self._modal(prompt, system, max_tokens, temperature, stop)
         if self.provider == "ollama":
             return await self._ollama(prompt, system, max_tokens, temperature, stop)
         if self.provider == "nvidia":
@@ -385,6 +387,58 @@ class LLMClient:
                 raise LLMError(f"freemodel.dev {resp.status_code}: {resp.text[:300]}")
             data = resp.json()
             return data["choices"][0]["message"]["content"]
+
+    async def _modal(
+        self,
+        prompt: str,
+        system: str | None,
+        max_tokens: int,
+        temperature: float,
+        stop: list[str] | None,
+    ) -> str:
+        """Modal-hosted NaijaReviewer-8B (GGUF on a serverless L4).
+
+        OpenAI-compatible /v1/chat/completions, open endpoint (no real auth).
+        Set MODAL_BASE_URL in .env (must end in /v1). First call after idle
+        includes a cold start (model load), so the timeout is generous.
+        """
+        if not self.settings.modal_base_url:
+            raise LLMError("MODAL_BASE_URL not set")
+        base_url = self.settings.modal_base_url.rstrip("/")
+
+        messages: list[dict[str, str]] = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        payload: dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+        }
+        if stop:
+            payload["stop"] = stop
+
+        # Generous timeout: cold start downloads/loads the model on first hit.
+        async with httpx.AsyncClient(timeout=300.0) as client:
+            async def _do():
+                return await client.post(
+                    f"{base_url}/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.settings.modal_api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json=payload,
+                )
+            resp = await _retry_on_429(_do, attempt_label=f"modal:{self.model}")
+            if resp.status_code != 200:
+                raise LLMError(f"Modal {resp.status_code}: {resp.text[:300]}")
+            data = resp.json()
+            try:
+                return data["choices"][0]["message"]["content"]
+            except (KeyError, IndexError):
+                raise LLMError(f"Modal response shape unexpected: {str(data)[:200]}")
 
     async def _lmstudio(
         self,

@@ -50,6 +50,12 @@ class Settings(BaseSettings):
     # Run the diagnostic in the Colab notebook to find which models work for you.
     nvidia_nemo_model: str = "meta/llama-3.3-70b-instruct"
     hf_token: str | None = None
+    # Modal-hosted NaijaReviewer-8B (GGUF on a serverless L4). OpenAI-compatible
+    # endpoint, open by default. base_url should end in /v1. Use the `modal:`
+    # provider prefix (e.g. TASK1_BACKBONE=modal:naija-reviewer-8b) so it doesn't
+    # collide with the real OpenAI base URL.
+    modal_base_url: str | None = None
+    modal_api_key: str = "x"  # any non-empty string; the endpoint is open
 
     # --- LangSmith / W&B ---
     wandb_api_key: str | None = None

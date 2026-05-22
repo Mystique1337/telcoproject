@@ -17,11 +17,17 @@ export const MODELS: ModelOption[] = [
   // ── Our fine-tune ────────────────────────────────────────────────────
   {
     label: "NaijaReviewer-8B",
+    spec: "modal:naija-reviewer-8b",
+    badge: "🇳🇬 fine-tune · hosted",
+    // Hosted on Modal (serverless L4, GGUF). Always-on; no local runtime needed.
+    // Empirically TOP RANKER on v2 B-eval (NDCG@10 0.588 vs Claude 0.433).
+    bestFor: "both",
+  },
+  {
+    label: "NaijaReviewer-8B (local)",
     spec: "lmstudio:naija-reviewer-8b",
     badge: "🇳🇬 fine-tune · local",
-    // Updated 2026-05-19: with the new bulletproof JSON parser + tightened
-    // rerank prompt, Naija reliably returns parseable JSON for Task B.
-    // Empirically TOP RANKER on v2 B-eval (NDCG@10 0.588 vs Claude 0.433).
+    // Same fine-tune via LM Studio on localhost — use when running offline.
     bestFor: "both",
   },
 
