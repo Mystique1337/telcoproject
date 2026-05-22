@@ -11,6 +11,8 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Login from "@/pages/auth/Login";
 import Signup from "@/pages/auth/Signup";
 import Landing from "@/pages/Landing";
+import InsideNaijaPage from "@/pages/products/InsideNaijaPage";
+import ShopEasyPage from "@/pages/products/ShopEasyPage";
 
 // Existing product components (preserved from v1)
 import InsideNaija from "./InsideNaija";
@@ -92,6 +94,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           <Routes>
             {/* Public */}
             <Route path="/" element={<Landing />} />
+            <Route path="/products/insidenaija" element={<InsideNaijaPage />} />
+            <Route path="/products/shopeasy" element={<ShopEasyPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 
@@ -127,7 +131,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             {/* Default */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-          <ThemeToggle />
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

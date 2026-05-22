@@ -1,171 +1,199 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Moon, Sun } from "lucide-react";
+import { ArrowRight, Users, BarChart3, ShoppingBag, Cpu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/auth";
+import Navbar from "@/components/Navbar";
 
-import InsideNaija from "@/InsideNaija";
-import ShopEasy from "@/ShopEasy";
-import B2B from "@/B2B";
-import { LanguageGate } from "@/LanguageGate";
-import App from "@/App";
-
-type Tab = "insidenaija" | "shopeasy" | "b2b" | "lab";
-
-const TABS: { id: Tab; label: string }[] = [
-  { id: "insidenaija", label: "InsideNaija" },
-  { id: "shopeasy", label: "ShopEasy" },
-  { id: "b2b", label: "B2B" },
-  { id: "lab", label: "Lab" },
+const PRODUCTS = [
+  {
+    href: "/products/insidenaija",
+    badge: "B2B",
+    badgeColor: "text-naija-400 border-naija-700/50 bg-naija-900/30",
+    accentColor: "border-naija-700/40 hover:border-naija-500/50",
+    icon: Users,
+    iconBg: "bg-naija-900/50 border-naija-700/30",
+    iconColor: "text-naija-400",
+    name: "InsideNaija",
+    tagline: "Synthetic Nigerian consumer research panel",
+    desc: "Run any product through 24 culturally-grounded Nigerian personas and get structured, actionable feedback in under 2 minutes.",
+    cta: "Explore InsideNaija",
+    stat: "48.5% win rate vs. Claude Sonnet",
+  },
+  {
+    href: "/products/shopeasy",
+    badge: "B2C",
+    badgeColor: "text-amber-400 border-amber-700/50 bg-amber-900/20",
+    accentColor: "border-amber-700/40 hover:border-amber-500/50",
+    icon: ShoppingBag,
+    iconBg: "bg-amber-900/30 border-amber-700/30",
+    iconColor: "text-amber-400",
+    name: "ShopEasy",
+    tagline: "Persona-aware Nigerian storefront",
+    desc: "AI-powered product recommendations tuned to Nigerian shopping behaviour, language register, and cultural context.",
+    cta: "Explore ShopEasy",
+    stat: "NDCG@10 0.572 — best of 5 models",
+  },
 ];
 
-function applyTheme(theme: "light" | "dark") {
-  document.documentElement.classList.toggle("light", theme === "light");
-  document.documentElement.classList.toggle("dark", theme === "dark");
-}
+const WHY = [
+  {
+    icon: Cpu,
+    title: "Built for Nigeria, not adapted",
+    body: "NaijaReviewer-8B was fine-tuned on Nigerian review data. Not a generic LLM with a Nigerian system prompt — a model that actually understands the culture.",
+  },
+  {
+    icon: BarChart3,
+    title: "Research-grade results",
+    body: "Blind human evaluation shows statistical parity with frontier models at 4× smaller size. Real signal, not synthetic noise.",
+  },
+  {
+    icon: Users,
+    title: "24 personas, not one prompt",
+    body: "Coverage across Yoruba, Hausa, Igbo, and Pidgin speakers — with distinct cognitive dimensions, aspect priorities, and register tiers per persona.",
+  },
+];
 
 export default function Landing() {
   const navigate = useNavigate();
   const session = useAuthStore((s) => s.session);
-  const signOut = useAuthStore((s) => s.signOut);
-
-  const [tab, setTab] = useState<Tab>("insidenaija");
-  const [theme, setTheme] = useState<"light" | "dark">(
-    () => (localStorage.getItem("theme") as "light" | "dark") || "dark",
-  );
-
-  useEffect(() => {
-    applyTheme(theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
 
   return (
     <div className="min-h-screen bg-ink-950 text-ink-50 flex flex-col">
+      <Navbar />
 
-      {/* Nav */}
-      <nav className="border-b border-ink-800 px-6 py-3 flex items-center justify-between sticky top-0 z-50 bg-ink-950/95 backdrop-blur">
-        <div className="flex items-center gap-2">
-          <span className="w-7 h-7 rounded-md bg-naija-600 flex items-center justify-center text-white text-xs font-bold">
-            NP
-          </span>
-          <span className="font-bold text-ink-50">Naija Persona</span>
+      {/* Hero */}
+      <section className="max-w-5xl mx-auto px-6 pt-24 pb-16 text-center space-y-8">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-naija-700/50 bg-naija-900/20 text-naija-400 text-sm">
+          <span className="w-2 h-2 rounded-full bg-naija-500 animate-pulse" />
+          AI infrastructure for the Nigerian market
         </div>
 
-        {/* Tab switcher */}
-        <div className="hidden sm:flex items-center gap-1 bg-ink-900 border border-ink-800 rounded-lg p-1">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                tab === t.id
-                  ? "bg-naija-600 text-white"
-                  : "text-ink-400 hover:text-ink-100"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight">
+          AI that understands<br />
+          <span className="text-naija-500">Nigerian context</span>
+        </h1>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="w-9 h-9 rounded-full border border-ink-700 text-ink-400 hover:text-ink-100 flex items-center justify-center transition-colors"
-          >
-            {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
+        <p className="text-xl text-ink-300 max-w-2xl mx-auto leading-relaxed">
+          Two products. One mission — close the gap between generic Western AI
+          and the richness of Nigerian consumer culture.
+        </p>
 
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           {session ? (
-            <>
-              <Button
-                size="sm"
-                className="bg-naija-600 hover:bg-naija-700 text-white"
-                onClick={() => navigate("/dashboard")}
-              >
-                Dashboard
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-ink-400 hover:text-ink-100"
-                onClick={signOut}
-              >
-                Sign out
-              </Button>
-            </>
+            <Button size="lg" className="bg-naija-600 hover:bg-naija-700 text-white px-8 h-12 text-base"
+              onClick={() => navigate("/dashboard")}>
+              Go to Dashboard <ArrowRight size={18} className="ml-2" />
+            </Button>
           ) : (
             <>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-ink-300 hover:text-ink-50"
-                onClick={() => navigate("/login")}
-              >
-                Sign in
+              <Button size="lg" className="bg-naija-600 hover:bg-naija-700 text-white px-8 h-12 text-base"
+                onClick={() => navigate("/signup")}>
+                Get started free <ArrowRight size={18} className="ml-2" />
               </Button>
-              <Button
-                size="sm"
-                className="bg-naija-600 hover:bg-naija-700 text-white"
-                onClick={() => navigate("/signup")}
-              >
-                Get started
-                <ArrowRight size={14} className="ml-1" />
+              <Button size="lg" variant="outline"
+                className="border-ink-700 text-ink-200 hover:border-naija-600 h-12 text-base"
+                onClick={() => navigate("/login")}>
+                Sign in
               </Button>
             </>
           )}
         </div>
-      </nav>
+      </section>
 
-      {/* Mobile tab switcher */}
-      <div className="sm:hidden flex items-center gap-1 bg-ink-900 border-b border-ink-800 px-4 py-2 overflow-x-auto">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
-              tab === t.id
-                ? "bg-naija-600 text-white"
-                : "text-ink-400 hover:text-ink-100"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      {/* Products */}
+      <section className="max-w-5xl mx-auto px-6 pb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {PRODUCTS.map((p) => (
+            <div
+              key={p.name}
+              className={`bg-ink-900 border ${p.accentColor} rounded-2xl p-8 space-y-5 cursor-pointer transition-all group`}
+              onClick={() => navigate(p.href)}
+            >
+              <div className="flex items-start justify-between">
+                <div className={`w-12 h-12 rounded-xl border ${p.iconBg} flex items-center justify-center`}>
+                  <p.icon size={22} className={p.iconColor} />
+                </div>
+                <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${p.badgeColor}`}>
+                  {p.badge}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-xl font-bold text-ink-50 group-hover:text-naija-300 transition-colors">
+                  {p.name}
+                </h3>
+                <p className="text-sm font-medium text-ink-400">{p.tagline}</p>
+              </div>
+              <p className="text-sm text-ink-400 leading-relaxed">{p.desc}</p>
+              <div className="flex items-center justify-between pt-2 border-t border-ink-800">
+                <span className="text-xs text-ink-500">{p.stat}</span>
+                <span className="text-sm text-naija-400 group-hover:text-naija-300 flex items-center gap-1 transition-colors">
+                  {p.cta} <ArrowRight size={14} />
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      {/* Product area */}
-      <div className="flex-1">
-        {tab === "insidenaija" && <InsideNaija />}
-        {tab === "shopeasy" && <ShopEasy />}
-        {tab === "b2b" && <B2B />}
-        {tab === "lab" && (
-          <LanguageGate
-            storageKey="lab_lang"
-            title="NaijaPersona Lab"
-            subtitle="Pick a default language for the developer console."
-          >
-            {() => <App />}
-          </LanguageGate>
-        )}
-      </div>
+      {/* Why */}
+      <section className="bg-ink-900/40 border-y border-ink-800 py-16">
+        <div className="max-w-5xl mx-auto px-6 space-y-10">
+          <h2 className="text-3xl font-bold text-center">Why Naija Persona</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {WHY.map(({ icon: Icon, title, body }) => (
+              <div key={title} className="space-y-3">
+                <div className="w-10 h-10 rounded-lg bg-naija-900/50 border border-naija-700/30 flex items-center justify-center">
+                  <Icon size={20} className="text-naija-400" />
+                </div>
+                <h3 className="font-semibold text-ink-100">{title}</h3>
+                <p className="text-sm text-ink-400 leading-relaxed">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      {/* Save-work banner — only shown to logged-out users */}
-      {!session && (
-        <div className="border-t border-ink-800 bg-ink-900 px-6 py-3 flex items-center justify-between">
-          <p className="text-sm text-ink-400">
-            <span className="text-ink-200 font-medium">Like what you see?</span>
-            {" "}Sign up to save projects, track history and export reports.
+      {/* Market numbers */}
+      <section className="max-w-5xl mx-auto px-6 py-16 text-center space-y-10">
+        <h2 className="text-3xl font-bold">The opportunity</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {[
+            { n: "218M+", label: "Nigerians", sub: "Africa's largest consumer market" },
+            { n: "15%+", label: "E-commerce growth YoY", sub: "fastest growing digital market on the continent" },
+            { n: "0", label: "Culturally-native AI tools", sub: "before Naija Persona" },
+          ].map(({ n, label, sub }) => (
+            <div key={n} className="bg-ink-900 border border-ink-800 rounded-xl p-8 space-y-2">
+              <p className="text-4xl font-bold text-naija-400">{n}</p>
+              <p className="text-sm font-semibold text-ink-200">{label}</p>
+              <p className="text-xs text-ink-500">{sub}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="max-w-4xl mx-auto px-6 pb-24 text-center space-y-6">
+        <div className="bg-naija-900/20 border border-naija-700/30 rounded-2xl p-12 space-y-5">
+          <h2 className="text-3xl font-bold">Start building for Nigeria today</h2>
+          <p className="text-ink-400 max-w-md mx-auto">
+            Free to try. No credit card. Results in under 2 minutes.
           </p>
-          <Button
-            size="sm"
-            className="bg-naija-600 hover:bg-naija-700 text-white shrink-0 ml-4"
-            onClick={() => navigate("/signup")}
-          >
-            Sign up free
+          <Button size="lg" className="bg-naija-600 hover:bg-naija-700 text-white px-10 h-12 text-base"
+            onClick={() => navigate(session ? "/dashboard" : "/signup")}>
+            {session ? "Go to Dashboard" : "Get started free"} <ArrowRight size={18} className="ml-2" />
           </Button>
         </div>
-      )}
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-ink-800 px-6 py-5 flex items-center justify-between text-sm text-ink-600">
+        <span className="font-semibold text-ink-400">Naija Persona</span>
+        <div className="flex gap-6">
+          <button onClick={() => navigate("/products/insidenaija")} className="hover:text-ink-300">InsideNaija</button>
+          <button onClick={() => navigate("/products/shopeasy")} className="hover:text-ink-300">ShopEasy</button>
+          <button onClick={() => navigate("/login")} className="hover:text-ink-300">Sign in</button>
+        </div>
+      </footer>
     </div>
   );
 }
