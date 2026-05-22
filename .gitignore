@@ -105,3 +105,6 @@ frontend/tsconfig.tsbuildinfo
 # Runtime data + Excel temp/lock files
 data/profiles.db
 ~$*.xlsx
+frontend_v2/node_modules/
+frontend_v2/dist/
+frontend_v2/tsconfig.tsbuildinfo
