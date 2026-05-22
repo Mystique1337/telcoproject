@@ -530,6 +530,30 @@ and widening the rater panel to match the Task-A study, is the clearest next
 step for the recommendation engine. Full per-rater numbers are in
 \texttt{paper/task\_b\_human\_eval\_summary.md}.
 
+\subsection{Ablation Studies}
+\label{sec:ablation}
+The clearest ablation we ran is the \textbf{Stage-2.5 Cohere pre-rerank},
+toggled on and off with everything else held fixed
+(Tables~\ref{tab:taskB-5way} and~\ref{tab:taskB-5way-cohere}). The result is
+deliberately reported as a non-uniform effect: narrowing the pool 30~$\to$~15
+lifts NaijaReviewer-8B's HR@1 by $+$19\,\% (0.444~$\to$~0.529) and the two HF
+open-weights' NDCG@10 by 12--14\,\%, leaves Claude flat, and \emph{hurts}
+GPT-OSS-120B by 17\,\%. This contradicts our own pre-registration that
+``tightening the pool helps every reranker'' (\S\ref{sec:results}), and we
+retract that prediction rather than hide it: the pre-rerank is a re-shaping of
+the candidate distribution that interacts with each model's strengths, not a
+free win.
+
+The remaining single-factor ablations are scaffolded in
+\texttt{scripts/eval\_ablation.py} but not yet run at scale, and we flag them
+honestly: (i) the retrieval encoder (\texttt{llama-text-embed-v2} vs a generic
+sentence-transformer), (ii) the MMR diversity pass (on vs off), and
+(iii) persona conditioning (full cognitive persona vs demographics-only vs no
+persona). The Task-A companion paper runs the persona-conditioning ablation
+for review generation and finds persona removal collapses cultural-marker
+output to zero; we expect a smaller but directionally similar effect on
+ranking, and quantifying it is immediate future work.
+
 % ---------------------------------------------------------------
 \section{From Submission to Product: \emph{NaijaPersona}}
 \label{sec:product}
@@ -693,6 +717,44 @@ this particular reranker'' --- is queued as future work. For now,
 operationally, we recommend Cohere ON when HR@1 dominates the
 business metric (NaijaReviewer-8B's HR@1 lift is $+$19\,\%) and OFF
 when top-10 ordering matters.
+
+% ---------------------------------------------------------------
+\section{Future Work: What More Time Would Buy}
+\label{sec:futurework}
+
+The five-day scope leaves concrete, prioritised next experiments.
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Reconcile ranking accuracy with human relevance.} Our sharpest
+        open question is the divergence in \S\ref{sec:taskb-humaneval}:
+        NaijaReviewer-8B wins NDCG@10 but loses the blind human relevance vote
+        to Claude (27.3\,\% win-rate, 2.60 vs 3.40 mean relevance) on a 2-rater
+        panel. The immediate work is to widen that panel to the five raters
+        used in Task~A, then diagnose \emph{why} the model that recovers
+        held-out items composes lists humans find less coherent --- likely a
+        list-level diversity / coherence objective the pointwise re-rank misses.
+  \item \textbf{Run the queued component ablations} (\S\ref{sec:ablation}):
+        retrieval encoder, MMR on/off, and persona-conditioning depth, each as
+        a single-factor study, to attribute the win to specific stages rather
+        than the pipeline as a whole.
+  \item \textbf{Larger, harder evaluation.} 17--18 scenarios per backbone is
+        small; binary relevance ($\geq 4$) is coarse. A larger held-out split
+        with graded relevance and more held-out purchases per persona would
+        tighten the confidence intervals behind the headline NDCG gap.
+  \item \textbf{Genuine multi-turn evaluation.} The pipeline supports
+        conversational refinement and budget changes, but we evaluate only
+        single-shot ranking. A turn-level metric (does each turn's constraint
+        actually move the ranking correctly?) is the natural extension.
+  \item \textbf{Learned, not prompted, pre-rerank.} Stage~2.5 currently uses a
+        general-purpose Cohere cross-encoder whose effect is non-uniform across
+        re-rankers. Fine-tuning a small Nigerian-context cross-encoder, or
+        making the narrowing reranker-aware, should turn the mixed ablation
+        result into a consistent gain.
+  \item \textbf{Cold-start and cross-domain at scale.} We implement explicit
+        handlers for both, but evaluate them lightly. Dedicated cold-start
+        (history-free personas) and cross-domain (unseen-category) test splits
+        would substantiate the two sub-scenarios the brief calls out.
+\end{enumerate}
 
 % ---------------------------------------------------------------
 \section{Conclusion}

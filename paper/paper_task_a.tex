@@ -806,6 +806,46 @@ vote. The RMSE / rating-accuracy lead is the surviving strong claim;
 the prose-authenticity claim is retracted.
 
 % ---------------------------------------------------------------
+\section{Future Work: What More Time Would Buy}
+\label{sec:futurework}
+
+This was a five-day sprint; the honest gaps point to clear next experiments,
+roughly in priority order.
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Decouple authenticity from prompt leakage.} Our largest
+        nominal wins (register match, marker recall) are partly confounded:
+        69\,\% of v2 ground-truth markers overlap with the markers our prompt
+        template already names (\S\ref{sec:audit}), so the metric reads as
+        \emph{emission rate}, not authenticity. The right fix is a
+        held-out test set with native-speaker-written ground truth and a
+        marker lexicon disjoint from the prompt, which would let us claim
+        authenticity rather than retract it.
+  \item \textbf{Reconcile the human / LLM-judge split.} Humans rated the
+        fine-tune at parity (48.5\,\%) while frontier LLM judges preferred
+        Claude 68--32. That gap is itself a finding about Western priors in
+        LLM judges; with more time we would scale the human panel, recruit
+        raters stratified by L1 (Yoruba / Hausa / Igbo / Pidgin), and measure
+        whether judge--human disagreement tracks register.
+  \item \textbf{Preference fine-tuning.} The current model is SFT-only. A
+        DPO / RLAIF pass over Nigerian preference pairs (which review of a
+        pair reads as more authentic to a Nigerian rater) should lift prose
+        quality, the axis where we currently lose to frontier models.
+  \item \textbf{Scale and diversify the corpus.} 20\,k examples skew toward a
+        few product categories and the five seed personas. More data across
+        all 24 personas, more categories, and explicit multi-dialect coverage
+        would test whether the register effect generalises beyond the seen
+        distribution (78\,\% of v2 personas are already out-of-training).
+  \item \textbf{Multi-turn review refinement.} The product supports
+        conversational refinement of a generated review; we have not yet
+        evaluated it. A turn-level fidelity metric is the natural extension.
+  \item \textbf{Causal product validation.} The NaijaPersona panel predicts
+        reactions; a study tying panel predictions to a real outcome (e.g.\
+        telco churn-message lift, MSME loan-default signal) would convert the
+        construct-validity argument into an external one.
+\end{enumerate}
+
+% ---------------------------------------------------------------
 \section{Conclusion}
 
 The cultural prior in vanilla LLM agents is a measurable gap that
