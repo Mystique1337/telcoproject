@@ -88,7 +88,7 @@ Where each criterion is satisfied:
 **Task B**
 - *Ranking quality:* NDCG@10 0.572 and HR@5 0.588, the best of five re-rankers measured, in `paper/paper_task_b.tex` and `paper/results.md`.
 - *Cold-start and cross-domain:* explicit handlers in `app/agents/recommend_agent.py` (demographic fallback when a persona has little history; multi-domain candidate pulls), surfaced in the API response and reasoning trace.
-- *Contextual relevance:* every recommendation carries a persona-grounded rationale, demonstrated in the Task B qualitative case study and observable live in the ShopEasy storefront.
+- *Contextual relevance:* every recommendation carries a persona-grounded rationale, demonstrated in the Task B qualitative case study and observable live in the ShopEasy storefront. A blind A/B relevance human-eval harness (`scripts/build_task_b_human_eval_xlsx.py` and `scripts/aggregate_task_b_human_eval_xlsx.py`) compares NaijaReviewer-8B and Claude recommendation lists across the 24 personas: raters pick which list better fits each persona and rate each list 1 to 5.
 - *Solution paper:* `paper/paper_task_b.tex`.
 - *Code reproducibility:* same one-command run; the recommendation stack is reproducible with `scripts/build_pinecone_index.py`.
 
@@ -243,6 +243,20 @@ make eval              # full eval with held-out test set
 ```
 
 Results write to `paper/results.json` and `paper/results.md`. The harness reports both the project's rubric metrics (RMSE, BERTScore F1, ROUGE-L, register match, cultural-marker recall) and the AgentSociety challenge metrics.
+
+**Human evaluation.** Two blind A/B human-eval instruments back the human-judged criteria:
+
+```bash
+# Task A - review quality / behavioural fidelity (5 raters, 50 pairs, already collected)
+python scripts/build_human_eval_xlsx.py
+python scripts/aggregate_human_eval_xlsx.py            # -> paper/human_eval_summary.md
+
+# Task B - recommendation contextual relevance (needs `make serve` running)
+python scripts/build_task_b_human_eval_xlsx.py         # -> paper/task_b_human_eval_template.xlsx
+python scripts/aggregate_task_b_human_eval_xlsx.py     # -> paper/task_b_human_eval_summary.md
+```
+
+Each builder produces a shareable workbook with no model labels (sides are randomised) plus a local answer key; raters fill it in, drop copies in the matching `paper/*_returned/` folder, and the aggregator reports win-rate with Wilson 95% CIs and inter-rater agreement.
 
 ## For judges
 
