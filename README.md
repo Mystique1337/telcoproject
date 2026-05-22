@@ -64,6 +64,36 @@ Language support across the products: English, Nigerian Pidgin, plus Yoruba, Hau
 
 Full numbers: `paper/results.md`, `paper/human_eval_summary.md`, `paper/llm_judge_summary.md`.
 
+## How this maps to the judging criteria
+
+The submission is built to address every line of the scoring rubric for both tasks, on a shared 100-point scale.
+
+| Weight | Task A: User Modeling | Task B: Recommendation |
+|---|---|---|
+| 30 | Review text quality (ROUGE / BERTScore) | Ranking quality (NDCG@10 / Hit Rate) |
+| 25 | Rating accuracy (RMSE) | Cold-start and cross-domain |
+| 20 | Behavioural fidelity (human eval) | Contextual relevance (human eval) |
+| 15 | Solution paper | Solution paper |
+| 10 | Code reproducibility | Code reproducibility |
+
+Where each criterion is satisfied:
+
+**Task A**
+- *Review text quality:* BERTScore F1 0.858 and ROUGE-L 0.205 on the held-out v2 split, reported in `paper/paper_task_a.tex` and `paper/results.md`, computed by `scripts/eval_all.py`.
+- *Rating accuracy:* RMSE 1.114 versus Claude Sonnet 4 at 1.319, a 15.5% reduction, on the same split.
+- *Behavioural fidelity:* a blind 5-rater human A/B over 50 pairs (48.5% win-rate against Claude), in `paper/human_eval_summary.md`, with an LLM-judge contrast in `paper/llm_judge_summary.md`.
+- *Solution paper:* `paper/paper_task_a.tex`.
+- *Code reproducibility:* one-command `make serve`, plus the full Colab build pipeline (`notebooks/02_finetune.ipynb`) and the hosted endpoint.
+
+**Task B**
+- *Ranking quality:* NDCG@10 0.572 and HR@5 0.588, the best of five re-rankers measured, in `paper/paper_task_b.tex` and `paper/results.md`.
+- *Cold-start and cross-domain:* explicit handlers in `app/agents/recommend_agent.py` (demographic fallback when a persona has little history; multi-domain candidate pulls), surfaced in the API response and reasoning trace.
+- *Contextual relevance:* every recommendation carries a persona-grounded rationale, demonstrated in the Task B qualitative case study and observable live in the ShopEasy storefront.
+- *Solution paper:* `paper/paper_task_b.tex`.
+- *Code reproducibility:* same one-command run; the recommendation stack is reproducible with `scripts/build_pinecone_index.py`.
+
+**Nigerian contextualisation (bonus).** The system is designed from the ground up to behave and sound Nigerian: a four-tier register model (standard English, Nigerian English, Pidgin, code-mixed), cultural-marker handling, the NaijaReviewer-8B fine-tune trained on Nigerian review data, multilingual output in Yoruba, Hausa, and Igbo, and Nigerian text-to-speech. This is the core thesis of both papers, not an afterthought.
+
 ## Architecture
 
 ```
@@ -215,6 +245,8 @@ make eval              # full eval with held-out test set
 Results write to `paper/results.json` and `paper/results.md`. The harness reports both the project's rubric metrics (RMSE, BERTScore F1, ROUGE-L, register match, cultural-marker recall) and the AgentSociety challenge metrics.
 
 ## For judges
+
+The two solution papers are the place to start: `paper/paper_task_a.tex` (user modeling and review generation) and `paper/paper_task_b.tex` (recommendation). The "How this maps to the judging criteria" section above points each rubric line to its evidence. To run the system:
 
 1. `pip install -r requirements.txt`, then `cp .env.example .env` and add an API key.
 2. `make serve` and open `http://localhost:8765` to use InsideNaija and ShopEasy directly, or `http://localhost:8765/docs` to call the API.
