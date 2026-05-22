@@ -10,6 +10,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 
 import Login from "@/pages/auth/Login";
 import Signup from "@/pages/auth/Signup";
+import Landing from "@/pages/Landing";
 
 // Existing product components (preserved from v1)
 import InsideNaija from "./InsideNaija";
@@ -90,6 +91,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <AuthProvider>
           <Routes>
             {/* Public */}
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 
@@ -123,7 +125,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <Route path="/widget" element={<Widget />} />
 
             {/* Default */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <ThemeToggle />
         </AuthProvider>
