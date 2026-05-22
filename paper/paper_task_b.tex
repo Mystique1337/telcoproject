@@ -109,14 +109,13 @@ review generation) using the same persona substrate.
           \texttt{llama-text-embed-v2} (1024-dim, Llama-3.2-1B encoder)
           hosted on Pinecone with the same asymmetric
           \texttt{passage} / \texttt{query} encoding architecture used
-          by industrial career / skills-extraction systems. Indexes
-          6\,657 real Jumia products under namespace
-          \texttt{products-v1}.
+          by industrial career / skills-extraction systems, indexing
+          6\,657 real Jumia products.
     \item A \emph{Cohere \texttt{rerank-v3.5} cross-encoder pre-rerank}
           stage that narrows the post-retrieval candidate pool 30 $\to$ 15
           by persona-flavored query in $\sim$200--600\,ms before the
-          (slow, expensive) LLM rerank stage. Auto-skips gracefully if the
-          key is absent or if the pool is already below \texttt{top\_n}.
+          (slow, expensive) LLM rerank stage. It auto-skips gracefully when
+          the pre-rerank is unavailable or the pool is already small enough.
     \item An \emph{11-backbone re-ranker comparison} on a 17--18
           persona-scenario held-out split. The 8\,B \emph{NaijaReviewer-8B}
           open-weight fine-tune is the top re-ranker on every metric,
@@ -124,9 +123,8 @@ review generation) using the same persona substrate.
           Qwen-2.5-72B at $9$--$15\times$ fewer parameters and zero
           per-call API cost.
     \item A \emph{robust JSON-following pipeline}: a custom
-          fence-stripping + balanced-brace + truncated-JSON-repair parser
-          (\texttt{app/llm/client.py}: \texttt{\_extract\_json},
-          \texttt{\_repair\_truncated\_json}) that lets smaller and
+          fence-stripping, balanced-brace, and truncated-JSON-repair parser
+          that lets smaller and
           less-aligned models participate in re-ranking without
           fallback-to-pre-rank events. Verified across 18 scenarios:
           zero fallbacks fired.
@@ -146,7 +144,7 @@ review generation) using the same persona substrate.
 retriever is now standard~\cite{recagent}: a retrieval-stage embedding model
 narrows a corpus to top-K candidates, then an LLM scores or pairwise-compares
 the candidates against the query. Our re-ranker adds a Maximal Marginal
-Relevance (MMR) pass for diversity (FR-T2.7 in our PRD) and a synthetic
+Relevance (MMR) pass for diversity and a synthetic
 ``serendipity'' score for negative recommendations.
 
 \subsubsection*{Asymmetric dense retrieval.} Our retrieval stack uses
@@ -300,28 +298,27 @@ candidates were filtered and why.
 
 \subsection{Robust JSON Following for Heterogeneous Re-Rankers}
 
-A practical obstacle to comparing 11 different re-rankers is that smaller
-open-weight models hit \texttt{max\_tokens} mid-JSON or wrap output in
-unexpected markdown fences. We mitigate this with two parsers in
-\texttt{app/llm/client.py}:
+A practical obstacle to comparing eleven different re-rankers is that
+smaller open-weight models often exhaust their token budget mid-JSON or wrap
+output in unexpected markdown fences. We mitigate this with two parsing
+stages:
 
 \begin{itemize}[leftmargin=*]
-    \item \texttt{\_extract\_json}: strips ` ```json ` and ` ``` `
-          fences anywhere in the output (not just leading), then runs
-          a balanced-brace scan to recover the first complete JSON
-          object even if surrounded by prose (``Here is the JSON: \{...\}'').
-    \item \texttt{\_repair\_truncated\_json}: when output ended mid-string
-          or mid-array (\texttt{max\_tokens} cut), attempts a best-effort
-          tail closure (close any open brackets, drop trailing partial
-          tokens) so we recover the prefix of the rank list instead of
-          dropping the whole response.
+    \item A \emph{fence-stripping, balanced-brace extractor} that removes code
+          fences anywhere in the output, then scans for the first complete
+          JSON object even when it is surrounded by prose (``Here is the
+          JSON: \{...\}'').
+    \item A \emph{truncated-JSON repairer} that, when output was cut off
+          mid-string or mid-array, closes any open brackets and drops the
+          trailing partial token, recovering the prefix of the rank list
+          instead of discarding the whole response.
 \end{itemize}
 
-Combined with a bumped \texttt{max\_tokens=3500} on rerank calls (up from
-2000 in early development) and a tightened ``Return ONLY this JSON, top-15
-items max'' prompt instruction, the pipeline survives every model in our
-11-backbone comparison without fallback-to-pre-rank events on the test
-split (verified: zero fallback events fired, audited via 5 controlled
+Combined with a generous token budget on rerank calls and a tightened
+``return only this JSON, top-15 items'' instruction, the pipeline survives
+every model in our eleven-backbone comparison without fallback-to-pre-rank
+events on the test split (verified: zero fallback events fired, audited via
+5 controlled
 live rerank calls + uvicorn-log fallback count over the full eval).
 
 % ---------------------------------------------------------------
@@ -367,12 +364,10 @@ relevance directly, we additionally run a blind A/B human evaluation. For
 each of the 24 personas we generate two top-5 recommendation lists, one
 re-ranked by NaijaReviewer-8B and one by Claude Sonnet 4, present them in
 randomised order with no model labels, and ask raters which list better fits
-the persona and to score each list 1--5 for relevance. The protocol is
-released as \texttt{scripts/build\_task\_b\_human\_eval\_xlsx.py} and
-\texttt{scripts/aggregate\_task\_b\_human\_eval\_xlsx.py}; the aggregator
-reports win-rate with Wilson 95\,\% confidence intervals, mean per-model
-relevance, and inter-rater agreement, mirroring the Task-A human-eval
-methodology.
+the persona and to score each list 1--5 for relevance. We report win-rate
+with Wilson 95\,\% confidence intervals, mean per-model relevance, and
+inter-rater agreement, mirroring the Task-A human-eval methodology; the full
+protocol is released with the code.
 
 % ---------------------------------------------------------------
 \section{Results}
@@ -396,28 +391,29 @@ Stage~2.5 enabled (Table~\ref{tab:taskB-5way-cohere}). In both
 configurations, NaijaReviewer-8B is the top re-ranker on NDCG@10
 despite being $9$--$15\times$ smaller than the next-best baseline.
 
-\begin{table}[h]
-\caption{Task B (Cohere-OFF) --- LLM-only 5-way re-ranker comparison on
-         v2 ($n=17$--18 scenarios per backbone). Same candidate set per
-         persona; only re-ranker changes. \emph{NaijaReviewer-8B wins on
-         every metric}, beating two frontier models and three open-weight
-         heavyweights at $9$--$15\times$ fewer parameters and \$0 per-call
-         API cost.}
+\begin{table*}[t]
+\centering
+\caption{Five-way re-ranker comparison without the Stage-2.5 pre-rerank
+         ($n=17$--18 scenarios per backbone). Every model sees the same
+         candidate set per persona; only the re-ranker changes.
+         NaijaReviewer-8B wins on every metric, beating two frontier models
+         and three open-weight heavyweights at $9$--$15\times$ fewer
+         parameters and at no per-call API cost.}
 \label{tab:taskB-5way}
 \small
 \begin{tabular}{lcccccc}
 \toprule
 \textbf{Re-ranker} & \textbf{Params} & \textbf{n} & \textbf{NDCG@10 $\uparrow$} &
-\textbf{HR@1} & \textbf{HR@3} & \textbf{HR@5} \\
+\textbf{HR@1 $\uparrow$} & \textbf{HR@3 $\uparrow$} & \textbf{HR@5 $\uparrow$} \\
 \midrule
-\textbf{NaijaReviewer-8B}      & \textbf{8B}  & 18 & \textbf{0.588} & \textbf{0.444} & \textbf{0.556} & \textbf{0.648} \\
-GPT-OSS 120B (Ollama Cloud)    & 120B         & 18 & 0.441 & 0.333 & 0.278 & 0.370 \\
-Claude Sonnet 4                & undisclosed  & 17 & 0.433 & 0.294 & 0.255 & 0.392 \\
-Llama-3.3-70B (HF Inference)   & 70B          & 16 & 0.425 & 0.312 & 0.219 & 0.354 \\
-Qwen-2.5-72B (HF Inference)    & 72B          & 17 & 0.404 & 0.235 & 0.186 & 0.324 \\
+\textbf{NaijaReviewer-8B} & \textbf{8B}  & 18 & \textbf{0.588} & \textbf{0.444} & \textbf{0.556} & \textbf{0.648} \\
+GPT-OSS-120B              & 120B         & 18 & 0.441 & 0.333 & 0.278 & 0.370 \\
+Claude Sonnet 4           & undisclosed  & 17 & 0.433 & 0.294 & 0.255 & 0.392 \\
+Llama-3.3-70B             & 70B          & 16 & 0.425 & 0.312 & 0.219 & 0.354 \\
+Qwen-2.5-72B              & 72B          & 17 & 0.404 & 0.235 & 0.186 & 0.324 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 \paragraph{Effect of Stage 2.5 (Cohere ON).}
 Re-running the same eval with the Cohere cross-encoder narrowing the
@@ -427,28 +423,30 @@ but the picture is more nuanced than ``every reranker improves
 uniformly'' --- some lift substantially, some drop, depending on how
 the narrowed pool interacts with the reranker's strengths.
 
-\begin{table}[h]
-\caption{Task B (Cohere ON) --- Same 5-way comparison with Stage 2.5
-         Cohere \texttt{rerank-v3.5} narrowing the candidate pool
-         30 $\to$ 15 before LLM reranking. NaijaReviewer-8B still leads
-         on NDCG@10 and \emph{further improves} on HR@1 (0.444 $\to$
-         0.529, $+$19\,\%). Llama-3.3-70B and Qwen-2.5-72B both gain
-         on NDCG@10; GPT-OSS-120B \emph{loses} after narrowing.}
+\begin{table*}[t]
+\centering
+\caption{The same five-way comparison with the Stage-2.5 cross-encoder
+         pre-rerank enabled (candidate pool narrowed from 30 to 15 before
+         re-ranking). NaijaReviewer-8B still leads on NDCG@10 and improves on
+         HR@1 (0.444 to 0.529, $+$19\,\%). The two open-weight 70B+ models
+         gain on NDCG@10, while GPT-OSS-120B loses after narrowing: the
+         pre-rerank reshapes the candidate distribution rather than helping
+         uniformly.}
 \label{tab:taskB-5way-cohere}
 \small
 \begin{tabular}{lcccccc}
 \toprule
 \textbf{Re-ranker} & \textbf{Params} & \textbf{n} & \textbf{NDCG@10 $\uparrow$} &
-\textbf{HR@1} & \textbf{HR@3} & \textbf{HR@5} \\
+\textbf{HR@1 $\uparrow$} & \textbf{HR@3 $\uparrow$} & \textbf{HR@5 $\uparrow$} \\
 \midrule
-\textbf{NaijaReviewer-8B}      & \textbf{8B}  & 17 & \textbf{0.572} & \textbf{0.529} & \textbf{0.529} & \textbf{0.588} \\
-Llama-3.3-70B (HF Inference)   & 70B          & 14 & 0.477 & 0.571 & 0.250 & 0.298 \\
-Qwen-2.5-72B (HF Inference)    & 72B          & 17 & 0.461 & 0.412 & 0.284 & 0.324 \\
-Claude Sonnet 4                & undisclosed  & 17 & 0.430 & 0.294 & 0.225 & 0.353 \\
-GPT-OSS 120B (Ollama Cloud)    & 120B         & 16 & 0.366 & 0.125 & 0.177 & 0.323 \\
+\textbf{NaijaReviewer-8B} & \textbf{8B}  & 17 & \textbf{0.572} & \textbf{0.529} & \textbf{0.529} & \textbf{0.588} \\
+Llama-3.3-70B             & 70B          & 14 & 0.477 & 0.571 & 0.250 & 0.298 \\
+Qwen-2.5-72B              & 72B          & 17 & 0.461 & 0.412 & 0.284 & 0.324 \\
+Claude Sonnet 4           & undisclosed  & 17 & 0.430 & 0.294 & 0.225 & 0.353 \\
+GPT-OSS-120B              & 120B         & 16 & 0.366 & 0.125 & 0.177 & 0.323 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 \paragraph{The honest read on Stage 2.5.} The pre-Cohere paper draft
 predicted ``every reranker's NDCG@10 should rise by tightening the
@@ -546,6 +544,16 @@ Claude Sonnet 4's lists, giving NaijaReviewer-8B a 27.3\,\% win-rate
 $\alpha = 0.14$) and the panel is small (2 raters), so we read this as a
 preliminary signal, not a verdict.
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.74\columnwidth]{figures/fig_task_b_relevance.pdf}
+  \caption{Blind human relevance: raters score Claude's recommendation lists
+  as more contextually relevant than NaijaReviewer-8B's (mean 3.40 vs 2.60;
+  NaijaReviewer-8B win-rate 27.3\,\%), the reverse of the automatic NDCG@10
+  ranking. We report the divergence rather than hide it.}
+  \label{fig:relevance-b}
+\end{figure}
+
 We report it because the divergence from Table~\ref{tab:taskB-5way} is the
 honest and interesting part. NaijaReviewer-8B leads on NDCG@10 --- it is
 better at surfacing the specific products a persona rated highly in held-out
@@ -555,8 +563,7 @@ coherent for the persona at a glance. The two measures reward different things
 re-ranker that is strong on one is not automatically strong on the other.
 Reconciling held-out ranking accuracy with human-perceived list coherence,
 and widening the rater panel to match the Task-A study, is the clearest next
-step for the recommendation engine. Full per-rater numbers are in
-\texttt{paper/task\_b\_human\_eval\_summary.md}.
+step for the recommendation engine.
 
 \subsection{Ablation Studies}
 \label{sec:ablation}
@@ -572,10 +579,20 @@ retract that prediction rather than hide it: the pre-rerank is a re-shaping of
 the candidate distribution that interacts with each model's strengths, not a
 free win.
 
-The remaining single-factor ablations are scaffolded in
-\texttt{scripts/eval\_ablation.py} but not yet run at scale, and we flag them
-honestly: (i) the retrieval encoder (\texttt{llama-text-embed-v2} vs a generic
-sentence-transformer), (ii) the MMR diversity pass (on vs off), and
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/fig_task_b_cohere.pdf}
+  \caption{Toggling the Stage-2.5 pre-rerank on and off, with everything else
+  fixed. The effect is non-uniform: the two 70B+ open-weights gain, GPT-OSS
+  loses, and NaijaReviewer-8B stays on top either way. The pre-rerank reshapes
+  the candidate distribution rather than helping every model.}
+  \label{fig:cohere-b}
+\end{figure}
+
+The remaining single-factor ablations are scaffolded but not yet run at
+scale, and we flag them honestly: (i) the retrieval encoder
+(\textsf{llama-text-embed-v2} vs a generic sentence-transformer),
+(ii) the MMR diversity pass (on vs off), and
 (iii) persona conditioning (full cognitive persona vs demographics-only vs no
 persona). The Task-A companion paper runs the persona-conditioning ablation
 for review generation and finds persona removal collapses cultural-marker
@@ -679,9 +696,8 @@ on cold-start personas.
 
 \textbf{(3) JSON-following robustness is the gating factor for multi-backbone
 re-ranker comparisons.} Half the engineering work in shipping the
-11-backbone comparison was the JSON parser
-(\texttt{\_extract\_json} + \texttt{\_repair\_truncated\_json} in
-\texttt{app/llm/client.py}). Without it, the smaller open-weight models
+eleven-backbone comparison was the JSON-following parser. Without it, the
+smaller open-weight models
 would have fallen back to pre-rank scores and the comparison would have
 silently compared retrieval-similarity-rankings rather than
 LLM-rankings. Anyone publishing multi-backbone re-ranker comparisons

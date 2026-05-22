@@ -135,10 +135,110 @@ def fig_task_b_ndcg():
     plt.close(fig)
 
 
+# --------------------------------------------------------------------------- #
+# 4. Task A ablation - register match and markers across conditions
+# --------------------------------------------------------------------------- #
+def fig_task_a_ablation():
+    conds = ["A. Full", "B. -prompt", "C. -persona", "D. 70B base"]
+    reg = [48.0, 6.0, 4.0, 53.1]       # register-match %
+    markers = [3.22, 0.16, 0.00, 4.65]  # markers / review
+    bar_colors = [NAIJA, GREY, GREY, "#5b8def"]
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.8, 3.2))
+    b1 = ax1.bar(conds, reg, color=bar_colors, width=0.6)
+    ax1.set_ylabel("Register-tier match (%)")
+    ax1.set_ylim(0, 60)
+    ax1.set_title("Register fidelity", fontsize=11, color=DARK)
+    for b, v in zip(b1, reg):
+        ax1.text(b.get_x()+b.get_width()/2, v+0.8, f"{v:.0f}", ha="center", fontsize=9)
+    ax1.tick_params(axis="x", labelrotation=20, labelsize=8)
+    b2 = ax2.bar(conds, markers, color=bar_colors, width=0.6)
+    ax2.set_ylabel("Cultural markers / review")
+    ax2.set_ylim(0, 5)
+    ax2.set_title("Marker emission", fontsize=11, color=DARK)
+    for b, v in zip(b2, markers):
+        ax2.text(b.get_x()+b.get_width()/2, v+0.07, f"{v:.2f}", ha="center", fontsize=9)
+    ax2.tick_params(axis="x", labelrotation=20, labelsize=8)
+    for ax in (ax1, ax2):
+        ax.grid(axis="y", color="#eeeeee")
+    fig.suptitle("Removing the register-aware prompt collapses Nigerian voice",
+                 fontsize=11.5, color=DARK)
+    fig.savefig(OUT / "fig_task_a_ablation.pdf")
+    plt.close(fig)
+
+
+# --------------------------------------------------------------------------- #
+# 5. Task A - LLM judges vs human raters (the cultural-prior twist)
+# --------------------------------------------------------------------------- #
+def fig_task_a_judge_human():
+    arbiters = ["LLM judges\n(majority)", "Nigerian humans\n(pooled)"]
+    winrate = [32.0, 48.5]
+    fig, ax = plt.subplots(figsize=(4.6, 3.3))
+    bars = ax.bar(arbiters, winrate, color=[GREY, NAIJA], width=0.55)
+    ax.axhline(50, color=EVAL, ls="--", lw=1)
+    ax.text(1.45, 50, "parity", color=EVAL, va="center", fontsize=9)
+    for b, v in zip(bars, winrate):
+        ax.text(b.get_x()+b.get_width()/2, v+0.8, f"{v:.1f}%", ha="center",
+                fontweight="bold", fontsize=11)
+    ax.set_ylabel("NaijaReviewer-8B win-rate vs Claude")
+    ax.set_ylim(0, 60)
+    ax.set_title("Who judges authenticity?", fontsize=12, color=DARK)
+    ax.grid(axis="y", color="#eeeeee")
+    fig.savefig(OUT / "fig_task_a_judge_human.pdf")
+    plt.close(fig)
+
+
+# --------------------------------------------------------------------------- #
+# 6. Task B - Cohere pre-rerank ablation (NDCG@10 OFF vs ON)
+# --------------------------------------------------------------------------- #
+def fig_task_b_cohere():
+    models = ["NaijaReviewer-8B", "Llama-3.3-70B", "Qwen-2.5-72B",
+              "Claude Sonnet 4", "GPT-OSS-120B"]
+    off = [0.588, 0.425, 0.404, 0.433, 0.441]
+    on = [0.572, 0.477, 0.461, 0.430, 0.366]
+    import numpy as np
+    x = np.arange(len(models)); w = 0.38
+    fig, ax = plt.subplots(figsize=(7.0, 3.5))
+    ax.bar(x - w/2, off, w, label="Pre-rerank OFF", color=GREY)
+    ax.bar(x + w/2, on, w, label="Pre-rerank ON", color=NAIJA)
+    ax.set_xticks(x); ax.set_xticklabels(models, rotation=18, ha="right", fontsize=9)
+    ax.set_ylabel("NDCG@10")
+    ax.set_ylim(0, 0.66)
+    ax.set_title("Stage-2.5 pre-rerank ablation: a non-uniform effect",
+                 fontsize=11.5, color=DARK)
+    ax.legend(frameon=False, fontsize=9)
+    ax.grid(axis="y", color="#eeeeee")
+    fig.savefig(OUT / "fig_task_b_cohere.pdf")
+    plt.close(fig)
+
+
+# --------------------------------------------------------------------------- #
+# 7. Task B - human contextual-relevance (mean relevance + win-rate)
+# --------------------------------------------------------------------------- #
+def fig_task_b_relevance():
+    models = ["NaijaReviewer-8B", "Claude Sonnet 4"]
+    rel = [2.60, 3.40]
+    fig, ax = plt.subplots(figsize=(4.7, 3.3))
+    bars = ax.bar(models, rel, color=[NAIJA, GREY], width=0.55)
+    for b, v in zip(bars, rel):
+        ax.text(b.get_x()+b.get_width()/2, v+0.05, f"{v:.2f}", ha="center",
+                fontweight="bold", fontsize=11)
+    ax.set_ylabel("Mean relevance (1-5)")
+    ax.set_ylim(0, 5)
+    ax.set_title("Human relevance: Claude's lists preferred\n"
+                 "(NaijaReviewer-8B win-rate 27.3%)", fontsize=10.5, color=DARK)
+    ax.grid(axis="y", color="#eeeeee")
+    fig.savefig(OUT / "fig_task_b_relevance.pdf")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     fig_training_loss()
     fig_task_a_rmse()
     fig_task_b_ndcg()
+    fig_task_a_ablation()
+    fig_task_a_judge_human()
+    fig_task_b_cohere()
+    fig_task_b_relevance()
     print(f"wrote figures to {OUT}")
     for p in sorted(OUT.glob("*.pdf")):
         print("  ", p.name, f"{p.stat().st_size/1024:.1f} KB")
