@@ -13,12 +13,12 @@
 
 \author{Ashinze Ifeanyi}
 \affiliation{\institution{Naija Persona Agent Team}\country{Nigeria}}
-\email{ashinze@bluebulb.co.uk}
+\email{chidi.ashinze@gmail.com}
 
 \author{Franca}
 \affiliation{\institution{Naija Persona Agent Team}\country{Nigeria}}
 
-\author{Anonymous Third Author}
+\author{Esther Oyenekan}
 \affiliation{\institution{Naija Persona Agent Team}\country{Nigeria}}
 
 \begin{document}
@@ -193,8 +193,13 @@ gradient checkpointing.
 \textbf{Corpus.} $\sim$20k examples, stratified 90/5/5 by register tier.
 \textbf{Schedule.} 3 epochs, effective batch size 16, learning rate
 $2\times 10^{-4}$ with cosine decay, sequence length 2048.
-\textbf{Export.} Merged FP16 + GGUF $Q4\_K\_M$ ($\sim$5\,GB) for local
-serving via Ollama / LM Studio.
+\textbf{Export.} The LoRA adapter is merged into FP16 and converted with
+llama.cpp to GGUF at three quantisation levels ($Q4\_K\_M$ $\sim$5\,GB,
+$Q5\_K\_M$, $Q8\_0$). All artifacts are published to HuggingFace: the merged
+model and GGUF builds (\textsf{Shinzmann/naija-reviewer-8b-v2}), the LoRA
+adapter, and the training corpus. The model serves either locally via
+Ollama / LM Studio or, in production, as an OpenAI-compatible endpoint on a
+Modal serverless L4 GPU (\S\ref{sec:deploy}).
 
 % ---------------------------------------------------------------
 \section{Experimental Setup}
@@ -246,10 +251,10 @@ served through the same FastAPI pipeline used in the live demo. Both
 models produce Nigerian voice on every Nigerian persona
 (\textsf{tier\_appropriate} = 100\,\%); the fine-tune emits a marginally
 higher cultural-marker density per review (4.00 vs 3.77). The fine-tune
-is slower (median 40.8\,s vs 36.6\,s) because it is served on a single
-consumer Mac via LM Studio rather than a cloud GPU; production latency
-will drop an order of magnitude on the same hardware once we deploy
-$Q4\_K\_M$ GGUF on a single T4 / L4.
+is slower in this run (median 40.8\,s vs 36.6\,s) because it was served on a
+single consumer Mac via LM Studio rather than a cloud GPU. In production the
+$Q4\_K\_M$ GGUF is now deployed on a Modal serverless L4 GPU
+(\S\ref{sec:deploy}), where warm latency falls to a few seconds per review.
 
 Table~\ref{tab:taskA} reports the supervised metrics on the 100-row v2
 held-out test split. NaijaReviewer-8B beats Claude Sonnet 4 on every
@@ -667,6 +672,24 @@ WhatsApp seller-buyer transcripts through NaijaUnderstand SDK; the
 engine reads informal Pidgin as legitimate business signal rather than
 noise. Expands credit reach without expanding default risk. Concrete
 first customer: Carbon / FairMoney / Branch.
+
+\subsection{Deployment}
+\label{sec:deploy}
+NaijaReviewer-8B is served in production as an OpenAI-compatible inference
+endpoint on \textbf{Modal}, a serverless GPU platform. The $Q4\_K\_M$ GGUF is
+pulled once from HuggingFace and cached in a persistent volume, then served
+from a single L4 GPU through a minimal FastAPI wrapper over
+\textsf{llama.cpp}. The endpoint scales to zero when idle, so there is no
+standing GPU cost, and warm requests return in a few seconds. The FastAPI
+application reaches it through a dedicated provider abstraction, which keeps
+the fine-tune isolated from the frontier APIs used for ranking and persona
+extraction and lets any backbone be swapped per request for A/B comparison.
+The same engine is exposed through two end-user products, the InsideNaija
+synthetic-panel interface (Task A) and the ShopEasy storefront (Task B), plus
+an embeddable business widget, all served by one FastAPI deployment. The full
+build pipeline, from corpus generation through QLoRA fine-tuning, GGUF
+quantisation, and HuggingFace publication, is reproducible from the released
+Colab notebooks.
 
 % ---------------------------------------------------------------
 \section{Discussion}

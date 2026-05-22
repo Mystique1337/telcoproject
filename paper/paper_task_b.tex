@@ -13,12 +13,12 @@
 
 \author{Ashinze Ifeanyi}
 \affiliation{\institution{Naija Persona Agent Team}\country{Nigeria}}
-\email{ashinze@bluebulb.co.uk}
+\email{chidi.ashinze@gmail.com}
 
 \author{Franca}
 \affiliation{\institution{Naija Persona Agent Team}\country{Nigeria}}
 
-\author{Anonymous Third Author}
+\author{Esther Oyenekan}
 \affiliation{\institution{Naija Persona Agent Team}\country{Nigeria}}
 
 \begin{document}
@@ -499,6 +499,22 @@ Nigerian buyers in cohort X actually click on / favourably review?''
 before the seller's listings go live --- pulling listing quality and
 persona-product fit signal before it hits production. Concrete first
 customer: Jumia's seller-tools product team.
+
+\subsection{Deployment}
+\label{sec:deploy}
+The recommendation pipeline runs as a FastAPI service. Candidate retrieval
+uses Pinecone serverless with the \textsf{llama-text-embed-v2} embedding model
+over the released 6.6\,k-product catalogue, with an optional Cohere
+\textsf{rerank-v3.5} cross-encoder as a Stage-2.5 pre-rerank before the
+persona-aware LLM re-rank. The re-ranker backbone is pluggable per request;
+NaijaReviewer-8B, our QLoRA fine-tune, is served in production as an
+OpenAI-compatible endpoint on a Modal serverless L4 GPU (the $Q4\_K\_M$ GGUF
+is cached in a persistent volume and the endpoint scales to zero when idle),
+while frontier APIs remain available for comparison. The same service powers
+the ShopEasy storefront (text, image, and voice search plus a conversational
+assistant) and an embeddable business widget. The full model build, from
+corpus generation through fine-tuning, GGUF quantisation, and HuggingFace
+publication, is reproducible from the released Colab notebooks.
 
 % ---------------------------------------------------------------
 \section{Discussion}
