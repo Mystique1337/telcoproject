@@ -9,24 +9,29 @@
 \usepackage{booktabs}
 \usepackage{enumitem}
 \usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds}
 
-% Placeholder box for diagrams not yet dropped in. Replace the \phfig{...}
-% calls with \includegraphics{...} once the final figures are ready.
-\newcommand{\phfig}[1]{\fbox{\parbox[c][4.6cm][c]{0.9\linewidth}{%
-  \centering\itshape [DIAGRAM PLACEHOLDER]\\[4pt]#1}}}
+% Shared TikZ styles for the pipeline diagram.
+\tikzset{
+  block/.style={rectangle, rounded corners=3pt, draw=black!55, line width=0.5pt,
+    fill=black!3, align=center, inner sep=5pt, minimum height=9mm, font=\small},
+  hl/.style={fill=green!12, draw=green!55!black},
+  flow/.style={-{Latex[length=2mm]}, draw=black!55, line width=0.6pt},
+}
 
 \title{Persona-Aware Recommendation for Nigerian E-Commerce:\\
        An Agentic Pipeline with an 8B Open-Weight Fine-Tune as Re-Ranker}
 
-\author{Ashinze Ifeanyi}
-\affiliation{\institution{Naija Persona Agent Team}\country{Nigeria}}
+\author{Ashinze Emmanuel}
+\affiliation{\institution{International University of Applied Sciences}\country{Germany}}
 \email{chidi.ashinze@gmail.com}
 
-\author{Franca}
-\affiliation{\institution{Naija Persona Agent Team}\country{Nigeria}}
+\author{Franca Uvere}
+\affiliation{\institution{University of Lagos}\country{Nigeria}}
 
 \author{Esther Oyenekan}
-\affiliation{\institution{Naija Persona Agent Team}\country{Nigeria}}
+\affiliation{\institution{MIVA Open University}\country{Nigeria}}
 
 \begin{document}
 
@@ -169,16 +174,29 @@ $\sim$20\,k Nigerian product reviews.
 % ---------------------------------------------------------------
 \section{Method}
 
-\begin{figure}[t]
+\begin{figure*}[t]
   \centering
-  \phfig{Six-stage recommendation pipeline: persona $\to$ asymmetric dense
-  retrieval (Pinecone, \texttt{llama-text-embed-v2}) $\to$ Cohere
-  \texttt{rerank-v3.5} Stage-2.5 pre-rerank (30$\to$15) $\to$ persona-aware
-  LLM re-rank $\to$ MMR diversity $\to$ ranked list with rationales.}
-  \caption{The six-stage agentic recommendation pipeline. \textbf{TODO:
-  replace the placeholder box with the final pipeline diagram.}}
+  \resizebox{\textwidth}{!}{%
+  \begin{tikzpicture}[node distance=5mm and 7mm]
+    \node[block] (persona) {Cognitive\\persona};
+    \node[block, right=of persona] (retr) {Dense retrieval\\\scriptsize Pinecone /\\\scriptsize llama-text-embed-v2};
+    \node[block, right=of retr] (cohere) {Cohere pre-rerank\\\scriptsize rerank-v3.5\\\scriptsize 30 $\to$ 15};
+    \node[block, hl, right=of cohere] (llm) {Persona-aware\\LLM re-rank\\\scriptsize NaijaReviewer-8B};
+    \node[block, right=of llm] (mmr) {MMR\\diversity};
+    \node[block, right=of mmr] (out) {Ranked list\\\scriptsize + rationales};
+    \draw[flow] (persona) -- (retr);
+    \draw[flow] (retr) -- (cohere);
+    \draw[flow] (cohere) -- (llm);
+    \draw[flow] (llm) -- (mmr);
+    \draw[flow] (mmr) -- (out);
+  \end{tikzpicture}}
+  \caption{The agentic recommendation pipeline. A cognitive persona drives
+  asymmetric dense retrieval, a Cohere cross-encoder pre-rerank (Stage~2.5)
+  narrows the pool, a configurable persona-aware LLM re-ranks (NaijaReviewer-8B
+  by default), and an MMR pass adds category diversity before the ranked list
+  with per-item rationales is returned.}
   \label{fig:pipeline-b}
-\end{figure}
+\end{figure*}
 
 \subsection{Cognitive Persona Representation}
 
@@ -270,6 +288,16 @@ orthogonal --- it applies to every scenario uniformly. The narrative
 scenario the agent detected, which constraints it extracted, which
 candidates were filtered and why.
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/fig_training_loss.pdf}
+  \caption{The default re-ranker, NaijaReviewer-8B, is the Llama~3.1~8B QLoRA
+  fine-tune from our Task-A work (companion paper). Training and validation
+  loss converge cleanly over two epochs (validation loss 1.577); we reuse the
+  resulting model unchanged as the persona-aware re-ranker.}
+  \label{fig:trainloss-b}
+\end{figure}
+
 \subsection{Robust JSON Following for Heterogeneous Re-Rankers}
 
 A practical obstacle to comparing 11 different re-rankers is that smaller
@@ -352,11 +380,11 @@ methodology.
 
 \begin{figure}[t]
   \centering
-  \phfig{Bar chart: NDCG@10 by re-ranker (NaijaReviewer-8B, GPT-OSS-120B,
-  Claude Sonnet 4, Llama-3.3-70B, Qwen-2.5-72B), annotated with parameter
-  count, showing the 8B fine-tune leading at 9--15$\times$ fewer parameters.}
-  \caption{Task~B NDCG@10 by re-ranker against model size. \textbf{TODO:
-  replace the placeholder box with the final results chart.}}
+  \includegraphics[width=\columnwidth]{figures/fig_task_b_ndcg.pdf}
+  \caption{Task~B re-ranker NDCG@10 (Cohere-OFF configuration), with each
+  model's parameter count printed on its bar. NaijaReviewer-8B leads at
+  9--15$\times$ fewer parameters than the open-weight baselines and at zero
+  per-call API cost.}
   \label{fig:results-b}
 \end{figure}
 

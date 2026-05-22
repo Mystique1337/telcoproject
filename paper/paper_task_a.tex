@@ -9,24 +9,29 @@
 \usepackage{booktabs}
 \usepackage{enumitem}
 \usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds}
 
-% Placeholder box for diagrams not yet dropped in. Replace the \phfig{...}
-% calls with \includegraphics{...} once the final figures are ready.
-\newcommand{\phfig}[1]{\fbox{\parbox[c][4.6cm][c]{0.9\linewidth}{%
-  \centering\itshape [DIAGRAM PLACEHOLDER]\\[4pt]#1}}}
+% Shared TikZ styles for the architecture/pipeline diagrams.
+\tikzset{
+  block/.style={rectangle, rounded corners=3pt, draw=black!55, line width=0.5pt,
+    fill=black!3, align=center, inner sep=5pt, minimum height=9mm, font=\small},
+  hl/.style={fill=green!12, draw=green!55!black},
+  flow/.style={-{Latex[length=2mm]}, draw=black!55, line width=0.6pt},
+}
 
 \title{Recovering the Cultural Prior:\\
        An 8B Open-Weight Fine-Tune for Persona-Aware Nigerian Review Generation}
 
-\author{Ashinze Ifeanyi}
-\affiliation{\institution{Naija Persona Agent Team}\country{Nigeria}}
+\author{Ashinze Emmanuel}
+\affiliation{\institution{International University of Applied Sciences}\country{Germany}}
 \email{chidi.ashinze@gmail.com}
 
-\author{Franca}
-\affiliation{\institution{Naija Persona Agent Team}\country{Nigeria}}
+\author{Franca Uvere}
+\affiliation{\institution{University of Lagos}\country{Nigeria}}
 
 \author{Esther Oyenekan}
-\affiliation{\institution{Naija Persona Agent Team}\country{Nigeria}}
+\affiliation{\institution{MIVA Open University}\country{Nigeria}}
 
 \begin{document}
 
@@ -158,13 +163,22 @@ Fleiss-$\kappa$ inter-judge agreement.
 
 \begin{figure}[t]
   \centering
-  \phfig{System architecture: the shared cognitive persona (4 behavioural
-  dimensions + Nigerian register tier) conditions register-aware prompting,
-  which drives NaijaReviewer-8B (with a frontier fallback) to emit a rating
-  and review.}
-  \caption{End-to-end architecture for Task~A review generation.
-  \textbf{TODO: replace the placeholder box with the final architecture
-  diagram.}}
+  \resizebox{\columnwidth}{!}{%
+  \begin{tikzpicture}[node distance=6mm and 8mm]
+    \node[block] (persona) {Cognitive persona\\\scriptsize 4 dims + register tier};
+    \node[block, right=of persona] (prompt) {Register-aware\\prompt};
+    \node[block, hl, right=of prompt] (model) {NaijaReviewer-8B\\\scriptsize QLoRA / GGUF};
+    \node[block, right=of model] (out) {Rating\\+ review};
+    \node[block, below=8mm of model] (fb) {Frontier\\fallback};
+    \draw[flow] (persona) -- (prompt);
+    \draw[flow] (prompt) -- (model);
+    \draw[flow] (model) -- (out);
+    \draw[flow] (fb) -- (model);
+  \end{tikzpicture}}
+  \caption{End-to-end architecture for Task~A. A structured cognitive persona
+  (four behavioural dimensions plus a Nigerian register tier) conditions
+  register-aware prompting, which drives NaijaReviewer-8B; a frontier model is
+  used only as a fallback when the fine-tune is unavailable.}
   \label{fig:arch-a}
 \end{figure}
 
@@ -220,6 +234,16 @@ adapter, and the training corpus. The model serves either locally via
 Ollama / LM Studio or, in production, as an OpenAI-compatible endpoint on a
 Modal serverless L4 GPU (\S\ref{sec:deploy}).
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/fig_training_loss.pdf}
+  \caption{QLoRA fine-tuning of NaijaReviewer-8B over two epochs (1066 steps).
+  Training loss falls from 2.53 to $\approx$1.33 and validation loss converges
+  to 1.577, with no divergence between the two, indicating a good fit without
+  over-fitting. Logged via Weights~and~Biases.}
+  \label{fig:trainloss-a}
+\end{figure}
+
 % ---------------------------------------------------------------
 \section{Experimental Setup}
 \label{sec:experiments}
@@ -266,11 +290,10 @@ simulator metrics (\textsf{preference\_estimation},
 
 \begin{figure}[t]
   \centering
-  \phfig{Bar chart: rating-prediction RMSE (lower is better) and
-  register-tier match (higher is better) for NaijaReviewer-8B vs Claude
-  Sonnet 4, GPT-4o, and base Llama 3.1 8B on the v2 held-out split.}
-  \caption{Task~A headline metrics by backbone. \textbf{TODO: replace the
-  placeholder box with the final results chart.}}
+  \includegraphics[width=0.72\columnwidth]{figures/fig_task_a_rmse.pdf}
+  \caption{Task~A rating-prediction RMSE on the v2 held-out split (lower is
+  better). NaijaReviewer-8B reduces RMSE by 15.5\,\% relative to Claude
+  Sonnet~4.}
   \label{fig:results-a}
 \end{figure}
 
