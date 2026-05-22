@@ -465,6 +465,31 @@ utility-leaning persona''. The frontier baseline (Claude Sonnet 4)
 ranks the Bluetooth speaker first with generic ``high quality, good
 value'' rationale --- correct text, wrong product for this persona.
 
+\subsection{Contextual-Relevance Human Evaluation}
+\label{sec:taskb-humaneval}
+The automatic metrics score ranking against held-out ratings; we also ran the
+blind A/B relevance eval described in \S\ref{sec:experiments} to ask humans,
+directly, which list \emph{reads} as more relevant for each persona. Two
+Nigerian raters judged all 24 persona scenarios (44 decisive votes, 3 ties).
+The result runs \emph{counter} to the automatic ranking: raters preferred
+Claude Sonnet 4's lists, giving NaijaReviewer-8B a 27.3\,\% win-rate
+(95\,\% CI [16.3\,\%, 41.8\,\%]) and a mean relevance of 2.60 versus Claude's
+3.40 on a 1--5 scale. Inter-rater agreement was low (Krippendorff
+$\alpha = 0.14$) and the panel is small (2 raters), so we read this as a
+preliminary signal, not a verdict.
+
+We report it because the divergence from Table~\ref{tab:taskB-5way} is the
+honest and interesting part. NaijaReviewer-8B leads on NDCG@10 --- it is
+better at surfacing the specific products a persona rated highly in held-out
+data --- yet Claude composes top-5 lists that human raters find more broadly
+coherent for the persona at a glance. The two measures reward different things
+(recovering known-relevant items versus list-level perceived fit), and a
+re-ranker that is strong on one is not automatically strong on the other.
+Reconciling held-out ranking accuracy with human-perceived list coherence,
+and widening the rater panel to match the Task-A study, is the clearest next
+step for the recommendation engine. Full per-rater numbers are in
+\texttt{paper/task\_b\_human\_eval\_summary.md}.
+
 % ---------------------------------------------------------------
 \section{From Submission to Product: \emph{NaijaPersona}}
 \label{sec:product}

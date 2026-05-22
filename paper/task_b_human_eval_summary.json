@@ -1,0 +1,52 @@
+{
+  "n_raters": 2,
+  "n_scenarios_master": 24,
+  "fine_tune_hint": "naija",
+  "overall": {
+    "fine_tune_wins": 12,
+    "other_wins": 32,
+    "ties": 3,
+    "decisive": 44,
+    "win_rate": 0.2727272727272727,
+    "ci95": [
+      0.16346223395491324,
+      0.41849154685509304
+    ],
+    "mean_relevance_fine_tune": 2.6041666666666665,
+    "mean_relevance_other": 3.3958333333333335,
+    "n_paired_relevance": 48,
+    "krippendorff_alpha": 0.13929313929313925
+  },
+  "per_rater": {
+    "Christianah": {
+      "fine_tune_wins": 6,
+      "other_wins": 16,
+      "ties": 2,
+      "decisive": 22,
+      "win_rate": 0.2727272727272727,
+      "ci95": [
+        0.1315058201581444,
+        0.4815212369900198
+      ],
+      "mean_rel_fine_tune": 2.625,
+      "mean_rel_other": 3.9166666666666665,
+      "n_rel_fine_tune": 24,
+      "n_rel_other": 24
+    },
+    "ashinze": {
+      "fine_tune_wins": 6,
+      "other_wins": 16,
+      "ties": 1,
+      "decisive": 22,
+      "win_rate": 0.2727272727272727,
+      "ci95": [
+        0.1315058201581444,
+        0.4815212369900198
+      ],
+      "mean_rel_fine_tune": 2.5833333333333335,
+      "mean_rel_other": 2.875,
+      "n_rel_fine_tune": 24,
+      "n_rel_other": 24
+    }
+  }
+}

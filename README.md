@@ -60,9 +60,11 @@ Language support across the products: English, Nigerian Pidgin, plus Yoruba, Hau
 | Claude Sonnet 4 | 0.430 | 0.353 |
 | GPT-OSS 120B | 0.366 | 0.323 |
 
+A blind human relevance eval tells a different and honest story: on a 2-rater panel over the 24 personas, raters preferred Claude's recommendation lists (NaijaReviewer-8B win-rate 27.3%, mean relevance 2.60 vs 3.40). The fine-tune wins on recovering held-out relevant products (NDCG@10) but Claude composes lists humans find more coherent. See `paper/task_b_human_eval_summary.md`.
+
 **Task A (review generation), blind human A/B.** Across 5 Nigerian raters and 50 review pairs, NaijaReviewer-8B reaches a **48.5%** win-rate against Claude Sonnet 4 (95% CI [40.2%, 56.9%]) - statistical parity with a frontier model many times its size. Notably, an LLM-judge over the same pairs preferred the frontier model far more often than the human raters did, which is itself evidence of the Western prior the system is designed to correct.
 
-Full numbers: `paper/results.md`, `paper/human_eval_summary.md`, `paper/llm_judge_summary.md`.
+Full numbers: `paper/results.md`, `paper/human_eval_summary.md`, `paper/llm_judge_summary.md`, `paper/task_b_human_eval_summary.md`.
 
 ## How this maps to the judging criteria
 
@@ -88,7 +90,7 @@ Where each criterion is satisfied:
 **Task B**
 - *Ranking quality:* NDCG@10 0.572 and HR@5 0.588, the best of five re-rankers measured, in `paper/paper_task_b.tex` and `paper/results.md`.
 - *Cold-start and cross-domain:* explicit handlers in `app/agents/recommend_agent.py` (demographic fallback when a persona has little history; multi-domain candidate pulls), surfaced in the API response and reasoning trace.
-- *Contextual relevance:* every recommendation carries a persona-grounded rationale, demonstrated in the Task B qualitative case study and observable live in the ShopEasy storefront. A blind A/B relevance human-eval harness (`scripts/build_task_b_human_eval_xlsx.py` and `scripts/aggregate_task_b_human_eval_xlsx.py`) compares NaijaReviewer-8B and Claude recommendation lists across the 24 personas: raters pick which list better fits each persona and rate each list 1 to 5.
+- *Contextual relevance:* every recommendation carries a persona-grounded rationale, demonstrated in the Task B qualitative case study and observable live in the ShopEasy storefront. A blind A/B relevance human-eval (`scripts/build_task_b_human_eval_xlsx.py` / `scripts/aggregate_task_b_human_eval_xlsx.py`, summary in `paper/task_b_human_eval_summary.md`) compares NaijaReviewer-8B and Claude lists across the 24 personas. On the current 2-rater panel, raters preferred Claude's lists (NaijaReviewer-8B win-rate 27.3%, mean relevance 2.60 vs 3.40), the reverse of the automatic NDCG@10 result. We report this divergence openly: the fine-tune is better at recovering held-out relevant products, while Claude composes lists humans find more coherent at a glance.
 - *Solution paper:* `paper/paper_task_b.tex`.
 - *Code reproducibility:* same one-command run; the recommendation stack is reproducible with `scripts/build_pinecone_index.py`.
 
