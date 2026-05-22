@@ -1,0 +1,239 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 47.4% 11.2%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47.4% 11.2%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 47.4% 11.2%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 213 31% 91%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 222.2 47.4% 11.2%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
+    --accent: 216 34% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+    --ring: 224 64% 33%;
+  }
+}
+
+/* Neutral scale as RGB triplets. Default = dark. `html.light` reverses the
+   scale so every existing bg-ink-950 / text-ink-100 flips with no markup
+   changes. The green/amber accents stay fixed (legible on both themes). */
+:root {
+  --ink-50: 247 248 250;  --ink-100: 237 240 245; --ink-200: 214 220 230;
+  --ink-300: 168 179 196; --ink-400: 110 124 146; --ink-500: 72 85 107;
+  --ink-600: 47 58 77;    --ink-700: 31 39 56;    --ink-800: 20 25 37;
+  --ink-850: 14 19 32;    --ink-900: 10 14 24;    --ink-950: 6 9 18;
+}
+html.light {
+  --ink-50: 12 16 26;     --ink-100: 24 30 44;    --ink-200: 40 50 68;
+  --ink-300: 64 78 100;   --ink-400: 96 110 132;  --ink-500: 130 142 162;
+  --ink-600: 168 179 196; --ink-700: 205 212 222; --ink-800: 224 228 236;
+  --ink-850: 234 237 243; --ink-900: 242 244 248; --ink-950: 250 251 253;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes talkbar {
+  0%, 100% { transform: scaleY(0.3); }
+  50%      { transform: scaleY(1); }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    @apply font-sans;
+  }
+  body {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    @apply bg-background text-foreground;
+  }
+  /* Display typeface for headings - distinctive, premium grotesk. */
+  h1, h2, h3, .font-display {
+    font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: theme("colors.ink.900");
+  }
+  ::-webkit-scrollbar-thumb {
+    background: theme("colors.ink.700");
+    border-radius: 5px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: theme("colors.ink.600");
+  }
+  .theme {
+    --font-heading: var(--font-sans);
+    --font-sans: 'Geist Variable', sans-serif;
+  }
+  :root {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --radius: 0.625rem;
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+  }
+  .dark {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+  }
+  * {
+    @apply border-border outline-ring/50;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-naija-600 hover:bg-naija-500 text-white font-medium px-5 py-2.5 rounded-lg
+           transition-colors duration-150 shadow-lg shadow-naija-900/30
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-ghost {
+    @apply bg-ink-800 hover:bg-ink-700 text-ink-200 px-4 py-2 rounded-lg
+           border border-ink-700 transition-colors duration-150;
+  }
+  .input {
+    @apply bg-ink-900 border border-ink-700 rounded-lg px-3 py-2 text-ink-100
+           placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-naija-500
+           focus:border-naija-500 transition-colors w-full;
+  }
+  .card {
+    @apply bg-ink-850 border border-ink-700 rounded-xl p-6 shadow-xl shadow-black/20;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+  .label {
+    @apply text-xs font-medium text-ink-400 uppercase tracking-wider mb-1.5 block;
+  }
+}
+
+/* ── Signature visual identity ─────────────────────────────────────────── */
+@layer utilities {
+  /* Brand gradient: Nigerian green → teal → warm gold. */
+  .brand-text {
+    background-image: linear-gradient(95deg, #4cc079 0%, #22b3a0 45%, #e0a93a 110%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .brand-bg {
+    background-image: linear-gradient(120deg, #006d40 0%, #0e8f6e 50%, #b8862a 130%);
+  }
+  /* Soft mesh-gradient backdrop for hero / CTA sections. */
+  .mesh {
+    background-image:
+      radial-gradient(40rem 40rem at 12% -10%, rgba(34, 179, 93, 0.16), transparent 60%),
+      radial-gradient(36rem 36rem at 100% 10%, rgba(224, 169, 58, 0.10), transparent 60%),
+      radial-gradient(40rem 40rem at 60% 120%, rgba(14, 143, 110, 0.12), transparent 60%);
+  }
+  /* Subtle film grain so flat dark areas don't read as "AI flat". */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* Gradient hairline border (premium card edge). */
+  .ring-brand {
+    box-shadow: 0 0 0 1px rgba(76, 192, 121, 0.25), 0 20px 60px -20px rgba(0, 0, 0, 0.6);
+  }
+}
