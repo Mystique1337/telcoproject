@@ -81,6 +81,13 @@ class Settings(BaseSettings):
     # to rebuild the Chroma collection with matching dimensionality.
     embedding_model: str = "local:paraphrase-MiniLM-L6-v2"
 
+    # --- Supabase / Database ---
+    supabase_url: str | None = None
+    supabase_service_key: str | None = Field(default=None, alias="SUPABASE_SERVICE_KEY")
+    supabase_jwt_secret: str | None = Field(default=None, alias="SUPABASE_JWT_SECRET")
+    database_url: str | None = Field(default=None, alias="DATABASE_URL")
+    direct_url: str | None = Field(default=None, alias="DIRECT_URL")
+
     # --- Feature flags ---
     enable_business_demo: bool = False
     enable_streaming: bool = True
