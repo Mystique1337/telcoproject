@@ -67,7 +67,8 @@ async def _personalize(
     }
     try:
         ranked = _prerank(list(products), persona, cold_start=persona.history_count < 3)
-        out, _fb = await _llm_rerank(persona, ranked[:20], k=20, reranker_spec=None)
+        out, _fb = await _llm_rerank(persona, ranked[:20], k=20,
+                                      reranker_spec="anthropic:claude-sonnet-4-20250514")
         out = _mmr_rerank(out, lambda_param=0.7)
         return out, info
     except Exception as e:  # noqa: BLE001

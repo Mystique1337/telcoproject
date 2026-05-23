@@ -390,7 +390,14 @@ function ChatPanel({ lang, persona, onOpen }:
       const history: ConversationTurn[] = [...msgs, um]
         .filter((m) => m.id !== "w")
         .map((m) => ({ role: m.role, content: m.content }));
-      const r = await api.chat({ history, persona: persona ?? null, language: chatLang ?? null, k: 6 });
+      const r = await api.chat({
+        history,
+        persona: persona ?? null,
+        language: chatLang ?? null,
+        k: 6,
+        reranker_override: "anthropic:claude-sonnet-4-20250514",
+        orchestrator_override: "anthropic:claude-sonnet-4-20250514",
+      });
       const recs: ShopProduct[] = (r.recommendations || []).map((x) => ({
         product_id: x.product_id, title: x.title || x.product_id,
         category: x.category, price_naira: x.price_naira,
