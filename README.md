@@ -66,11 +66,36 @@ Open <https://switteefranca2-0--naijapersona-web.modal.run/>. The Modal endpoint
 |---|---|---|
 | **InsideNaija** (default home) | The synthetic-panel interface. | Type a product description (for example *"Tecno Spark 10 mobile phone, 4 GB RAM, 64 GB storage, 5,000 mAh battery, NGN 145,000"*) and run the panel. You will see a 24-persona reaction stream with star ratings, register-tagged reviews, and aggregates by zone, age band, and register. Click any reaction to expand the persona detail and the reasoning. |
 | **ShopEasy** (top nav) | The Nigerian-shopper storefront. | Try the text search (for example *"affordable phone under 100k"*), the voice search (microphone icon), and the image search (upload any product photo). Click into a product to see specs, simulated reviews from the panel, and a "why this for you" rationale. The chat icon opens the conversational assistant; try refining the budget mid-conversation. |
-| **NaijaPersona Lab** (top nav, after sign-in) | The developer console. | Run a side-by-side A/B between any two of the eleven supported LLM backbones on the same persona and product. Inspect the structured reasoning trace each one returns. Every run is saved to your experiment history; click any past run to re-open or share. |
+| **NaijaPersona Lab** (top nav, "Labz" link) | The playground / developer console. | This is where judges should spend the most time. See the dedicated walkthrough below. |
 | **B2B widget** | Demonstration of the embeddable iframe. | Register a business, copy the generated iframe snippet, and confirm the recommendation surface renders inside the snippet. |
 | **Sign in** (top right) | Supabase magic link. | Sign in with any email; you will receive a magic link. After login an onboarding wizard builds your personal persona which is used to personalise both panel and storefront responses from that session onwards. |
 
 If the live link is asleep when you click it, the first request triggers the warm-up. No action is required.
+
+### Spend time in the Lab (the "Labz" link)
+
+The Lab is where the system opens up. Everything the products do is callable from a single screen, with the model, the persona, and the parameters under your control, and every run is saved so you can come back to it. If you only have ten minutes, this is the page to spend them on.
+
+**What you can do there:**
+
+- **Drive any of the eleven LLM backbones** on the same persona and product, side by side. Pick *Backbone A* and *Backbone B* from the dropdowns (NaijaReviewer-8B, Claude Sonnet 4, GPT-OSS-120B, Llama-3.3-70B, Qwen-2.5-72B, plus six more) and run them on the same input. The Lab renders both responses next to each other so the difference is visible at a glance.
+- **Pick any of the 24 hand-curated Nigerian personas**, or build a new one through the onboarding wizard. The persona JSON is editable, so you can adjust register tier, aspect priorities, or intensity calibration and rerun on the spot to see how the model's output shifts.
+- **Read the agent's reasoning trace.** Every response comes back with a structured trace of the agent's own work: which scenario it detected (cold-start, cross-domain, multi-turn), which constraints it extracted from the persona, which candidates it filtered and why, and how each item was scored. This is the most honest way to see what the system is actually doing.
+- **Override generation parameters.** Set a `target_rating` to steer the simulator, supply `refinement_instructions` to revise a generated review, or set the language to Yoruba, Hausa, Igbo, or Pidgin and rerun.
+- **Save and share runs.** Every Lab run is persisted to your personal experiment history (Supabase-backed). Open any past run from the sidebar, duplicate it, or click *Share* to get a public link you can send to a colleague or include in a report. The shared view is read-only and does not require sign-in.
+- **Compare against the released evaluation.** The Lab cross-references each backbone's saved metrics from the `paper/results.md` runs so you can sanity-check a single ad-hoc run against the held-out benchmark.
+
+**Suggested ten-minute tour:**
+
+1. Sign in with magic link, complete onboarding so you have a persona on file.
+2. Open the Lab, pick a persona (try Chinwe Owerri or Tunde Lagos).
+3. Set *Backbone A* to **NaijaReviewer-8B** and *Backbone B* to **Claude Sonnet 4**.
+4. Drop in a Nigerian-context product (any Tecno or Oraimo SKU works) and run.
+5. Read both responses side by side. Read the reasoning trace under each.
+6. Switch the persona's register tier from Nigerian English to Pidgin and rerun. The shift in voice should be visible immediately.
+7. Click *Share* on the run that surprised you most and keep the link.
+
+That single tour exercises the persona schema, the multi-backbone gateway, the register-aware prompting, the reasoning trace, the experiment-history backend, and the share view, which is the bulk of the system in ten minutes.
 
 ## How judges should evaluate this
 
