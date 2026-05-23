@@ -425,12 +425,32 @@ export default function RunResults() {
 
         {/* Project description card */}
         {run.project_description && (
-          <div className="bg-ink-900 border border-ink-800 rounded-xl px-5 py-4 space-y-1.5">
+          <div className="bg-ink-900 border border-ink-800 rounded-xl px-5 py-4 space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
               <p className="text-sm font-semibold text-ink-100">{run.project_name}</p>
               {run.project_category && (
                 <span className="text-xs px-2 py-0.5 rounded-md bg-ink-800 border border-ink-700 text-ink-400">
                   {run.project_category}
+                </span>
+              )}
+              {/* Target rating indicator */}
+              {run.project_target_rating != null && run.aggregate && (
+                <span className={`text-xs px-2.5 py-1 rounded-full border font-medium flex items-center gap-1.5 ${
+                  run.aggregate.avg_rating >= run.project_target_rating
+                    ? "bg-naija-900/30 border-naija-700/50 text-naija-400"
+                    : "bg-red-900/20 border-red-700/40 text-red-400"
+                }`}>
+                  {run.aggregate.avg_rating >= run.project_target_rating ? "✓" : "✗"}
+                  Target {run.project_target_rating}/5
+                  {run.aggregate.avg_rating >= run.project_target_rating
+                    ? ` — hit (+${(run.aggregate.avg_rating - run.project_target_rating).toFixed(1)})`
+                    : ` — missed (${(run.aggregate.avg_rating - run.project_target_rating).toFixed(1)})`}
+                </span>
+              )}
+              {/* Show target without result comparison while running */}
+              {run.project_target_rating != null && !run.aggregate && (
+                <span className="text-xs px-2.5 py-1 rounded-full border border-amber-700/40 text-amber-400 bg-amber-900/20">
+                  Target {run.project_target_rating}/5
                 </span>
               )}
             </div>

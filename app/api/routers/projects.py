@@ -35,6 +35,7 @@ class CreateProjectRequest(BaseModel):
     description: str
     category: str = "general"
     image_url: str | None = None
+    target_rating: float | None = None
 
 
 @router.post("")
@@ -52,6 +53,7 @@ async def create_project(
         description=req.description,
         category=req.category,
         image_url=req.image_url,
+        target_rating=req.target_rating,
     )
 
     run = run_svc.create_run(str(project.id))
@@ -91,6 +93,7 @@ async def list_projects(
                 "name": p.name,
                 "description": p.description,
                 "category": p.category,
+                "target_rating": p.target_rating,
                 "created_at": p.created_at.isoformat(),
                 "latest_run": {
                     "id": str(latest.id),

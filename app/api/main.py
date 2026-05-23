@@ -46,6 +46,7 @@ async def lifespan(app: FastAPI):
             session.execute(text("ALTER TABLE panel_runs ADD COLUMN IF NOT EXISTS share_token TEXT"))
             session.execute(text("ALTER TABLE personas ADD COLUMN IF NOT EXISTS location TEXT"))
             session.execute(text("ALTER TABLE personas ADD COLUMN IF NOT EXISTS display_name TEXT"))
+            session.execute(text("ALTER TABLE projects ADD COLUMN IF NOT EXISTS target_rating FLOAT"))
             session.execute(text(
                 "CREATE TABLE IF NOT EXISTS shop_orders ("
                 "id UUID PRIMARY KEY, "

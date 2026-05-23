@@ -92,6 +92,7 @@ function SingleProjectForm() {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("FMCG");
   const [imageUrl, setImageUrl] = useState("");
+  const [targetRating, setTargetRating] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -101,7 +102,13 @@ function SingleProjectForm() {
     if (!name.trim() || !descText) { setError("Product name and description are required."); return; }
     setError(""); setLoading(true);
     try {
-      const res = await createProject({ name: name.trim(), description: description.trim(), category, image_url: imageUrl.trim() || undefined });
+      const res = await createProject({
+        name: name.trim(),
+        description: description.trim(),
+        category,
+        image_url: imageUrl.trim() || undefined,
+        target_rating: targetRating ?? undefined,
+      });
       navigate(`/runs/${res.run_id}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -141,6 +148,38 @@ function SingleProjectForm() {
             <Label htmlFor="image" className="text-ink-200">Image URL <span className="text-ink-600 font-normal">(optional)</span></Label>
             <Input id="image" placeholder="https://…" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)}
               className="bg-ink-950 border-ink-700 text-ink-50 placeholder:text-ink-600 focus-visible:ring-naija-600" disabled={loading} />
+          </div>
+        </div>
+
+        {/* Target rating */}
+        <div className="space-y-2">
+          <Label className="text-ink-200">
+            Target rating <span className="text-ink-600 font-normal">(optional — what score would you consider a win?)</span>
+          </Label>
+          <div className="flex items-center gap-2">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                disabled={loading}
+                onClick={() => setTargetRating(targetRating === star ? null : star)}
+                className={`w-9 h-9 rounded-lg border transition-all text-sm font-bold ${
+                  targetRating !== null && star <= targetRating
+                    ? "bg-amber-600/30 border-amber-500 text-amber-300"
+                    : "border-ink-700 text-ink-600 hover:border-amber-700/50 hover:text-amber-500"
+                }`}
+              >
+                {star}
+              </button>
+            ))}
+            {targetRating !== null && (
+              <span className="text-sm text-amber-400 ml-1">
+                {targetRating}/5 target
+              </span>
+            )}
+            {targetRating === null && (
+              <span className="text-xs text-ink-700 ml-1">click to set</span>
+            )}
           </div>
         </div>
       </div>

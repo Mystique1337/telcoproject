@@ -60,6 +60,7 @@ class Project(Base):
     description = Column(Text, nullable=False)
     category = Column(String, nullable=False, default="general")
     image_url = Column(String, nullable=True)
+    target_rating = Column(Float, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     user = relationship("User", back_populates="projects")

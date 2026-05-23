@@ -27,6 +27,7 @@ class ProjectService:
         description: str,
         category: str,
         image_url: str | None = None,
+        target_rating: float | None = None,
     ) -> Project:
         project = Project(
             user_id=uuid.UUID(user_id),
@@ -34,6 +35,7 @@ class ProjectService:
             description=description,
             category=category,
             image_url=image_url,
+            target_rating=target_rating,
         )
         return self.repo.save(project)
 

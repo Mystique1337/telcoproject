@@ -51,6 +51,7 @@ export interface CreateProjectPayload {
   description: string;
   category: string;
   image_url?: string;
+  target_rating?: number;
 }
 
 export interface CreateProjectResponse {
@@ -100,6 +101,7 @@ export interface RunDetail {
   project_name: string;
   project_description?: string;
   project_category?: string;
+  project_target_rating?: number | null;
   status: "running" | "completed" | "failed";
   created_at: string;
   completed_at: string | null;
