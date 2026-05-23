@@ -10,6 +10,14 @@ pydantic>=2.9,<3.0
 pydantic-settings>=2.6,<3.0
 python-dotenv>=1.0
 
+# Database (SQLAlchemy ORM + PostgreSQL driver)
+sqlalchemy>=2.0,<3.0
+psycopg2-binary>=2.9,<3.0
+
+# Auth (Supabase client + JWT verification)
+supabase>=2.0,<3.0
+python-jose[cryptography]>=3.3,<4.0
+
 # Prompt templating
 jinja2>=3.1
 
@@ -30,6 +38,11 @@ numpy>=1.24,<2
 
 # HuggingFace datasets (used in scripts/ — comment out if not building product index)
 # datasets>=3.0
+
+# Utilities (scripts / bulk import)
+openpyxl>=3.1,<4.0
+pyyaml>=6.0,<7.0
+tqdm>=4.66,<5.0
 
 # Demo (judge-facing UI)
 streamlit>=1.38

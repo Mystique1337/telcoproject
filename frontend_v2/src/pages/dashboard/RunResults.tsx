@@ -1,12 +1,95 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
-  ArrowLeft, CheckCircle, CheckCircle2, Copy, Download, Loader2, Star, XCircle, Clock, Share2, RefreshCw,
+  ArrowLeft, CheckCircle, CheckCircle2, Copy, Download, Loader2, Star, XCircle, Clock, Share2, RefreshCw, Volume2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DashboardLayout from "@/components/DashboardLayout";
 import { getRun, getPanelPersonas, shareRun, rerunProject, type PersonaResult, type RunDetail } from "@/lib/apiClient";
+
+// ── TTS ───────────────────────────────────────────────────────────────────────
+
+// Maps register tier → default voice when persona-specific matching isn't used
+const TIER_VOICE: Record<string, string> = {
+  nigerian_pidgin:  "Tayo",
+  code_mixed:       "Chinenye",
+  nigerian_english: "Femi",
+  formal_english:   "Adam",
+};
+
+function usePersonaTTS(text: string, personaId: string, registerTier?: string | null) {
+  const [loading, setLoading] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const cachedUrl = useRef<string | null>(null);
+
+  async function play() {
+    if (loading) return;
+    // Replay from cache
+    if (audioRef.current && cachedUrl.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+      return;
+    }
+    setLoading(true);
+    try {
+      // Ask the backend to pick the culturally-matched Nigerian voice
+      let voice = TIER_VOICE[registerTier ?? ""] ?? "Idera";
+      try {
+        const vr = await fetch("/tts/voice-for-persona", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ persona_id: personaId, register_tier: registerTier }),
+        });
+        if (vr.ok) {
+          const vd = await vr.json();
+          voice = vd.voice ?? voice;
+        }
+      } catch { /* use fallback voice */ }
+
+      const r = await fetch("/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text.slice(0, 500), voice }),
+      });
+      if (!r.ok) throw new Error(`TTS ${r.status}`);
+      const url = URL.createObjectURL(await r.blob());
+      cachedUrl.current = url;
+      const audio = new Audio(url);
+      audio.playbackRate = 1.05;
+      audio.onplay   = () => setPlaying(true);
+      audio.onended  = () => setPlaying(false);
+      audio.onpause  = () => setPlaying(false);
+      audioRef.current = audio;
+      audio.play().catch(() => {});
+    } catch { /* silently ignore */ }
+    setLoading(false);
+  }
+
+  return { play, loading, playing };
+}
+
+function PersonaListenButton({ text, personaId, registerTier }: {
+  text: string; personaId: string; registerTier?: string | null;
+}) {
+  const { play, loading, playing } = usePersonaTTS(text, personaId, registerTier);
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); play(); }}
+      disabled={loading}
+      title="Hear this review in a Nigerian voice"
+      className={`flex items-center gap-1 text-xs transition-colors ${
+        playing ? "text-naija-400" : "text-ink-600 hover:text-naija-400"
+      } disabled:opacity-40`}
+    >
+      {loading
+        ? <Loader2 size={12} className="animate-spin" />
+        : <Volume2 size={12} className={playing ? "animate-pulse" : ""} />}
+      <span>{loading ? "…" : playing ? "Playing" : "Listen"}</span>
+    </button>
+  );
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -98,6 +181,11 @@ function PersonaCard({
       </div>
       <StarRating rating={result.rating} />
       <p className="text-xs text-ink-500 leading-relaxed line-clamp-2">{result.review_text}</p>
+      <PersonaListenButton
+        text={result.review_text}
+        personaId={result.persona_id}
+        registerTier={result.register_tier}
+      />
     </div>
   );
 }
@@ -174,7 +262,14 @@ function ReviewModal({ result, onClose }: { result: PersonaResult; onClose: () =
           <button onClick={onClose} className="text-ink-500 hover:text-ink-100 text-xl">×</button>
         </div>
         <p className="text-sm text-ink-300 leading-relaxed whitespace-pre-wrap">{result.review_text}</p>
-        <p className="text-xs text-ink-600">Register: {result.register_tier?.replace(/_/g, " ")}</p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-ink-600">Register: {result.register_tier?.replace(/_/g, " ")}</p>
+          <PersonaListenButton
+            text={result.review_text}
+            personaId={result.persona_id}
+            registerTier={result.register_tier}
+          />
+        </div>
       </div>
     </div>
   );
