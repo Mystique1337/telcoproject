@@ -24,7 +24,7 @@ function ProductSwitcher({ current }: { current: "panel" | "shop" }) {
         InsideNaija
       </a>
       <a href="#shopeasy"
-         className={`px-2.5 py-1 rounded-md transition-colors ${current === "shop" ? "bg-naija-600 text-white" : "text-ink-400 hover:text-ink-200"}`}>
+         className={`px-2.5 py-1 rounded-md transition-colors ${current === "shop" ? "bg-amber-600 text-white" : "text-ink-400 hover:text-ink-200"}`}>
         ShopEasy
       </a>
     </div>
@@ -172,13 +172,13 @@ function OrderPage({ p, t, onClose }:
            onClick={(e) => e.stopPropagation()}>
         {placed ? (
           <div className="flex flex-col items-center justify-center text-center py-16 px-6">
-            <div className="w-14 h-14 rounded-full bg-naija-600/20 border border-naija-500 flex items-center justify-center mb-4">
-              <Check size={28} className="text-naija-300" />
+            <div className="w-14 h-14 rounded-full bg-amber-600/20 border border-amber-500 flex items-center justify-center mb-4">
+              <Check size={28} className="text-amber-300" />
             </div>
             <div className="text-lg font-bold text-ink-50">{t.placed}</div>
             <div className="text-sm text-ink-300 mt-1">{qty}× {p.title}</div>
             <div className="text-xs text-ink-400 mt-3">{t.deliver}</div>
-            <button onClick={onClose} className="mt-6 text-sm text-naija-300 hover:text-naija-200">Done</button>
+            <button onClick={onClose} className="mt-6 text-sm text-amber-300 hover:text-amber-200">Done</button>
           </div>
         ) : (
           <>
@@ -195,10 +195,10 @@ function OrderPage({ p, t, onClose }:
                     : <span className="text-xs text-ink-500">Loading reviews…</span>}
                 </div>
                 <div className="text-[11px] text-ink-400 mt-1.5 flex items-center gap-1.5">
-                  <Check size={11} className="text-naija-400" /> Sold by <span className="text-ink-200">{p.seller || "Verified ShopEasy Seller"}</span>
+                  <Check size={11} className="text-amber-400" /> Sold by <span className="text-ink-200">{p.seller || "Verified ShopEasy Seller"}</span>
                 </div>
-                <div className="text-2xl font-bold text-naija-300 mt-3">{naira(p.price_naira)}</div>
-                {p.rationale && <div className="text-xs text-naija-300/90 italic mt-2">✓ {p.rationale}</div>}
+                <div className="text-2xl font-bold text-amber-300 mt-3">{naira(p.price_naira)}</div>
+                {p.rationale && <div className="text-xs text-amber-300/90 italic mt-2">✓ {p.rationale}</div>}
                 <div className="flex items-center gap-3 mt-5">
                   <span className="text-xs text-ink-400">{t.qty}</span>
                   <div className="flex items-center border border-ink-700 rounded-lg">
@@ -208,7 +208,7 @@ function OrderPage({ p, t, onClose }:
                   </div>
                 </div>
                 <button onClick={() => setPlaced(true)}
-                        className="w-full mt-5 inline-flex items-center justify-center gap-2 bg-naija-600 hover:bg-naija-500 text-white font-semibold rounded-lg py-3 transition-colors">
+                        className="w-full mt-5 inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-3 transition-colors">
                   <ShoppingCart size={17} /> {t.place} · {naira((p.price_naira || 0) * qty)}
                 </button>
               </div>
@@ -218,9 +218,9 @@ function OrderPage({ p, t, onClose }:
             <div className="border-t border-ink-800 px-6 pt-4 pb-6">
               <div className="flex gap-4 border-b border-ink-800 mb-4">
                 <button onClick={() => setTab("specs")}
-                        className={`pb-2 text-sm font-medium ${tab === "specs" ? "text-naija-300 border-b-2 border-naija-500" : "text-ink-400 hover:text-ink-200"}`}>Specifications</button>
+                        className={`pb-2 text-sm font-medium ${tab === "specs" ? "text-amber-300 border-b-2 border-amber-500" : "text-ink-400 hover:text-ink-200"}`}>Specifications</button>
                 <button onClick={() => setTab("reviews")}
-                        className={`pb-2 text-sm font-medium ${tab === "reviews" ? "text-naija-300 border-b-2 border-naija-500" : "text-ink-400 hover:text-ink-200"}`}>
+                        className={`pb-2 text-sm font-medium ${tab === "reviews" ? "text-amber-300 border-b-2 border-amber-500" : "text-ink-400 hover:text-ink-200"}`}>
                   Reviews {reviews ? `(${reviews.length})` : ""}
                 </button>
               </div>
@@ -230,7 +230,7 @@ function OrderPage({ p, t, onClose }:
                   <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-1.5">
                     {specs.map((s, i) => (
                       <li key={i} className="text-sm text-ink-300 flex items-start gap-2">
-                        <Check size={13} className="text-naija-400 mt-0.5 flex-shrink-0" /> {s}
+                        <Check size={13} className="text-amber-400 mt-0.5 flex-shrink-0" /> {s}
                       </li>
                     ))}
                   </ul>
@@ -267,7 +267,7 @@ function OrderPage({ p, t, onClose }:
 function Card({ p, t, onOpen }: { p: ShopProduct; t: Record<string, string>; onOpen: () => void }) {
   return (
     <button onClick={onOpen}
-            className="group text-left bg-ink-900/50 border border-ink-800 hover:border-naija-600/60 rounded-xl overflow-hidden transition-all hover:-translate-y-0.5">
+            className="group text-left bg-ink-900/50 border border-ink-800 hover:border-amber-600/60 rounded-xl overflow-hidden transition-all hover:-translate-y-0.5">
       <div className="relative aspect-square overflow-hidden">
         <Thumb p={p} className="w-full h-full group-hover:scale-105 transition-transform duration-300" />
         {p.category && (
@@ -279,11 +279,11 @@ function Card({ p, t, onOpen }: { p: ShopProduct; t: Record<string, string>; onO
       <div className="p-3">
         <div className="text-sm text-ink-100 leading-snug line-clamp-2 min-h-[2.5rem]">{p.title}</div>
         {p.rationale && (
-          <div className="text-[10px] text-naija-300/90 leading-snug mt-1 line-clamp-2 italic">✓ {p.rationale}</div>
+          <div className="text-[10px] text-amber-300/90 leading-snug mt-1 line-clamp-2 italic">✓ {p.rationale}</div>
         )}
         <div className="flex items-center justify-between mt-2">
-          <span className="text-base font-bold text-naija-300">{naira(p.price_naira)}</span>
-          <span className="text-xs text-naija-400 group-hover:text-naija-300 inline-flex items-center gap-1">{t.order} →</span>
+          <span className="text-base font-bold text-amber-300">{naira(p.price_naira)}</span>
+          <span className="text-xs text-amber-400 group-hover:text-amber-300 inline-flex items-center gap-1">{t.order} →</span>
         </div>
       </div>
     </button>
@@ -371,7 +371,7 @@ function ChatPanel({ lang, persona, onOpen }:
           {msgs.map((m) => (
             <div key={m.id} className={m.role === "user" ? "flex justify-end" : ""}>
               <div className={m.role === "user"
-                ? "bg-naija-600 text-white rounded-2xl rounded-br-sm px-4 py-2 max-w-[80%] text-sm"
+                ? "bg-amber-600 text-white rounded-2xl rounded-br-sm px-4 py-2 max-w-[80%] text-sm"
                 : "bg-ink-800 text-ink-100 rounded-2xl rounded-bl-sm px-4 py-2 max-w-[85%] text-sm"}>
                 {m.content}
               </div>
@@ -379,11 +379,11 @@ function ChatPanel({ lang, persona, onOpen }:
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mt-3">
                   {m.recs.map((p) => (
                     <button key={p.product_id} onClick={() => onOpen(p)}
-                            className="group text-left bg-ink-900/60 border border-ink-800 hover:border-naija-600/60 rounded-lg overflow-hidden transition-all">
+                            className="group text-left bg-ink-900/60 border border-ink-800 hover:border-amber-600/60 rounded-lg overflow-hidden transition-all">
                       <Thumb p={p} className="w-full aspect-square" iconSize={28} />
                       <div className="p-2">
                         <div className="text-[11px] text-ink-200 line-clamp-2 leading-snug min-h-[2rem]">{p.title}</div>
-                        <div className="text-sm font-bold text-naija-300 mt-0.5">{naira(p.price_naira)}</div>
+                        <div className="text-sm font-bold text-amber-300 mt-0.5">{naira(p.price_naira)}</div>
                       </div>
                     </button>
                   ))}
@@ -398,7 +398,7 @@ function ChatPanel({ lang, persona, onOpen }:
           )}
         </div>
         <div className="border-t border-ink-800 p-3 flex items-center gap-2">
-          <label className="cursor-pointer text-ink-400 hover:text-naija-300 p-2" title="Send a photo">
+          <label className="cursor-pointer text-ink-400 hover:text-amber-300 p-2" title="Send a photo">
             <Camera size={18} />
             <input type="file" accept="image/*" className="hidden" disabled={sending}
                    onChange={(e) => e.target.files?.[0] && sendImage(e.target.files[0])} />
@@ -406,9 +406,9 @@ function ChatPanel({ lang, persona, onOpen }:
           <input value={input} onChange={(e) => setInput(e.target.value)}
                  onKeyDown={(e) => e.key === "Enter" && send()}
                  placeholder={ct.ph} disabled={sending}
-                 className="flex-1 bg-ink-950 border border-ink-700 focus:border-naija-600 rounded-lg px-3 py-2 text-sm text-ink-100 outline-none" />
+                 className="flex-1 bg-ink-950 border border-ink-700 focus:border-amber-600 rounded-lg px-3 py-2 text-sm text-ink-100 outline-none" />
           <button onClick={send} disabled={sending || !input.trim()}
-                  className="bg-naija-600 hover:bg-naija-500 disabled:opacity-50 text-white rounded-lg p-2.5 transition-colors">
+                  className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white rounded-lg p-2.5 transition-colors">
             <Send size={16} />
           </button>
         </div>
@@ -495,7 +495,7 @@ function Store({ lang, profile, onHome, onSignIn }:
         <div className="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-naija-500 to-naija-800 flex items-center justify-center"><ShoppingCart size={16} className="text-white" /></div>
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-800 flex items-center justify-center"><ShoppingCart size={16} className="text-white" /></div>
               <span className="font-bold text-ink-50 tracking-tight">Shop<span className="brand-text">Easy</span></span>
             </div>
             <ProductSwitcher current="shop" />
@@ -512,7 +512,7 @@ function Store({ lang, profile, onHome, onSignIn }:
               </span>
             ) : (
               <button onClick={onSignIn}
-                      className="inline-flex items-center gap-1.5 bg-naija-600 hover:bg-naija-500 text-white rounded-lg px-3 py-1.5 font-medium">
+                      className="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg px-3 py-1.5 font-medium">
                 <LogIn size={13} /> Sign in
               </button>
             )}
@@ -524,11 +524,11 @@ function Store({ lang, profile, onHome, onSignIn }:
       <div className="max-w-3xl mx-auto px-6 pt-8 flex justify-center">
         <div className="inline-flex bg-ink-900 border border-ink-700 rounded-lg p-1">
           <button onClick={() => setMode("search")}
-                  className={`text-sm font-medium rounded-md px-4 py-1.5 inline-flex items-center gap-1.5 transition-colors ${mode === "search" ? "bg-naija-600 text-white" : "text-ink-300 hover:text-ink-50"}`}>
+                  className={`text-sm font-medium rounded-md px-4 py-1.5 inline-flex items-center gap-1.5 transition-colors ${mode === "search" ? "bg-amber-600 text-white" : "text-ink-300 hover:text-ink-50"}`}>
             <Search size={14} /> {ct.stab}
           </button>
           <button onClick={() => setMode("chat")}
-                  className={`text-sm font-medium rounded-md px-4 py-1.5 inline-flex items-center gap-1.5 transition-colors ${mode === "chat" ? "bg-naija-600 text-white" : "text-ink-300 hover:text-ink-50"}`}>
+                  className={`text-sm font-medium rounded-md px-4 py-1.5 inline-flex items-center gap-1.5 transition-colors ${mode === "chat" ? "bg-amber-600 text-white" : "text-ink-300 hover:text-ink-50"}`}>
             <MessageSquare size={14} /> {ct.tab}
           </button>
         </div>
@@ -538,9 +538,9 @@ function Store({ lang, profile, onHome, onSignIn }:
       <div className="max-w-4xl mx-auto px-6 pt-5">
         {profile ? (
           <div className="text-center text-xs text-ink-300">
-            <span className="inline-flex items-center gap-1.5 bg-naija-900/30 border border-naija-700/40 rounded-full px-3 py-1">
-              <SparklesIcon size={12} className="text-naija-300" />
-              Personalised for <span className="text-naija-300 font-medium">{profile.name}</span>
+            <span className="inline-flex items-center gap-1.5 bg-amber-900/30 border border-amber-700/40 rounded-full px-3 py-1">
+              <SparklesIcon size={12} className="text-amber-300" />
+              Personalised for <span className="text-amber-300 font-medium">{profile.name}</span>
               {profile.persona.demographics?.location ? ` · ${profile.persona.demographics.location}` : ""}
             </span>
           </div>
@@ -548,13 +548,13 @@ function Store({ lang, profile, onHome, onSignIn }:
           <div className="flex items-center gap-2 flex-wrap justify-center">
             <span className="text-xs text-ink-400 inline-flex items-center gap-1 mr-1"><Users size={12} /> Preview as:</span>
             <button onClick={() => setPersonaId(null)}
-                    className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${!personaId ? "bg-naija-600 text-white border-naija-600" : "bg-ink-900 text-ink-300 border-ink-700 hover:border-ink-600"}`}>
+                    className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${!personaId ? "bg-amber-600 text-white border-amber-600" : "bg-ink-900 text-ink-300 border-ink-700 hover:border-ink-600"}`}>
               Anyone
             </button>
             {personas.slice(0, 6).map((p) => (
               <button key={p.user_id} onClick={() => setPersonaId(p.user_id)}
                       title={`${p.demographics?.location || ""} · ${p.demographics?.occupation || ""}`}
-                      className={`text-xs px-2.5 py-1 rounded-full border inline-flex items-center gap-1.5 transition-colors ${personaId === p.user_id ? "bg-naija-600 text-white border-naija-600" : "bg-ink-900 text-ink-300 border-ink-700 hover:border-ink-600"}`}>
+                      className={`text-xs px-2.5 py-1 rounded-full border inline-flex items-center gap-1.5 transition-colors ${personaId === p.user_id ? "bg-amber-600 text-white border-amber-600" : "bg-ink-900 text-ink-300 border-ink-700 hover:border-ink-600"}`}>
                 <span className="w-4 h-4 rounded-full bg-ink-700 overflow-hidden flex items-center justify-center">
                   <img src={personaAvatar(p.user_id)} alt="" className="w-full h-full object-cover"
                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
@@ -562,7 +562,7 @@ function Store({ lang, profile, onHome, onSignIn }:
                 {personaName(p.user_id)}
               </button>
             ))}
-            <button onClick={onSignIn} className="text-xs text-naija-300 hover:text-naija-200 ml-1">
+            <button onClick={onSignIn} className="text-xs text-amber-300 hover:text-amber-200 ml-1">
               + Personalise for me
             </button>
           </div>
@@ -574,11 +574,11 @@ function Store({ lang, profile, onHome, onSignIn }:
       {/* Search hero */}
       {mode === "search" && (
       <section className="max-w-3xl mx-auto px-6 pt-8 pb-6 text-center">
-        <div className="inline-flex items-center gap-2 text-xs font-medium text-naija-300 bg-naija-900/40 border border-naija-700/40 rounded-full px-3 py-1 mb-4">
+        <div className="inline-flex items-center gap-2 text-xs font-medium text-amber-300 bg-amber-900/40 border border-amber-700/40 rounded-full px-3 py-1 mb-4">
           <Sparkles size={13} /> AI-powered Nigerian shopping
         </div>
         <h1 className="text-3xl md:text-4xl font-extrabold text-ink-50 tracking-tight">{t.tagline}</h1>
-        <div className="mt-7 flex items-center gap-2 bg-ink-900 border border-ink-700 focus-within:border-naija-600 rounded-xl p-1.5 transition-colors">
+        <div className="mt-7 flex items-center gap-2 bg-ink-900 border border-ink-700 focus-within:border-amber-600 rounded-xl p-1.5 transition-colors">
           <Search size={18} className="text-ink-400 ml-2" />
           <input value={query} onChange={(e) => setQuery(e.target.value)}
                  onKeyDown={(e) => e.key === "Enter" && runText()}
@@ -586,17 +586,17 @@ function Store({ lang, profile, onHome, onSignIn }:
                  className="flex-1 bg-transparent text-ink-100 text-sm outline-none px-1" />
           {voice.supported && (
             <button onClick={voice.toggle} title="Speak your search"
-                    className={`px-2 py-2 transition-colors ${voice.listening ? "text-red-400 animate-pulse" : "text-ink-400 hover:text-naija-300"}`}>
+                    className={`px-2 py-2 transition-colors ${voice.listening ? "text-red-400 animate-pulse" : "text-ink-400 hover:text-amber-300"}`}>
               <Mic size={18} />
             </button>
           )}
-          <label className="cursor-pointer text-ink-400 hover:text-naija-300 px-2 py-2" title={t.photo}>
+          <label className="cursor-pointer text-ink-400 hover:text-amber-300 px-2 py-2" title={t.photo}>
             <Camera size={18} />
             <input type="file" accept="image/*" className="hidden"
                    onChange={(e) => e.target.files?.[0] && runImage(e.target.files[0])} />
           </label>
           <button onClick={() => runText()} disabled={loading}
-                  className="bg-naija-600 hover:bg-naija-500 disabled:opacity-50 text-white text-sm font-semibold rounded-lg px-5 py-2 transition-colors">
+                  className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-sm font-semibold rounded-lg px-5 py-2 transition-colors">
             {loading ? <Loader2 size={16} className="animate-spin" /> : t.search}
           </button>
         </div>
@@ -618,7 +618,7 @@ function Store({ lang, profile, onHome, onSignIn }:
         {err && <div className="text-sm text-red-300 bg-red-900/20 border border-red-700/40 rounded-lg p-3 mb-4">{err}</div>}
         {loading && (
           <div className="flex flex-col items-center gap-3 py-16 text-ink-400">
-            <Loader2 size={26} className="animate-spin text-naija-400" />
+            <Loader2 size={26} className="animate-spin text-amber-400" />
             <span className="text-sm">Finding the best products for you…</span>
           </div>
         )}
@@ -655,7 +655,7 @@ function Home({ profile, onStart, onSignIn }:
         <div className="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-naija-500 to-naija-800 flex items-center justify-center"><ShoppingCart size={16} className="text-white" /></div>
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-800 flex items-center justify-center"><ShoppingCart size={16} className="text-white" /></div>
               <span className="font-bold text-ink-50 tracking-tight">Shop<span className="brand-text">Easy</span></span>
             </div>
             <ProductSwitcher current="shop" />
@@ -665,7 +665,7 @@ function Home({ profile, onStart, onSignIn }:
             <a href="#b2b" className="text-ink-300 hover:text-ink-50">For Business</a>
             {profile
               ? <span className="inline-flex items-center gap-1.5 bg-ink-900 border border-ink-700 rounded-full pl-1 pr-3 py-1"><img src={personaAvatar(profile.id)} alt="" className="w-5 h-5 rounded-full" /><span className="text-ink-200">{profile.name}</span></span>
-              : <button onClick={onSignIn} className="inline-flex items-center gap-1.5 bg-naija-600 hover:bg-naija-500 text-white rounded-lg px-3 py-1.5 font-medium"><LogIn size={13} /> Sign in</button>}
+              : <button onClick={onSignIn} className="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg px-3 py-1.5 font-medium"><LogIn size={13} /> Sign in</button>}
           </nav>
         </div>
       </header>
