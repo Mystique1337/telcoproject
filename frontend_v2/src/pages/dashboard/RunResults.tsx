@@ -10,7 +10,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Navbar from "@/components/Navbar";
+import DashboardLayout from "@/components/DashboardLayout";
 import { getRun, type PersonaResult, type RunDetail } from "@/lib/apiClient";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -208,20 +208,17 @@ export default function RunResults() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-ink-950 text-ink-50">
-        <Navbar />
+      <DashboardLayout>
         <FailedState error={(error as Error).message} />
-      </div>
+      </DashboardLayout>
     );
   }
 
   const agg = run!.aggregate;
 
   return (
-    <div className="min-h-screen bg-ink-950 text-ink-50">
-      <Navbar />
-
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+    <DashboardLayout>
+      <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -478,6 +475,6 @@ export default function RunResults() {
           </div>
         </div>
       )}
-    </div>
+    </DashboardLayout>
   );
 }

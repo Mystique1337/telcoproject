@@ -1,32 +1,38 @@
 from __future__ import annotations
 
+import logging
+from functools import lru_cache
 from typing import Any
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
+from supabase import Client, create_client
 
 from app.config import get_settings
 
+logger = logging.getLogger(__name__)
 security = HTTPBearer()
+
+
+@lru_cache(maxsize=1)
+def _supabase_client() -> Client:
+    s = get_settings()
+    return create_client(s.supabase_url, s.supabase_service_key)
 
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> dict[str, Any]:
-    settings = get_settings()
     try:
-        payload = jwt.decode(
-            credentials.credentials,
-            settings.supabase_jwt_secret,
-            algorithms=["HS256"],
-            options={"verify_aud": False},
-        )
-        user_id: str = payload.get("sub")
-        if not user_id:
+        response = _supabase_client().auth.get_user(credentials.credentials)
+        user = response.user
+        if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail="Invalid token")
-        return {"user_id": user_id, "email": payload.get("email", "")}
-    except JWTError:
+        return {"user_id": str(user.id), "email": user.email or ""}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.warning("Auth failed: %s", exc)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid token")

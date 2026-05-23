@@ -4,7 +4,7 @@ import { ArrowLeft, Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Navbar from "@/components/Navbar";
+import DashboardLayout from "@/components/DashboardLayout";
 import { createProject } from "@/lib/apiClient";
 
 const CATEGORIES = [
@@ -50,9 +50,7 @@ export default function NewProject() {
   }
 
   return (
-    <div className="min-h-screen bg-ink-950 text-ink-50">
-      <Navbar />
-
+    <DashboardLayout>
       <div className="max-w-2xl mx-auto px-6 py-10 space-y-8">
         {/* Back */}
         <button
@@ -176,6 +174,6 @@ export default function NewProject() {
           </Button>
         </form>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

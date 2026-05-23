@@ -1,0 +1,69 @@
+  ---
+  Build Sequence
+
+  Phase 1 — Setup frontend_v2 (~30 min) Done
+
+  1. Copy frontend/ → frontend_v2/ (keep all existing components)
+  2. Install new deps: React Router, TanStack Query, Zustand, Supabase JS, shadcn/ui
+  3. Create Supabase project, copy keys into .env.local
+
+  Phase 2 — Backend Foundation (~45 min) Done
+
+  4. Add Supabase vars to app/config.py
+  5. Create app/db/client.py — Supabase singleton
+  6. Create app/db/base_repository.py — BaseRepository with find/save/update/delete
+  7. Create app/middleware/auth.py — JWT verification dependency
+  8. Run shared DB schema in Supabase (organizations + users + trigger)
+
+  Phase 3 — Auth (~30 min)
+
+
+  9. Create src/lib/supabase.ts — client
+  10. Create src/store/auth.ts — Zustand session store
+  11. Build Login + Signup pages (new, don't exist yet)
+  12. Build ProtectedRoute component
+  13. Restructure App.tsx with React Router — keep existing product components as route targets
+
+  Phase 4 — InsideNaija (~2.5 hrs)
+
+  14. Run InsideNaija DB schema (projects, panel_runs, results + RLS + Realtime)
+  15. Create ProjectRepository, PanelRunRepository, ResultsRepository
+  16. Create ProjectService, PanelRunService
+  17. Add FastAPI routers: projects.py, runs.py
+  18. Move existing InsideNaija.tsx into features/insidenaija/ — keep the UI, add auth headers
+  to API calls
+  19. Build Dashboard — project list, last run status, "New Project" button
+  20. Build New Project form — name, description, category → triggers panel run
+  21. Build Results page — live progress via Supabase Realtime, per-persona reviews, aggregate
+  stats, CSV export
+  22. Build History page — past runs per project
+
+  Phase 5 — ShopEasy (~2.5 hrs)
+  
+  23. Run ShopEasy DB schema (products, personas, cart_items, orders, order_items + RLS)
+  24. Seed products from existing app/data/products.json → Supabase
+  25. Create ProductRepository, PersonaRepository, CartRepository, OrderRepository
+  26. Create ProductService, CartService, OrderService
+  27. Add FastAPI routers: shop_products.py, shop_cart.py, shop_orders.py, shop_persona.py
+  28. Move existing ShopEasy.tsx into features/shopeasy/ — keep the UI, wire auth + real data
+  29. Build Onboarding — language + shopping style → saves persona (already exists, just wire
+  it)
+  30. Build Catalog — product grid, search, category filter
+  31. Build Product Detail — product info + AI recommendations
+  32. Build Cart — add/remove items, place order
+  33. Build Order History — past orders
+
+  Phase 6 — Wire + Test (~1 hr)
+
+  34. Update all existing API calls in api.ts to pass auth tokens
+  35. Test full InsideNaija flow end-to-end
+  36. Test full ShopEasy flow end-to-end
+  37. Fix any integration breaks
+  
+  ---
+  ~7 hours total. Start with Phase 1.
+  
+  The detailed plan files with all the actual code are in docs/superpowers/plans/. Want me to
+  start executing Phase 1 now?
+  
+✻ Baked for 31s

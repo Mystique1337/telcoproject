@@ -55,6 +55,7 @@ class DBStorage:
             bind=self.engine,
             autocommit=False,
             autoflush=False,
+            expire_on_commit=False,  # keep attribute values accessible after session closes
         )
 
     @classmethod

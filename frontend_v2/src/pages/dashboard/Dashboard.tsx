@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Users, Clock, CheckCircle, XCircle, Loader2, ArrowRight } from "lucide-react";
+import { Plus, Users, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Navbar from "@/components/Navbar";
+import DashboardLayout from "@/components/DashboardLayout";
 import { listProjects, type ProjectSummary } from "@/lib/apiClient";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -108,10 +108,8 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-ink-950 text-ink-50">
-      <Navbar />
-
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+    <DashboardLayout>
+      <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -184,6 +182,6 @@ export default function Dashboard() {
           </div>
         )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

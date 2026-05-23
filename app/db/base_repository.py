@@ -23,20 +23,27 @@ class BaseRepository(Generic[T]):
 
     def find(self, id: Any) -> Optional[T]:
         with self.db.session() as session:
-            return session.get(self.model_class, id)
+            obj = session.get(self.model_class, id)
+            if obj is not None:
+                session.expunge(obj)
+            return obj
 
     def find_all(self, **filters: Any) -> list[T]:
         with self.db.session() as session:
             q = session.query(self.model_class)
             for attr, value in filters.items():
                 q = q.filter(getattr(self.model_class, attr) == value)
-            return q.all()
+            rows = q.all()
+            for r in rows:
+                session.expunge(r)
+            return rows
 
     def save(self, instance: T) -> T:
         with self.db.session() as session:
             session.add(instance)
             session.flush()
             session.refresh(instance)
+            session.expunge(instance)
             return instance
 
     def update(self, instance: T, **fields: Any) -> T:
@@ -46,6 +53,7 @@ class BaseRepository(Generic[T]):
                 setattr(instance, key, value)
             session.flush()
             session.refresh(instance)
+            session.expunge(instance)
             return instance
 
     def delete(self, instance: T) -> None:
