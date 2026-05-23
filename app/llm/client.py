@@ -199,25 +199,34 @@ class LLMClient:
         stop: list[str] | None = None,
     ) -> str:
         """Return the LLM's completion as a single string."""
-        if self.provider == "anthropic":
-            return await self._anthropic(prompt, system, max_tokens, temperature, stop)
-        if self.provider == "openai":
-            return await self._openai(prompt, system, max_tokens, temperature, stop)
-        if self.provider == "freemodel":
-            return await self._freemodel(prompt, system, max_tokens, temperature, stop)
-        if self.provider == "modal":
-            return await self._modal(prompt, system, max_tokens, temperature, stop)
-        if self.provider == "ollama":
-            return await self._ollama(prompt, system, max_tokens, temperature, stop)
-        if self.provider == "nvidia":
-            return await self._nvidia(prompt, system, max_tokens, temperature, stop)
-        if self.provider == "lmstudio":
-            return await self._lmstudio(prompt, system, max_tokens, temperature, stop)
-        if self.provider in ("ollama-cloud", "ollamacloud", "ocloud"):
-            return await self._ollama_cloud(prompt, system, max_tokens, temperature, stop)
-        if self.provider in ("hf", "huggingface", "hf-inference"):
-            return await self._hf_inference(prompt, system, max_tokens, temperature, stop)
-        raise LLMError(f"Unknown provider: {self.provider}")
+        try:
+            if self.provider == "anthropic":
+                return await self._anthropic(prompt, system, max_tokens, temperature, stop)
+            if self.provider == "openai":
+                return await self._openai(prompt, system, max_tokens, temperature, stop)
+            if self.provider == "freemodel":
+                return await self._freemodel(prompt, system, max_tokens, temperature, stop)
+            if self.provider == "modal":
+                return await self._modal(prompt, system, max_tokens, temperature, stop)
+            if self.provider == "ollama":
+                return await self._ollama(prompt, system, max_tokens, temperature, stop)
+            if self.provider == "nvidia":
+                return await self._nvidia(prompt, system, max_tokens, temperature, stop)
+            if self.provider == "lmstudio":
+                return await self._lmstudio(prompt, system, max_tokens, temperature, stop)
+            if self.provider in ("ollama-cloud", "ollamacloud", "ocloud"):
+                return await self._ollama_cloud(prompt, system, max_tokens, temperature, stop)
+            if self.provider in ("hf", "huggingface", "hf-inference"):
+                return await self._hf_inference(prompt, system, max_tokens, temperature, stop)
+            raise LLMError(f"Unknown provider: {self.provider}")
+        except httpx.ConnectError as exc:
+            raise LLMError(
+                f"{self.provider}:{self.model} unreachable — {exc}"
+            ) from exc
+        except httpx.TimeoutException as exc:
+            raise LLMError(
+                f"{self.provider}:{self.model} timed out — {exc}"
+            ) from exc
 
     async def complete_json(
         self,
