@@ -94,13 +94,22 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS — open during hackathon evaluation
+# CORS
+_ALLOWED_ORIGINS = [o.strip() for o in os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:8765,http://localhost:5173,http://localhost:3000,http://127.0.0.1:8765",
+).split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=_ALLOWED_ORIGINS,
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin",
+                   "X-Requested-With", "Cache-Control"],
+    expose_headers=["Content-Length"],
+    max_age=600,
 )
 
 # Routers
