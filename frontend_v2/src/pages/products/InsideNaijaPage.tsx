@@ -67,7 +67,7 @@ export default function InsideNaijaPage() {
 
       {/* Stats */}
       <section className="max-w-5xl mx-auto px-6 pb-16">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {STATS.map((s) => (
             <div key={s.value} className="bg-ink-900 border border-ink-800 rounded-xl p-6 text-center space-y-1">
               <p className="text-3xl font-bold text-naija-400">{s.value}</p>
@@ -145,7 +145,7 @@ export default function InsideNaijaPage() {
 
       {/* Built for how Nigerians actually shop & speak */}
       <section className="max-w-5xl mx-auto px-6 py-16">
-        <div className="grid lg:grid-cols-2 gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <SectionPhoto
             q="nigeria lagos market shopping"
             className="rounded-2xl min-h-[280px] border border-ink-800"

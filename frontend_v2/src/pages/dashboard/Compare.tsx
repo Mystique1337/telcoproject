@@ -54,13 +54,13 @@ function StatRow({ label, aVal, bVal, format }: StatProps) {
   }
 
   return (
-    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 py-2.5 border-b border-ink-800 last:border-0">
-      <div className={`text-sm font-semibold text-right ${aWins ? "text-naija-400" : "text-ink-200"}`}>
+    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1 sm:gap-2 py-2.5 border-b border-ink-800 last:border-0">
+      <div className={`text-sm font-semibold text-right truncate ${aWins ? "text-naija-400" : "text-ink-200"}`}>
         {display(aVal)}
         {aWins && <TrendingUp size={12} className="inline ml-1 text-naija-400" />}
       </div>
-      <span className="text-xs text-ink-600 text-center whitespace-nowrap px-2">{label}</span>
-      <div className={`text-sm font-semibold ${bWins ? "text-naija-400" : "text-ink-200"}`}>
+      <span className="text-xs text-ink-600 text-center whitespace-nowrap px-1 sm:px-2">{label}</span>
+      <div className={`text-sm font-semibold truncate ${bWins ? "text-naija-400" : "text-ink-200"}`}>
         {display(bVal)}
         {bWins && <TrendingUp size={12} className="inline ml-1 text-naija-400" />}
       </div>
@@ -134,7 +134,7 @@ export default function Compare() {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-ink-50">Compare runs</h1>
             <p className="text-sm text-ink-400 mt-0.5">Side-by-side panel comparison</p>
@@ -200,9 +200,10 @@ export default function Compare() {
             </div>
 
             {/* Side-by-side detail */}
-            <div className="flex gap-6">
+            <div className="flex flex-col sm:flex-row gap-6">
               <RunColumn side={data.run_a} label="Run A" />
-              <div className="w-px bg-ink-800 shrink-0 my-2" />
+              <div className="hidden sm:block w-px bg-ink-800 shrink-0 my-2" />
+              <div className="block sm:hidden h-px bg-ink-800 w-full" />
               <RunColumn side={data.run_b} label="Run B" />
             </div>
           </>

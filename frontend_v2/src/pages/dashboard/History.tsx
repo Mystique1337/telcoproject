@@ -101,12 +101,12 @@ export default function History() {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-ink-50">History</h1>
             <p className="text-sm text-ink-400 mt-0.5">All panel runs across your projects</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {compareMode && selectedIds.length === 2 && (
               <button
                 onClick={() => navigate(`/compare?a=${selectedIds[0]}&b=${selectedIds[1]}`)}
@@ -144,95 +144,99 @@ export default function History() {
 
         {!isLoading && !error && runs && runs.length > 0 && (
           <div className="bg-ink-900 border border-ink-800 rounded-xl overflow-hidden">
-            {/* Table header */}
-            <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto_auto] items-center gap-4 px-5 py-3 border-b border-ink-800 bg-ink-950/40">
-              {(compareMode ? ["", "Project", "Date", "Status", "Avg rating", "Buy %", "", ""] : ["Project", "Date", "Status", "Avg rating", "Buy %", "", ""]).map((h, i) => (
-                <span key={i} className="text-xs font-medium text-ink-500 uppercase tracking-wider">
-                  {h}
-                </span>
-              ))}
-            </div>
-
-            {/* Rows */}
-            <div className="divide-y divide-ink-800">
-              {runs.map((run) => (
-                <div
-                  key={run.id}
-                  className={`grid items-center gap-4 px-5 py-4 transition-colors cursor-pointer group ${
-                    compareMode
-                      ? "grid-cols-[auto_1fr_auto_auto_auto_auto_auto_auto]"
-                      : "grid-cols-[1fr_auto_auto_auto_auto_auto_auto]"
-                  } ${
-                    compareMode && selectedIds.includes(run.id)
-                      ? "bg-naija-900/20 hover:bg-naija-900/30"
-                      : "hover:bg-ink-800/30"
-                  }`}
-                  onClick={() => compareMode ? toggleSelect(run.id) : navigate(`/runs/${run.id}`)}
-                >
-                  {/* Compare checkbox */}
-                  {compareMode && (
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(run.id)}
-                      onChange={() => toggleSelect(run.id)}
-                      onClick={(e) => e.stopPropagation()}
-                      className="w-4 h-4 accent-naija-500 cursor-pointer"
-                    />
-                  )}
-
-                  {/* Project name */}
-                  <div className="min-w-0">
-                    <p className="font-medium text-ink-100 truncate group-hover:text-naija-300 transition-colors">
-                      {run.project_name}
-                    </p>
-                    <p className="text-xs text-ink-600 mt-0.5">{formatTime(run.created_at)}</p>
-                  </div>
-
-                  {/* Date */}
-                  <span className="text-sm text-ink-400 whitespace-nowrap">
-                    {formatDate(run.created_at)}
-                  </span>
-
-                  {/* Status */}
-                  <StatusBadge status={run.status} />
-
-                  {/* Avg rating */}
-                  <div className="w-28 flex justify-center">
-                    {run.avg_rating != null ? (
-                      <MiniStars rating={run.avg_rating} />
-                    ) : (
-                      <span className="text-xs text-ink-700">—</span>
-                    )}
-                  </div>
-
-                  {/* Buy likelihood */}
-                  <div className="w-16 text-center">
-                    {run.buy_likelihood != null ? (
-                      <span className="text-sm font-semibold text-naija-400">
-                        {run.buy_likelihood}%
-                      </span>
-                    ) : (
-                      <span className="text-xs text-ink-700">—</span>
-                    )}
-                  </div>
-
-                  {/* Rerun icon */}
-                  <button
-                    onClick={(e) => handleRerun(e, run.project_id)}
-                    className="text-ink-600 hover:text-naija-400 transition-colors p-1 rounded"
-                    title="Run again"
-                    disabled={rerunningId === run.project_id}
-                  >
-                    {rerunningId === run.project_id
-                      ? <Loader2 size={14} className="animate-spin" />
-                      : <RefreshCw size={14} />
-                    }
-                  </button>
-
-                  {/* Arrow */}
-                  <ArrowRight size={15} className="text-ink-700 group-hover:text-naija-400 transition-colors" />
+            <div className="overflow-x-auto">
+              <div className="min-w-[560px]">
+                {/* Table header */}
+                <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto_auto] items-center gap-4 px-5 py-3 border-b border-ink-800 bg-ink-950/40">
+                  {(compareMode ? ["", "Project", "Date", "Status", "Avg rating", "Buy %", "", ""] : ["Project", "Date", "Status", "Avg rating", "Buy %", "", ""]).map((h, i) => (
+                    <span key={i} className="text-xs font-medium text-ink-500 uppercase tracking-wider">
+                      {h}
+                    </span>
+                  ))}
                 </div>
-              ))}
+
+                {/* Rows */}
+                <div className="divide-y divide-ink-800">
+                  {runs.map((run) => (
+                    <div
+                      key={run.id}
+                      className={`grid items-center gap-4 px-5 py-4 transition-colors cursor-pointer group ${
+                        compareMode
+                          ? "grid-cols-[auto_1fr_auto_auto_auto_auto_auto_auto]"
+                          : "grid-cols-[1fr_auto_auto_auto_auto_auto_auto]"
+                      } ${
+                        compareMode && selectedIds.includes(run.id)
+                          ? "bg-naija-900/20 hover:bg-naija-900/30"
+                          : "hover:bg-ink-800/30"
+                      }`}
+                      onClick={() => compareMode ? toggleSelect(run.id) : navigate(`/runs/${run.id}`)}
+                    >
+                      {/* Compare checkbox */}
+                      {compareMode && (
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(run.id)}
+                          onChange={() => toggleSelect(run.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-4 h-4 accent-naija-500 cursor-pointer"
+                        />
+                      )}
+
+                      {/* Project name */}
+                      <div className="min-w-0">
+                        <p className="font-medium text-ink-100 truncate group-hover:text-naija-300 transition-colors">
+                          {run.project_name}
+                        </p>
+                        <p className="text-xs text-ink-600 mt-0.5">{formatTime(run.created_at)}</p>
+                      </div>
+
+                      {/* Date */}
+                      <span className="text-sm text-ink-400 whitespace-nowrap">
+                        {formatDate(run.created_at)}
+                      </span>
+
+                      {/* Status */}
+                      <StatusBadge status={run.status} />
+
+                      {/* Avg rating */}
+                      <div className="w-28 flex justify-center">
+                        {run.avg_rating != null ? (
+                          <MiniStars rating={run.avg_rating} />
+                        ) : (
+                          <span className="text-xs text-ink-700">—</span>
+                        )}
+                      </div>
+
+                      {/* Buy likelihood */}
+                      <div className="w-16 text-center">
+                        {run.buy_likelihood != null ? (
+                          <span className="text-sm font-semibold text-naija-400">
+                            {run.buy_likelihood}%
+                          </span>
+                        ) : (
+                          <span className="text-xs text-ink-700">—</span>
+                        )}
+                      </div>
+
+                      {/* Rerun icon */}
+                      <button
+                        onClick={(e) => handleRerun(e, run.project_id)}
+                        className="text-ink-600 hover:text-naija-400 transition-colors p-1 rounded"
+                        title="Run again"
+                        disabled={rerunningId === run.project_id}
+                      >
+                        {rerunningId === run.project_id
+                          ? <Loader2 size={14} className="animate-spin" />
+                          : <RefreshCw size={14} />
+                        }
+                      </button>
+
+                      {/* Arrow */}
+                      <ArrowRight size={15} className="text-ink-700 group-hover:text-naija-400 transition-colors" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}

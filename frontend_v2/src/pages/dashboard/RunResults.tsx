@@ -279,6 +279,7 @@ function ReviewModal({ result, onClose }: { result: PersonaResult; onClose: () =
 
 function CohortTable({ data }: { data: Record<string, { n: number; avg_rating: number; buy_likelihood: number }> }) {
   return (
+    <div className="overflow-x-auto">
     <table className="w-full text-sm">
       <thead>
         <tr className="border-b border-ink-800">
@@ -298,6 +299,7 @@ function CohortTable({ data }: { data: Record<string, { n: number; avg_rating: n
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 
@@ -470,19 +472,19 @@ export default function RunResults() {
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
 
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate("/dashboard")} className="text-ink-400 hover:text-ink-100 transition-colors">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <button onClick={() => navigate("/dashboard")} className="text-ink-400 hover:text-ink-100 transition-colors shrink-0">
               <ArrowLeft size={20} />
             </button>
-            <div>
-              <h1 className="text-xl font-bold text-ink-50">{run.project_name}</h1>
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold text-ink-50 truncate">{run.project_name}</h1>
               <p className="text-xs text-ink-500">
                 {new Date(run.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {isDone && (
               <>
                 <span className="flex items-center gap-1.5 text-sm text-naija-400">
@@ -650,7 +652,7 @@ export default function RunResults() {
 
             {/* Cohort breakdown */}
             <div className="bg-ink-900 border border-ink-800 rounded-xl overflow-hidden">
-              <div className="flex border-b border-ink-800">
+              <div className="flex overflow-x-auto border-b border-ink-800">
                 {([["by_zone", "By zone"], ["by_register", "By register"], ["by_age", "By age"]] as const).map(([key, label]) => (
                   <button
                     key={key}

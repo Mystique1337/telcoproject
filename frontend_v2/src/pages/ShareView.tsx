@@ -165,7 +165,7 @@ export default function ShareView() {
             </div>
             <div className="divide-y divide-ink-800 max-h-[480px] overflow-y-auto">
               {data.results.map((r: PersonaResult) => (
-                <div key={r.id} className="flex items-center gap-4 px-5 py-3">
+                <div key={r.id} className="flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 px-5 py-3">
                   <div className="w-7 h-7 rounded-lg bg-naija-900/50 border border-naija-700/30 flex items-center justify-center text-naija-400 text-xs font-bold shrink-0">
                     {r.persona_name.charAt(0)}
                   </div>

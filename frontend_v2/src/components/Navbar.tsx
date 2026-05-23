@@ -76,8 +76,8 @@ export default function Navbar() {
         <span className="font-bold text-ink-50 hidden sm:block">Naija Persona</span>
       </button>
 
-      {/* Centre nav */}
-      <div className="flex items-center gap-1">
+      {/* Centre nav — hidden on mobile */}
+      <div className="hidden md:flex items-center gap-1">
         {/* Products dropdown */}
         <div ref={dropdownRef} className="relative">
           <button
@@ -138,14 +138,14 @@ export default function Navbar() {
 
         <button
           onClick={() => navigate("/business")}
-          className="px-4 py-2 rounded-lg text-sm font-medium text-ink-300 hover:text-ink-50 hover:bg-ink-800/50 transition-colors"
+          className="hidden lg:block px-4 py-2 rounded-lg text-sm font-medium text-ink-300 hover:text-ink-50 hover:bg-ink-800/50 transition-colors"
         >
           For Business
         </button>
       </div>
 
       {/* Right actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="w-9 h-9 rounded-full border border-ink-700 text-ink-400 hover:text-ink-100 flex items-center justify-center transition-colors"
@@ -160,7 +160,8 @@ export default function Navbar() {
           className="border-ink-600 bg-ink-800/50 text-ink-400 hover:bg-ink-700 hover:text-ink-200 hover:border-ink-500"
           onClick={() => navigate("/lab")}
         >
-          <FlaskConical size={13} className="mr-1" /> Labz
+          <FlaskConical size={13} className="sm:mr-1" />
+          <span className="hidden sm:inline">Labz</span>
         </Button>
 
         {session ? (
@@ -169,20 +170,21 @@ export default function Navbar() {
               onClick={() => navigate("/dashboard")}>
               Dashboard
             </Button>
-            <Button size="sm" variant="ghost" className="text-ink-400 hover:text-ink-100"
+            <Button size="sm" variant="ghost" className="hidden sm:inline-flex text-ink-400 hover:text-ink-100"
               onClick={signOut}>
               Sign out
             </Button>
           </>
         ) : (
           <>
-            <Button size="sm" variant="ghost" className="text-ink-300 hover:text-ink-50"
+            <Button size="sm" variant="ghost" className="hidden sm:inline-flex text-ink-300 hover:text-ink-50"
               onClick={() => navigate("/login")}>
               Sign in
             </Button>
             <Button size="sm" className="bg-naija-600 hover:bg-naija-700 text-white"
               onClick={() => navigate("/signup")}>
-              Get started <ArrowRight size={13} className="ml-1" />
+              <span className="hidden sm:inline">Get started </span>
+              <ArrowRight size={13} className="sm:ml-1" />
             </Button>
           </>
         )}

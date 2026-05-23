@@ -136,7 +136,7 @@ function SingleProjectForm() {
             disabled={loading}
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="category" className="text-ink-200">Category</Label>
             <select id="category" value={category} onChange={(e) => setCategory(e.target.value)} disabled={loading}
@@ -156,7 +156,7 @@ function SingleProjectForm() {
           <Label className="text-ink-200">
             Target rating <span className="text-ink-600 font-normal">(optional — what score would you consider a win?)</span>
           </Label>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
@@ -436,39 +436,44 @@ function BulkImport() {
             </div>
           </div>
 
-          {/* Column labels */}
-          <div className="grid grid-cols-[36px_1fr_2fr_1fr] gap-3 px-4 py-2.5 bg-ink-950/40 border-b border-ink-800 text-xs font-medium text-ink-500 uppercase tracking-wider">
-            <div className="flex items-center">
-              <input type="checkbox" checked={allChecked} onChange={toggleAll}
-                className="w-4 h-4 rounded border-ink-600 bg-ink-800 accent-naija-600 cursor-pointer" />
-            </div>
-            <span>Product name</span>
-            <span>Description</span>
-            <span>Category</span>
-          </div>
-
-          {/* Rows */}
-          <div className="divide-y divide-ink-800/60 max-h-72 overflow-y-auto">
-            {parsed.rows.map((row, i) => {
-              const name = (row[mapping.name] ?? "").trim();
-              const desc = (row[mapping.description] ?? "").trim();
-              const cat  = (row[mapping.category]    ?? "").trim();
-              const valid = !!name && !!desc;
-              return (
-                <div key={i} onClick={() => valid && toggleRow(i)}
-                  className={`grid grid-cols-[36px_1fr_2fr_1fr] gap-3 px-4 py-3 items-start transition-colors ${
-                    valid ? "cursor-pointer hover:bg-ink-800/30" : "opacity-40"
-                  } ${selected.has(i) ? "bg-naija-900/10" : ""}`}>
-                  <div className="flex items-center pt-0.5">
-                    <input type="checkbox" checked={selected.has(i)} readOnly disabled={!valid}
-                      className="w-4 h-4 rounded border-ink-600 bg-ink-800 accent-naija-600 cursor-pointer" />
-                  </div>
-                  <p className="text-sm text-ink-100 font-medium truncate">{name || <span className="text-red-400 italic">missing</span>}</p>
-                  <p className="text-xs text-ink-500 line-clamp-2 leading-relaxed">{desc || <span className="text-red-400 italic">missing</span>}</p>
-                  <span className="text-xs px-2 py-0.5 rounded-md bg-ink-800 text-ink-400 w-fit">{cat || "—"}</span>
+          {/* Column labels + rows — scrollable on small screens */}
+          <div className="overflow-x-auto">
+            <div className="min-w-[480px]">
+              {/* Column labels */}
+              <div className="grid grid-cols-[36px_1fr_2fr_1fr] gap-3 px-4 py-2.5 bg-ink-950/40 border-b border-ink-800 text-xs font-medium text-ink-500 uppercase tracking-wider">
+                <div className="flex items-center">
+                  <input type="checkbox" checked={allChecked} onChange={toggleAll}
+                    className="w-4 h-4 rounded border-ink-600 bg-ink-800 accent-naija-600 cursor-pointer" />
                 </div>
-              );
-            })}
+                <span>Product name</span>
+                <span>Description</span>
+                <span>Category</span>
+              </div>
+
+              {/* Rows */}
+              <div className="divide-y divide-ink-800/60 max-h-72 overflow-y-auto">
+                {parsed.rows.map((row, i) => {
+                  const name = (row[mapping.name] ?? "").trim();
+                  const desc = (row[mapping.description] ?? "").trim();
+                  const cat  = (row[mapping.category]    ?? "").trim();
+                  const valid = !!name && !!desc;
+                  return (
+                    <div key={i} onClick={() => valid && toggleRow(i)}
+                      className={`grid grid-cols-[36px_1fr_2fr_1fr] gap-3 px-4 py-3 items-start transition-colors ${
+                        valid ? "cursor-pointer hover:bg-ink-800/30" : "opacity-40"
+                      } ${selected.has(i) ? "bg-naija-900/10" : ""}`}>
+                      <div className="flex items-center pt-0.5">
+                        <input type="checkbox" checked={selected.has(i)} readOnly disabled={!valid}
+                          className="w-4 h-4 rounded border-ink-600 bg-ink-800 accent-naija-600 cursor-pointer" />
+                      </div>
+                      <p className="text-sm text-ink-100 font-medium truncate">{name || <span className="text-red-400 italic">missing</span>}</p>
+                      <p className="text-xs text-ink-500 line-clamp-2 leading-relaxed">{desc || <span className="text-red-400 italic">missing</span>}</p>
+                      <span className="text-xs px-2 py-0.5 rounded-md bg-ink-800 text-ink-400 w-fit">{cat || "—"}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       )}

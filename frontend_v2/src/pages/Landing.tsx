@@ -191,9 +191,9 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-ink-800 px-6 py-5 flex items-center justify-between text-sm text-ink-600">
+      <footer className="border-t border-ink-800 px-6 py-5 flex flex-wrap items-center justify-between gap-4 text-sm text-ink-600">
         <span className="font-semibold text-ink-400">Naija Persona</span>
-        <div className="flex gap-6">
+        <div className="flex flex-wrap gap-4 sm:gap-6">
           <button onClick={() => navigate("/products/insidenaija")} className="hover:text-ink-300">InsideNaija</button>
           <button onClick={() => navigate("/products/shopeasy")} className="hover:text-ink-300">ShopEasy</button>
           <button onClick={() => navigate("/login")} className="hover:text-ink-300">Sign in</button>
