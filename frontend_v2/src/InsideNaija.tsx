@@ -317,7 +317,7 @@ function ValueStrip() {
 // How it works + Why sections (real imagery)
 // ─────────────────────────────────────────────────────────────────────────
 
-function SectionPhoto({ q, className = "" }: { q: string; className?: string }) {
+export function SectionPhoto({ q, className = "" }: { q: string; className?: string }) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     let c = false;

@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
-import InsideNaija, { Hero as InsideNaijaHero } from "@/InsideNaija";
+import InsideNaija, { Hero as InsideNaijaHero, SectionPhoto } from "@/InsideNaija";
 
 const STATS = [
   { value: "48.5%", label: "Win rate vs Claude Sonnet", sub: "blind human evaluation" },
@@ -146,13 +146,10 @@ export default function InsideNaijaPage() {
       {/* Built for how Nigerians actually shop & speak */}
       <section className="max-w-5xl mx-auto px-6 py-16">
         <div className="grid lg:grid-cols-2 gap-8 items-center">
-          {/* Styled placeholder — mirrors the photo box in the demo */}
-          <div className="rounded-2xl min-h-[280px] border border-ink-800 bg-gradient-to-br from-naija-900/40 via-ink-900 to-amber-900/20 flex items-center justify-center">
-            <div className="text-center space-y-2 px-8">
-              <div className="text-5xl">🇳🇬</div>
-              <p className="text-sm text-ink-500">24 personas · 6 zones · 4 languages</p>
-            </div>
-          </div>
+          <SectionPhoto
+            q="nigeria lagos market shopping"
+            className="rounded-2xl min-h-[280px] border border-ink-800"
+          />
           <div className="flex flex-col justify-center space-y-4">
             <h2 className="text-2xl md:text-3xl font-bold text-ink-50 tracking-tight">
               Built for how Nigerians actually shop &amp; speak
