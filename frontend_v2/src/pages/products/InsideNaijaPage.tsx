@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, Users, Globe, BarChart3, Zap,
@@ -57,10 +57,43 @@ const USE_CASES = [
 export default function InsideNaijaPage() {
   const navigate = useNavigate();
   const [showDemo, setShowDemo] = useState(false);
+  const demoRef = useRef<HTMLElement>(null);
+
+  function toggleDemo() {
+    const next = !showDemo;
+    setShowDemo(next);
+    if (next) {
+      // Small delay so the DOM renders the section before scrolling
+      setTimeout(() => {
+        demoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 60);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-ink-950 text-ink-50">
       <Navbar />
+
+      {/* Live demo — sits above the hero, hidden until "See it live" is clicked */}
+      {showDemo && (
+        <section ref={demoRef} className="max-w-6xl mx-auto px-6 pt-6 pb-2">
+          <div className="border border-naija-700/40 rounded-2xl overflow-hidden">
+            <div className="bg-ink-900 border-b border-ink-800 px-6 py-3 flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-red-500/60" />
+              <span className="w-3 h-3 rounded-full bg-amber-500/60" />
+              <span className="w-3 h-3 rounded-full bg-naija-500/60" />
+              <span className="ml-3 text-xs text-ink-500">InsideNaija — live demo</span>
+              <button
+                onClick={toggleDemo}
+                className="ml-auto text-xs text-ink-500 hover:text-ink-200 transition-colors"
+              >
+                Hide ×
+              </button>
+            </div>
+            <InsideNaija />
+          </div>
+        </section>
+      )}
 
       {/* Hero */}
       <section className="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center space-y-8">
@@ -86,7 +119,7 @@ export default function InsideNaijaPage() {
           </Button>
           <Button size="lg" variant="outline"
             className="border-ink-700 text-ink-200 hover:border-naija-600 h-12 text-base"
-            onClick={() => setShowDemo((d) => !d)}>
+            onClick={toggleDemo}>
             {showDemo ? "Hide demo" : "See it live"}
           </Button>
         </div>
@@ -104,21 +137,6 @@ export default function InsideNaijaPage() {
           ))}
         </div>
       </section>
-
-      {/* Live demo */}
-      {showDemo && (
-        <section className="max-w-6xl mx-auto px-6 pb-16">
-          <div className="border border-naija-700/40 rounded-2xl overflow-hidden">
-            <div className="bg-ink-900 border-b border-ink-800 px-6 py-3 flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-red-500/60" />
-              <span className="w-3 h-3 rounded-full bg-amber-500/60" />
-              <span className="w-3 h-3 rounded-full bg-naija-500/60" />
-              <span className="ml-3 text-xs text-ink-500">InsideNaija — live demo</span>
-            </div>
-            <InsideNaija />
-          </div>
-        </section>
-      )}
 
       {/* How it works */}
       <section className="max-w-5xl mx-auto px-6 py-16">
