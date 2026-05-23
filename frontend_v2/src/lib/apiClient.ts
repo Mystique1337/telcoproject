@@ -150,6 +150,20 @@ export interface PanelPersona {
 export const getPanelPersonas = () =>
   fetch("/api/panel-personas").then((r) => r.json()) as Promise<PanelPersona[]>;
 
+export interface PersonaReview {
+  run_id: string;
+  project_name: string;
+  project_category: string;
+  created_at: string;
+  rating: number;
+  sentiment: "positive" | "neutral" | "negative";
+  review_text: string;
+  register_tier: string;
+}
+
+export const getPersonaReviews = (personaId: string) =>
+  request<PersonaReview[]>("GET", `/api/panel-personas/${personaId}/reviews`);
+
 // ── Analytics ────────────────────────────────────────────────────────────────
 
 export interface AnalyticsData {
