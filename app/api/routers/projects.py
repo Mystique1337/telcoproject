@@ -178,11 +178,6 @@ async def get_stats(
         "running_runs": running,
         "avg_rating": round(total_rating / rated_runs, 2) if rated_runs else None,
         "total_personas_evaluated": total_personas,
-        "quota": {
-            "used": completed,
-            "limit": 10,
-            "remaining": max(0, 10 - completed),
-        },
     }
 
 

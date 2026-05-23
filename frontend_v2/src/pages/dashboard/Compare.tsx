@@ -1,9 +1,9 @@
 /**
  * Run comparison page — /compare?a={runId}&b={runId}
  */
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, Minus, ArrowLeft } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { compareRuns, type RunCompareSide } from "@/lib/apiClient";
 
@@ -120,6 +120,7 @@ function RunColumn({ side, label }: { side: RunCompareSide; label: string }) {
 
 export default function Compare() {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const runA = params.get("a") ?? "";
   const runB = params.get("b") ?? "";
 
@@ -133,9 +134,17 @@ export default function Compare() {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold text-ink-50">Compare runs</h1>
-          <p className="text-sm text-ink-400 mt-0.5">Side-by-side panel comparison</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-ink-50">Compare runs</h1>
+            <p className="text-sm text-ink-400 mt-0.5">Side-by-side panel comparison</p>
+          </div>
+          <button
+            onClick={() => navigate("/history")}
+            className="flex items-center gap-1.5 text-sm text-ink-400 hover:text-ink-100 transition-colors"
+          >
+            <ArrowLeft size={15} /> Back to history
+          </button>
         </div>
 
         {isLoading && (

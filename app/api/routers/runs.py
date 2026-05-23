@@ -136,6 +136,8 @@ async def get_run(
         "id": str(run.id),
         "project_id": str(run.project_id),
         "project_name": project.name,
+        "project_description": project.description,
+        "project_category": project.category,
         "status": run.status,
         "created_at": run.created_at.isoformat(),
         "completed_at": run.completed_at.isoformat() if run.completed_at else None,

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
-  ArrowLeft, CheckCircle, Download, Loader2, Star, XCircle, Clock, Share2, RefreshCw,
+  ArrowLeft, CheckCircle, CheckCircle2, Copy, Download, Loader2, Star, XCircle, Clock, Share2, RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -226,12 +226,18 @@ function ShareModal({ shareUrl, onClose }: { shareUrl: string; onClose: () => vo
         </div>
         <p className="text-sm text-ink-400">Anyone with this link can view the panel results (no login required).</p>
         <div className="flex items-center gap-2 bg-ink-800 border border-ink-700 rounded-lg px-3 py-2">
-          <span className="text-xs text-ink-300 flex-1 truncate">{fullUrl}</span>
+          <span className="text-xs text-ink-300 flex-1 truncate font-mono">{fullUrl}</span>
           <button
             onClick={copy}
-            className="shrink-0 text-xs font-medium px-2.5 py-1 rounded bg-naija-700 hover:bg-naija-600 text-naija-100 transition-colors"
+            className={`shrink-0 flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-all ${
+              copied
+                ? "bg-naija-700/60 text-naija-300 border border-naija-600/50"
+                : "bg-ink-700 hover:bg-ink-600 text-ink-200 border border-ink-600"
+            }`}
           >
-            {copied ? "Copied!" : "Copy"}
+            {copied
+              ? <><CheckCircle2 size={13} className="text-naija-400" /> Copied!</>
+              : <><Copy size={13} /> Copy</>}
           </button>
         </div>
       </div>
@@ -370,6 +376,21 @@ export default function RunResults() {
             )}
           </div>
         </div>
+
+        {/* Project description card */}
+        {run.project_description && (
+          <div className="bg-ink-900 border border-ink-800 rounded-xl px-5 py-4 space-y-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm font-semibold text-ink-100">{run.project_name}</p>
+              {run.project_category && (
+                <span className="text-xs px-2 py-0.5 rounded-md bg-ink-800 border border-ink-700 text-ink-400">
+                  {run.project_category}
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-ink-400 leading-relaxed">{run.project_description}</p>
+          </div>
+        )}
 
         {/* Live progress bar (shown while running) */}
         {isRunning && <LiveProgress completed={completed} total={total} projectName={run.project_name} />}

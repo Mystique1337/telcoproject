@@ -98,6 +98,8 @@ export interface RunDetail {
   id: string;
   project_id: string;
   project_name: string;
+  project_description?: string;
+  project_category?: string;
   status: "running" | "completed" | "failed";
   created_at: string;
   completed_at: string | null;
@@ -127,11 +129,6 @@ export interface DashboardStats {
   running_runs: number;
   avg_rating: number | null;
   total_personas_evaluated: number;
-  quota: {
-    used: number;
-    limit: number;
-    remaining: number;
-  };
 }
 
 export const getDashboardStats = () =>
