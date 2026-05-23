@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ShoppingBag, Brain, Languages, TrendingUp, Repeat, Star } from "lucide-react";
+import { ArrowRight, ShoppingBag, Brain, Languages, TrendingUp, Repeat, Star, Search, Sparkles, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import ShopEasy from "@/ShopEasy";
@@ -12,28 +12,6 @@ const STATS = [
   { value: "Real-time", label: "Persona adaptation", sub: "learns from every interaction" },
 ];
 
-const FEATURES = [
-  {
-    icon: Brain,
-    title: "Persona-aware recommendations",
-    body: "Each user's shopping behaviour is modelled across 4 cognitive dimensions. Recommendations are tuned to who they are, not just what they clicked.",
-  },
-  {
-    icon: Languages,
-    title: "Native language experience",
-    body: "Pidgin, Yoruba, Hausa, Igbo — users interact in their preferred language with Nigerian TTS voices that actually sound right.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Cross-encoder re-ranking",
-    body: "Pinecone retrieval narrows candidates, Cohere re-ranks by relevance, then persona-aware scoring surfaces the right product for the right person.",
-  },
-  {
-    icon: Repeat,
-    title: "Gets better over time",
-    body: "Personas are updated from purchase history and conversation. The more a user shops, the more accurate their recommendations become.",
-  },
-];
 
 const BUSINESS_VALUE = [
   {
@@ -138,19 +116,27 @@ export default function ShopEasyPage() {
         </section>
       )}
 
-      {/* Features */}
+      {/* How it works */}
       <section className="max-w-5xl mx-auto px-6 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">How it works</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {FEATURES.map(({ icon: Icon, title, body }) => (
-            <div key={title} className="bg-ink-900 border border-ink-800 rounded-xl p-6 space-y-3 hover:border-amber-700/40 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-amber-900/30 border border-amber-700/30 flex items-center justify-center">
-                <Icon size={20} className="text-amber-400" />
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            { icon: Search,       t: "Search any way",    d: "Type, snap a photo, talk, or just chat — in your language." },
+            { icon: Sparkles,     t: "We learn you",      d: "Tell us your area & taste once; recommendations get personal." },
+            { icon: ShoppingCart, t: "Order in clicks",   d: "Real prices, clear picks, pay on delivery." },
+          ].map(({ icon: Icon, t, d }) => (
+            <div key={t} className="bg-ink-900/40 border border-ink-800 rounded-2xl p-6">
+              <div className="w-10 h-10 rounded-xl bg-amber-600/20 border border-amber-700/40 text-amber-300 flex items-center justify-center mb-4">
+                <Icon size={18} />
               </div>
-              <h3 className="font-semibold text-ink-100">{title}</h3>
-              <p className="text-sm text-ink-400 leading-relaxed">{body}</p>
+              <h3 className="text-lg font-semibold text-ink-50">{t}</h3>
+              <p className="text-sm text-ink-400 mt-2 leading-relaxed">{d}</p>
             </div>
           ))}
+        </div>
+        <div className="mt-10 text-center">
+          <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-8 h-12 text-base" onClick={() => navigate("/signup")}>
+            Browse products <ArrowRight size={18} className="ml-2" />
+          </Button>
         </div>
       </section>
 
@@ -195,7 +181,7 @@ export default function ShopEasyPage() {
       </section>
 
       {/* CTA */}
-      <section className="max-w-4xl mx-auto px-6 py-20 text-center space-y-6">
+      <section className="max-w-4xl mx-auto px-6 py-16 text-center space-y-6">
         <h2 className="text-4xl font-bold">Start selling to Nigeria, not at it</h2>
         <p className="text-ink-400 text-lg max-w-xl mx-auto">
           Create an account and experience persona-aware shopping in your language.
@@ -212,6 +198,45 @@ export default function ShopEasyPage() {
           </Button>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="border-t border-ink-800">
+        <div className="max-w-5xl mx-auto px-6 py-12 grid md:grid-cols-4 gap-8">
+          <div className="md:col-span-2">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-7 h-7 rounded-lg bg-amber-600 flex items-center justify-center">
+                <ShoppingCart size={14} className="text-white" />
+              </div>
+              <span className="font-bold text-ink-50">ShopEasy</span>
+            </div>
+            <p className="text-sm text-ink-400 max-w-xs leading-relaxed">
+              AI shopping for the Nigerian market. Search by text, photo, voice or chat in 5 languages.
+            </p>
+          </div>
+          <div>
+            <div className="text-xs font-semibold text-ink-300 uppercase tracking-wider mb-3">Products</div>
+            <ul className="space-y-2 text-sm text-ink-400">
+              <li><button onClick={() => navigate("/products/shopeasy")} className="hover:text-amber-300 transition-colors">ShopEasy — Store</button></li>
+              <li><button onClick={() => navigate("/products/insidenaija")} className="hover:text-amber-300 transition-colors">InsideNaija — Panel</button></li>
+              <li><button onClick={() => navigate("/signup")} className="hover:text-amber-300 transition-colors">Get started free</button></li>
+            </ul>
+          </div>
+          <div>
+            <div className="text-xs font-semibold text-ink-300 uppercase tracking-wider mb-3">Platform</div>
+            <ul className="space-y-2 text-sm text-ink-400">
+              <li>5 Nigerian languages</li>
+              <li>Voice + photo search</li>
+              <li>Persona-aware AI</li>
+            </ul>
+          </div>
+        </div>
+        <div className="border-t border-ink-800/70">
+          <div className="max-w-5xl mx-auto px-6 py-5 text-xs text-ink-600 flex items-center justify-between flex-wrap gap-2">
+            <span>© 2026 Naija Persona. ShopEasy — AI shopping built for Nigeria.</span>
+            <span>Search by text, photo, voice or chat · 5 languages</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -703,31 +703,6 @@ function Home({ profile, onStart, onSignIn }:
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="max-w-6xl mx-auto px-6 py-14">
-        <div className="grid md:grid-cols-3 gap-6">
-          {steps.map((s) => (
-            <div key={s.t} className="bg-ink-900/40 border border-ink-800 rounded-2xl p-6">
-              <div className="w-10 h-10 rounded-xl bg-naija-600/20 border border-naija-700/40 text-naija-300 flex items-center justify-center mb-4">{s.icon}</div>
-              <h3 className="text-lg font-semibold text-ink-50">{s.t}</h3>
-              <p className="text-sm text-ink-400 mt-2 leading-relaxed">{s.d}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-10 text-center">
-          <button onClick={onStart}
-                  className="inline-flex items-center gap-2 bg-naija-600 hover:bg-naija-500 text-white font-semibold rounded-lg px-6 py-3 transition-colors">
-            Browse products <ArrowRight size={16} />
-          </button>
-        </div>
-      </section>
-
-      <footer className="border-t border-ink-800">
-        <div className="max-w-6xl mx-auto px-6 py-8 text-xs text-ink-500 flex items-center justify-between flex-wrap gap-3">
-          <span>ShopEasy - AI shopping for the Nigerian market.</span>
-          <span>Search by text, photo, voice or chat · 5 languages</span>
-        </div>
-      </footer>
     </div>
   );
 }
