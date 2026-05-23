@@ -148,3 +148,42 @@ export interface PanelPersona {
 
 export const getPanelPersonas = () =>
   fetch("/api/panel-personas").then((r) => r.json()) as Promise<PanelPersona[]>;
+
+// ── Analytics ────────────────────────────────────────────────────────────────
+
+export interface AnalyticsData {
+  top_products: {
+    project_name: string;
+    category: string;
+    avg_rating: number;
+    buy_likelihood: number;
+    n_personas: number;
+    run_id: string;
+  }[];
+  top_personas: {
+    persona_id: string;
+    persona_name: string;
+    positive_count: number;
+    total_reviews: number;
+    positive_rate: number;
+    avg_rating: number;
+  }[];
+  sentiment_distribution: Record<string, number>;
+  rating_distribution: Record<string, number>;
+  category_performance: {
+    category: string;
+    avg_rating: number;
+    avg_buy_likelihood: number;
+    n_runs: number;
+  }[];
+  register_performance: {
+    register: string;
+    avg_rating: number;
+    avg_buy_likelihood: number;
+  }[];
+  total_reviews: number;
+  total_completed_runs: number;
+}
+
+export const getAnalytics = () =>
+  request<AnalyticsData>("GET", "/api/analytics");
