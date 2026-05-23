@@ -20,6 +20,7 @@ import History from "@/pages/dashboard/History";
 import Personas from "@/pages/dashboard/Personas";
 import ShareView from "@/pages/ShareView";
 import Compare from "@/pages/dashboard/Compare";
+import ShopGate from "@/pages/ShopGate";
 
 // Existing product components (preserved from v1)
 import InsideNaija from "./InsideNaija";
@@ -77,7 +78,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 function ShopPage() {
   return (
     <ProtectedRoute>
-      <ShopEasy />
+      <ShopGate />
     </ProtectedRoute>
   );
 }
