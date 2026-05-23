@@ -18,6 +18,38 @@ async def _ensure_user(user_data: dict = Depends(get_current_user)) -> dict:
     return user_data
 
 
+@router.get("")
+async def list_runs(
+    user: dict = Depends(_ensure_user),
+) -> list[dict[str, Any]]:
+    """All runs for the current user across all projects, newest first."""
+    from app.db.repositories.insidenaija import PanelRunRepository as _RunRepo
+    project_svc = ProjectService()
+    run_repo = _RunRepo()
+
+    projects = project_svc.list_for_user(user["user_id"])
+    project_map = {str(p.id): p.name for p in projects}
+
+    all_runs = []
+    for p in projects:
+        for run in run_repo.find_all_for_project(str(p.id)):
+            agg = (run.meta or {}).get("aggregate") or {}
+            all_runs.append({
+                "id": str(run.id),
+                "project_id": str(run.project_id),
+                "project_name": project_map.get(str(run.project_id), "—"),
+                "status": run.status,
+                "created_at": run.created_at.isoformat(),
+                "completed_at": run.completed_at.isoformat() if run.completed_at else None,
+                "n_personas": agg.get("n_personas"),
+                "avg_rating": agg.get("avg_rating"),
+                "buy_likelihood": agg.get("buy_likelihood"),
+            })
+
+    all_runs.sort(key=lambda r: r["created_at"], reverse=True)
+    return all_runs
+
+
 @router.get("/{run_id}")
 async def get_run(
     run_id: str,

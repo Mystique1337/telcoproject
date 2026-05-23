@@ -16,6 +16,7 @@ import ShopEasyPage from "@/pages/products/ShopEasyPage";
 import Dashboard from "@/pages/dashboard/Dashboard";
 import NewProject from "@/pages/dashboard/NewProject";
 import RunResults from "@/pages/dashboard/RunResults";
+import History from "@/pages/dashboard/History";
 
 // Existing product components (preserved from v1)
 import InsideNaija from "./InsideNaija";
@@ -115,6 +116,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               element={
                 <ProtectedRoute>
                   <RunResults />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute>
+                  <History />
                 </ProtectedRoute>
               }
             />

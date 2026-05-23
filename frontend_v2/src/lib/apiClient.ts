@@ -102,3 +102,28 @@ export interface RunDetail {
 
 export const getRun = (runId: string) =>
   request<RunDetail>("GET", `/api/runs/${runId}`);
+
+export interface DashboardStats {
+  total_projects: number;
+  completed_runs: number;
+  running_runs: number;
+  avg_rating: number | null;
+  total_personas_evaluated: number;
+}
+
+export const getDashboardStats = () =>
+  request<DashboardStats>("GET", "/api/projects/stats");
+
+export interface RunSummary {
+  id: string;
+  project_id: string;
+  project_name: string;
+  status: "running" | "completed" | "failed";
+  created_at: string;
+  completed_at: string | null;
+  n_personas: number | null;
+  avg_rating: number | null;
+  buy_likelihood: number | null;
+}
+
+export const listRuns = () => request<RunSummary[]>("GET", "/api/runs");

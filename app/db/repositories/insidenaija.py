@@ -42,6 +42,19 @@ class PanelRunRepository(BaseRepository[PanelRun]):
                 session.expunge(row)
             return row
 
+    def find_all_for_project(self, project_id: str) -> list[PanelRun]:
+        pid = uuid.UUID(project_id)
+        with self.db.session() as session:
+            rows = (
+                session.query(PanelRun)
+                .filter(PanelRun.project_id == pid)
+                .order_by(desc(PanelRun.created_at))
+                .all()
+            )
+            for r in rows:
+                session.expunge(r)
+            return rows
+
 
 class ResultRepository(BaseRepository[Result]):
     model_class = Result

@@ -97,6 +97,40 @@ async def list_projects(
     return result
 
 
+@router.get("/stats")
+async def get_stats(
+    user: dict = Depends(_ensure_user),
+) -> dict[str, Any]:
+    from app.db.repositories.insidenaija import PanelRunRepository as _RunRepo
+    projects = ProjectService().list_for_user(user["user_id"])
+    run_repo = _RunRepo()
+
+    completed = running = total_personas = rated_runs = 0
+    total_rating = 0.0
+
+    for p in projects:
+        for run in run_repo.find_all_for_project(str(p.id)):
+            if run.status == "completed":
+                completed += 1
+                agg = (run.meta or {}).get("aggregate") or {}
+                n = agg.get("n_personas", 0)
+                r = agg.get("avg_rating")
+                total_personas += n
+                if r:
+                    total_rating += r
+                    rated_runs += 1
+            elif run.status == "running":
+                running += 1
+
+    return {
+        "total_projects": len(projects),
+        "completed_runs": completed,
+        "running_runs": running,
+        "avg_rating": round(total_rating / rated_runs, 2) if rated_runs else None,
+        "total_personas_evaluated": total_personas,
+    }
+
+
 @router.get("/{project_id}")
 async def get_project(
     project_id: str,

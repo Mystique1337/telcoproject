@@ -1,9 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Users, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import {
+  Plus, Users, CheckCircle, XCircle, Loader2,
+  Star, TrendingUp, Activity, BarChart3,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DashboardLayout from "@/components/DashboardLayout";
-import { listProjects, type ProjectSummary } from "@/lib/apiClient";
+import { listProjects, getDashboardStats, type ProjectSummary } from "@/lib/apiClient";
 
 const CATEGORY_COLORS: Record<string, string> = {
   fmcg: "text-naija-400 border-naija-700/50 bg-naija-900/20",
@@ -35,25 +38,18 @@ function ProjectCard({ project }: { project: ProjectSummary }) {
 
   return (
     <div
-      className="bg-ink-900 border border-ink-800 hover:border-naija-700/50 rounded-xl p-6 space-y-4 cursor-pointer transition-all group"
-      onClick={() =>
-        run ? navigate(`/runs/${run.id}`) : navigate(`/projects/${project.id}`)
-      }
+      className="bg-ink-900 border border-ink-800 hover:border-naija-700/50 rounded-xl p-5 space-y-4 cursor-pointer transition-all group"
+      onClick={() => run ? navigate(`/runs/${run.id}`) : navigate(`/projects/new`)}
     >
-      <div className="flex items-start justify-between">
-        <div className="space-y-1 flex-1 min-w-0">
-          <h3 className="font-semibold text-ink-50 group-hover:text-naija-300 transition-colors truncate">
-            {project.name}
-          </h3>
-          <p className="text-xs text-ink-500 line-clamp-2">{project.description}</p>
-        </div>
-        <span
-          className={`ml-3 shrink-0 text-xs font-medium px-2 py-0.5 rounded-full border ${categoryColor(project.category)}`}
-        >
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="font-semibold text-ink-50 group-hover:text-naija-300 transition-colors truncate">
+          {project.name}
+        </h3>
+        <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full border ${categoryColor(project.category)}`}>
           {project.category}
         </span>
       </div>
-
+      <p className="text-xs text-ink-500 line-clamp-2">{project.description}</p>
       <div className="flex items-center justify-between pt-2 border-t border-ink-800">
         {run ? (
           <span className="flex items-center gap-1.5 text-xs text-ink-400">
@@ -65,9 +61,7 @@ function ProjectCard({ project }: { project: ProjectSummary }) {
         )}
         <span className="text-xs text-ink-600">
           {new Date(project.created_at).toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
+            day: "numeric", month: "short", year: "numeric",
           })}
         </span>
       </div>
@@ -88,12 +82,8 @@ function EmptyState() {
           Create your first research project and run it through 24 Nigerian consumer personas in under 2 minutes.
         </p>
       </div>
-      <Button
-        className="bg-naija-600 hover:bg-naija-700 text-white"
-        onClick={() => navigate("/projects/new")}
-      >
-        <Plus size={16} className="mr-2" />
-        Run your first panel
+      <Button className="bg-naija-600 hover:bg-naija-700 text-white" onClick={() => navigate("/projects/new")}>
+        <Plus size={16} className="mr-2" /> Run your first panel
       </Button>
     </div>
   );
@@ -101,11 +91,54 @@ function EmptyState() {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { data: projects, isLoading, error } = useQuery({
+
+  const { data: projects, isLoading: projectsLoading, error } = useQuery({
     queryKey: ["projects"],
     queryFn: listProjects,
-    refetchInterval: 8000, // refresh so running panels update
+    refetchInterval: 8000,
   });
+
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ["dashboard-stats"],
+    queryFn: getDashboardStats,
+    refetchInterval: 10000,
+    enabled: !!(projects?.length),
+  });
+
+  const STAT_CARDS = [
+    {
+      label: "Total projects",
+      value: stats?.total_projects ?? projects?.length ?? "—",
+      icon: Users,
+      color: "text-naija-400",
+    },
+    {
+      label: "Completed runs",
+      value: stats?.completed_runs ?? "—",
+      icon: CheckCircle,
+      color: "text-naija-400",
+    },
+    {
+      label: "Running now",
+      value: stats?.running_runs ?? "—",
+      icon: Activity,
+      color: "text-amber-400",
+    },
+    {
+      label: "Avg rating",
+      value: stats?.avg_rating != null ? `${stats.avg_rating} / 5` : "—",
+      icon: Star,
+      color: "text-amber-400",
+    },
+    {
+      label: "Personas evaluated",
+      value: stats?.total_personas_evaluated != null
+        ? stats.total_personas_evaluated.toLocaleString()
+        : "—",
+      icon: BarChart3,
+      color: "text-blue-400",
+    },
+  ];
 
   return (
     <DashboardLayout>
@@ -116,51 +149,30 @@ export default function Dashboard() {
             <h1 className="text-2xl font-bold text-ink-50">InsideNaija</h1>
             <p className="text-sm text-ink-400 mt-0.5">Your research projects</p>
           </div>
-          <Button
-            className="bg-naija-600 hover:bg-naija-700 text-white"
-            onClick={() => navigate("/projects/new")}
-          >
-            <Plus size={16} className="mr-2" />
-            New project
+          <Button className="bg-naija-600 hover:bg-naija-700 text-white" onClick={() => navigate("/projects/new")}>
+            <Plus size={16} className="mr-2" /> New project
           </Button>
         </div>
 
-        {/* Stats bar */}
-        {projects && projects.length > 0 && (
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              {
-                label: "Total projects",
-                value: projects.length,
-                icon: Users,
-              },
-              {
-                label: "Completed runs",
-                value: projects.filter((p) => p.latest_run?.status === "completed").length,
-                icon: CheckCircle,
-              },
-              {
-                label: "Running now",
-                value: projects.filter((p) => p.latest_run?.status === "running").length,
-                icon: Clock,
-              },
-            ].map(({ label, value, icon: Icon }) => (
-              <div
-                key={label}
-                className="bg-ink-900 border border-ink-800 rounded-xl px-5 py-4 flex items-center gap-3"
-              >
-                <Icon size={18} className="text-naija-400 shrink-0" />
-                <div>
-                  <p className="text-xl font-bold text-ink-50">{value}</p>
+        {/* Stats */}
+        {(projects?.length ?? 0) > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {STAT_CARDS.map(({ label, value, icon: Icon, color }) => (
+              <div key={label} className="bg-ink-900 border border-ink-800 rounded-xl px-4 py-4 space-y-2">
+                <div className="flex items-center justify-between">
                   <p className="text-xs text-ink-500">{label}</p>
+                  <Icon size={14} className={color} />
                 </div>
+                <p className={`text-xl font-bold ${statsLoading ? "text-ink-700 animate-pulse" : "text-ink-50"}`}>
+                  {value}
+                </p>
               </div>
             ))}
           </div>
         )}
 
         {/* Content */}
-        {isLoading && (
+        {projectsLoading && (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={28} className="text-naija-400 animate-spin" />
           </div>
@@ -172,13 +184,16 @@ export default function Dashboard() {
           </div>
         )}
 
-        {!isLoading && !error && projects?.length === 0 && <EmptyState />}
+        {!projectsLoading && !error && projects?.length === 0 && <EmptyState />}
 
-        {!isLoading && !error && projects && projects.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {projects.map((p) => (
-              <ProjectCard key={p.id} project={p} />
-            ))}
+        {!projectsLoading && !error && projects && projects.length > 0 && (
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold text-ink-400 uppercase tracking-wider">
+              Recent projects
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {projects.map((p) => <ProjectCard key={p.id} project={p} />)}
+            </div>
           </div>
         )}
       </div>
