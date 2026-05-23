@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, Users, Globe, BarChart3, Zap,
-  TrendingUp, DollarSign, Clock, ShieldCheck, Package, Share2,
+  TrendingUp, DollarSign, Clock, ShieldCheck, Package, Share2, Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
@@ -156,6 +156,62 @@ export default function InsideNaijaPage() {
               <p className="text-sm text-ink-400 mt-2 leading-relaxed">{d}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Validated by Nigerians */}
+      <section className="relative overflow-hidden border-y border-ink-800/80">
+        <div className="absolute inset-0 bg-gradient-to-r from-naija-600/[0.07] via-transparent to-amber-500/[0.06] pointer-events-none" />
+        <div className="relative max-w-4xl mx-auto px-6 py-20 text-center">
+          <div className="text-xs font-semibold tracking-widest text-naija-400 uppercase mb-5">Validated by Nigerians</div>
+          <p className="text-2xl md:text-[2.1rem] leading-snug font-semibold text-ink-50 tracking-tight">
+            Nigerian readers rate our <span className="text-naija-300">8B local model</span> as authentic
+            as frontier AI — <span className="text-ink-300">a statistical tie at 48.5%</span> in blind A/B,
+            while frontier LLM judges (carrying a Western prior) under-rate it.
+          </p>
+          <div className="mt-8 flex items-center justify-center gap-8 text-sm flex-wrap">
+            <div><div className="text-3xl font-bold text-naija-300 tabular-nums">48.5%</div><div className="text-xs text-ink-400 mt-1">human win-rate vs Claude</div></div>
+            <div className="w-px h-10 bg-ink-700" />
+            <div><div className="text-3xl font-bold text-naija-300 tabular-nums">−15.5%</div><div className="text-xs text-ink-400 mt-1">rating-error vs frontier</div></div>
+            <div className="w-px h-10 bg-ink-700" />
+            <div><div className="text-3xl font-bold text-naija-300 tabular-nums">$0</div><div className="text-xs text-ink-400 mt-1">per call, runs local</div></div>
+          </div>
+        </div>
+      </section>
+
+      {/* Built for how Nigerians actually shop & speak */}
+      <section className="max-w-5xl mx-auto px-6 py-16">
+        <div className="grid lg:grid-cols-2 gap-8 items-center">
+          {/* Styled placeholder — mirrors the photo box in the demo */}
+          <div className="rounded-2xl min-h-[280px] border border-ink-800 bg-gradient-to-br from-naija-900/40 via-ink-900 to-amber-900/20 flex items-center justify-center">
+            <div className="text-center space-y-2 px-8">
+              <div className="text-5xl">🇳🇬</div>
+              <p className="text-sm text-ink-500">24 personas · 6 zones · 4 languages</p>
+            </div>
+          </div>
+          <div className="flex flex-col justify-center space-y-4">
+            <h2 className="text-2xl md:text-3xl font-bold text-ink-50 tracking-tight">
+              Built for how Nigerians actually shop &amp; speak
+            </h2>
+            <p className="text-ink-300 leading-relaxed">
+              Vanilla AI flattens "e too much abeg" into bland English and reads "Alhamdulillah" as a
+              complaint. InsideNaija is powered by{" "}
+              <span className="text-naija-300">NaijaReviewer-8B</span>, fine-tuned on Nigerian reviews,
+              so reactions land in the right register — Pidgin, Yorùbá, Hausa, Igbo — for every region,
+              age and faith.
+            </p>
+            <ul className="space-y-2.5">
+              {[
+                "Calibrated to 6 geopolitical zones",
+                "Predicts ratings within ±1.1★ on unseen products",
+                "Hear every reaction in a Nigerian voice",
+              ].map((x) => (
+                <li key={x} className="flex items-center gap-2.5 text-sm text-ink-200">
+                  <Check size={16} className="text-naija-400 shrink-0" /> {x}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 
