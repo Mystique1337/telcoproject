@@ -1,0 +1,78 @@
+{
+  "task1_user_modeling": {
+    "naija_reviewer_8b": {
+      "backbone": "lmstudio:naija-reviewer-8b",
+      "n_valid": 40,
+      "n_errors": 0,
+      "RMSE": 1.449137674618944,
+      "register_match_pct": 70.0,
+      "cultural_marker_recall": 0.35773809523809524,
+      "length_ratio_mean": 1.1758423127644912,
+      "BERTScore": {
+        "P": 0.8604001998901367,
+        "R": 0.8637932538986206,
+        "F1": 0.8620529174804688
+      },
+      "ROUGE": {
+        "rouge1": 0.37453877438228456,
+        "rouge2": 0.09562095957274441,
+        "rougeL": 0.218898514560333
+      },
+      "AgentSociety": {
+        "preference_estimation": 0.75,
+        "sentiment_error": 0.35653375,
+        "topic_error": 0.15531542030732282,
+        "emotion_error": 0.26546389896248,
+        "review_generation": 0.7668428776057186,
+        "overall_quality": 0.7584214388028593
+      }
+    },
+    "claude_sonnet_4": {
+      "backbone": "anthropic:claude-sonnet-4-20250514",
+      "n_valid": 40,
+      "n_errors": 0,
+      "RMSE": 1.5491933384829668,
+      "register_match_pct": 70.0,
+      "cultural_marker_recall": 0.2151785714285714,
+      "length_ratio_mean": 1.1901361426195218,
+      "BERTScore": {
+        "P": 0.8554369211196899,
+        "R": 0.8560541272163391,
+        "F1": 0.8556932210922241
+      },
+      "ROUGE": {
+        "rouge1": 0.3238444011065321,
+        "rouge2": 0.06730298052579818,
+        "rougeL": 0.18333111862104373
+      },
+      "AgentSociety": {
+        "preference_estimation": 0.75,
+        "sentiment_error": 0.27553625,
+        "topic_error": 0.18169408513110732,
+        "emotion_error": 0.24049924782593735,
+        "review_generation": 0.780144082977962,
+        "overall_quality": 0.765072041488981
+      }
+    }
+  },
+  "task2_recommendation": {
+    "claude_sonnet_4": {
+      "reranker": "anthropic:claude-sonnet-4-20250514",
+      "n_valid": 4,
+      "n_errors": 0,
+      "NDCG_at_10": 0.0,
+      "HR_at_1": 0.0,
+      "HR_at_3": 0.0,
+      "HR_at_5": 0.0
+    },
+    "naija_reviewer_8b": {
+      "reranker": "lmstudio:naija-reviewer-8b",
+      "n_valid": 4,
+      "n_errors": 0,
+      "NDCG_at_10": 0.0,
+      "HR_at_1": 0.0,
+      "HR_at_3": 0.0,
+      "HR_at_5": 0.0
+    }
+  }
+}

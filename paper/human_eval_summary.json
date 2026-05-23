@@ -1,0 +1,80 @@
+{
+  "n_raters": 5,
+  "raters": [
+    "Christianah",
+    "ENIOLA",
+    "SHARON",
+    "ashinze",
+    "esther"
+  ],
+  "n_pairs_in_master": 50,
+  "per_rater": {
+    "Christianah": {
+      "naija_wins": 18,
+      "claude_wins": 16,
+      "ties": 16,
+      "decisive": 34,
+      "naija_win_rate": 0.5294117647058824,
+      "naija_win_rate_ci95": [
+        0.3673644042005483,
+        0.6854874836688863
+      ]
+    },
+    "ENIOLA": {
+      "naija_wins": 19,
+      "claude_wins": 15,
+      "ties": 15,
+      "decisive": 34,
+      "naija_win_rate": 0.5588235294117647,
+      "naija_win_rate_ci95": [
+        0.3945361778918369,
+        0.7111675978470325
+      ]
+    },
+    "SHARON": {
+      "naija_wins": 2,
+      "claude_wins": 2,
+      "ties": 5,
+      "decisive": 4,
+      "naija_win_rate": 0.5,
+      "naija_win_rate_ci95": [
+        0.15003570882017148,
+        0.8499642911798285
+      ]
+    },
+    "ashinze": {
+      "naija_wins": 10,
+      "claude_wins": 10,
+      "ties": 2,
+      "decisive": 20,
+      "naija_win_rate": 0.5,
+      "naija_win_rate_ci95": [
+        0.2992949144298199,
+        0.7007050855701801
+      ]
+    },
+    "esther": {
+      "naija_wins": 16,
+      "claude_wins": 26,
+      "ties": 6,
+      "decisive": 42,
+      "naija_win_rate": 0.38095238095238093,
+      "naija_win_rate_ci95": [
+        0.24999520898785943,
+        0.5318623178000363
+      ]
+    }
+  },
+  "overall": {
+    "naija_wins": 65,
+    "claude_wins": 69,
+    "ties": 44,
+    "decisive_total": 134,
+    "naija_win_rate": 0.48507462686567165,
+    "naija_win_rate_ci95": [
+      0.40205569373979705,
+      0.5689254904600383
+    ],
+    "krippendorff_alpha_nominal": 0.08300433317284539
+  }
+}
