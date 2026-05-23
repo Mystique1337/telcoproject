@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Users, BarChart3, ShoppingBag, Cpu, FlaskConical } from "lucide-react";
+import { ArrowRight, Users, BarChart3, ShoppingBag, Cpu, FlaskConical, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/auth";
 import Navbar from "@/components/Navbar";
@@ -198,6 +198,14 @@ export default function Landing() {
           <button onClick={() => navigate("/products/shopeasy")} className="hover:text-ink-300">ShopEasy</button>
           <button onClick={() => navigate("/login")} className="hover:text-ink-300">Sign in</button>
           <button onClick={() => navigate("/lab")} className="hover:text-purple-400 text-purple-500">Labz ⚗️</button>
+          <a
+            href="https://github.com/Mystique1337/telcoproject"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1.5 hover:text-ink-300 transition-colors"
+          >
+            <Github size={15} /> GitHub
+          </a>
         </div>
       </footer>
     </div>
