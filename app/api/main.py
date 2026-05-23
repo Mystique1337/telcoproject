@@ -25,7 +25,7 @@ except ImportError:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import simulate_review, recommend, elicit, health, catalog, chat, tts, panel, shop, auth, b2b
+from app.api.routers import simulate_review, recommend, elicit, health, catalog, chat, tts, panel, shop, auth, b2b, projects, runs
 from app.config import get_settings
 
 settings = get_settings()
@@ -36,6 +36,18 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("starting %s v%s", settings.app_name, settings.app_version)
+    # Lightweight schema migration — adds columns that don't exist yet
+    try:
+        from sqlalchemy import text
+        from app.db.storage import DBStorage
+        db = DBStorage.get_instance()
+        with db.session() as session:
+            session.execute(text(
+                "ALTER TABLE panel_runs ADD COLUMN IF NOT EXISTS meta JSONB"
+            ))
+        logger.info("schema migration OK")
+    except Exception:
+        logger.warning("schema migration skipped (DB not reachable or already applied)")
     yield
     logger.info("shutting down %s", settings.app_name)
 
@@ -72,6 +84,8 @@ app.include_router(panel.router)
 app.include_router(shop.router)
 app.include_router(auth.router)
 app.include_router(b2b.router)
+app.include_router(projects.router)
+app.include_router(runs.router)
 
 
 # ── Static frontend (React build) ─────────────────────────────────────────
@@ -81,7 +95,7 @@ from pathlib import Path as _Path
 from fastapi.staticfiles import StaticFiles as _StaticFiles
 from fastapi.responses import FileResponse as _FileResponse
 
-_FRONTEND_DIST = _Path(__file__).resolve().parents[2] / "frontend" / "dist"
+_FRONTEND_DIST = _Path(__file__).resolve().parents[2] / "frontend_v2" / "dist"
 
 if _FRONTEND_DIST.exists() and (_FRONTEND_DIST / "index.html").exists():
     # Serve hashed asset files (/assets/*) directly.

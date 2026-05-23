@@ -75,6 +75,7 @@ class PanelRun(Base):
     status = Column(String, nullable=False, default="pending")
     model_used = Column(String, nullable=True)
     personas_used = Column(JSON, nullable=False, default=list)
+    meta = Column(JSON, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
 

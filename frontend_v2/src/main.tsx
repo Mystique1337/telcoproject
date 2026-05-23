@@ -13,6 +13,9 @@ import Signup from "@/pages/auth/Signup";
 import Landing from "@/pages/Landing";
 import InsideNaijaPage from "@/pages/products/InsideNaijaPage";
 import ShopEasyPage from "@/pages/products/ShopEasyPage";
+import Dashboard from "@/pages/dashboard/Dashboard";
+import NewProject from "@/pages/dashboard/NewProject";
+import RunResults from "@/pages/dashboard/RunResults";
 
 // Existing product components (preserved from v1)
 import InsideNaija from "./InsideNaija";
@@ -67,15 +70,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// Dashboard placeholder — will be replaced in Phase 4
-function Dashboard() {
-  return (
-    <ProtectedRoute>
-      <InsideNaija />
-    </ProtectedRoute>
-  );
-}
-
 function ShopPage() {
   return (
     <ProtectedRoute>
@@ -99,8 +93,33 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 
-            {/* Products */}
-            <Route path="/dashboard" element={<Dashboard />} />
+            {/* InsideNaija dashboard */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/projects/new"
+              element={
+                <ProtectedRoute>
+                  <NewProject />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/runs/:runId"
+              element={
+                <ProtectedRoute>
+                  <RunResults />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* ShopEasy */}
             <Route path="/shop" element={<ShopPage />} />
             <Route
               path="/b2b"
