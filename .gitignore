@@ -17,9 +17,6 @@ dist/
 venv/
 env/
 
-# Poetry
-poetry.toml
-
 # OS
 .DS_Store
 Thumbs.db
@@ -30,6 +27,7 @@ Thumbs.db
 .env.*.local
 *.pem
 *.key
+*.bak
 
 # IDE
 .vscode/
@@ -37,55 +35,51 @@ Thumbs.db
 *.swp
 *.swo
 
-# Data (large; tracked via DVC or HF Datasets later)
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs and runtime data
+*.log
+logs/
+data/profiles.db
+
+# Internal product docs (kept local only)
+PRD/
+.agents/
+.claude/
+
+# Frontend build artifacts (regenerable via `npm run build` in frontend_v2/)
+frontend_v2/node_modules/
+frontend_v2/dist/
+frontend_v2/tsconfig.tsbuildinfo
+
+# Large eval datasets (regenerable; small samples remain tracked)
 data/jumia_reviews/*.parquet
 data/jumia_reviews/*.csv
 data/jumia_reviews/raw/
 data/nollywood_reviews/raw/
 data/synthetic/raw/
 data/finetune/*.jsonl
-data/personas/*.db
 *.duckdb
 
-# Model artifacts (push to HuggingFace, not GitHub)
+# Local Chroma index (regenerable)
+chroma_db/
+*.chroma/
+
+# Model artifacts (published on HuggingFace, not in git)
 *.gguf
 *.safetensors
 *.bin
 *.pt
-finetuning/checkpoints/
-finetuning/runs/
-finetuning/wandb/
 
-# Logs
-*.log
-logs/
+# Excel lock files
+~$*.xlsx
 
-# Notebooks checkpoints
-.ipynb_checkpoints/
-
-# Streamlit
-.streamlit/secrets.toml
-
-# Jupyter
-.jupyter/
-
-# Chroma
-chroma_db/
-*.chroma/
-
-# Misc
-.coverage
-htmlcov/
-
-# Private docs — PRDs kept locally only, never pushed to GitHub
-PRD/
-
-# Local-only llama.cpp checkout (~500MB) — judges convert via HF Space "gguf-my-repo"
+# Local-only llama.cpp checkout
 llama.cpp/
 
-# Bulk Jumia product pull (6k+ JSONs, ~26MB) — regenerable via
-# `python scripts/pull_jumia_products.py`. The 6 curated demo products
-# remain tracked.
+# Bulk Jumia product pull (~6k JSONs, regenerable via scripts/pull_jumia_products.py).
+# Six curated demo products stay tracked.
 data/sample/products/*.json
 !data/sample/products/anikulapo_movie.json
 !data/sample/products/macbook_pro_m3.json
@@ -94,17 +88,7 @@ data/sample/products/*.json
 !data/sample/products/solar_inverter_3kva.json
 !data/sample/products/tecno_spark_10.json
 
-
-# Vite build output — regenerable via `cd frontend && npm run build`
-frontend/dist/
-frontend/node_modules/
-frontend/tsconfig.tsbuildinfo
-\[1_0]_\[TAM_ESCO_SKILLS_EXTRACTOR_V2].ipynb
-.env.bak
-
-# Runtime data + Excel temp/lock files
-data/profiles.db
-~$*.xlsx
-frontend_v2/node_modules/
-frontend_v2/dist/
-frontend_v2/tsconfig.tsbuildinfo
+# Paper build artifacts
+paper/dist/
+paper/_ziptmp/
+paper/auxil/

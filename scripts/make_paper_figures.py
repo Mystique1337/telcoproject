@@ -215,8 +215,10 @@ def fig_task_b_cohere():
 # 7. Task B - human contextual-relevance (mean relevance + win-rate)
 # --------------------------------------------------------------------------- #
 def fig_task_b_relevance():
+    # 3-rater pooled (Christianah, Uvere_Amarachi, ashinze): n=59 decisive,
+    # mean relevance NaijaReviewer 3.00 vs Claude 3.68 over 72 paired ratings.
     models = ["NaijaReviewer-8B", "Claude Sonnet 4"]
-    rel = [2.60, 3.40]
+    rel = [3.00, 3.68]
     fig, ax = plt.subplots(figsize=(4.7, 3.3))
     bars = ax.bar(models, rel, color=[NAIJA, GREY], width=0.55)
     for b, v in zip(bars, rel):
@@ -224,8 +226,8 @@ def fig_task_b_relevance():
                 fontweight="bold", fontsize=11)
     ax.set_ylabel("Mean relevance (1-5)")
     ax.set_ylim(0, 5)
-    ax.set_title("Human relevance: Claude's lists preferred\n"
-                 "(NaijaReviewer-8B win-rate 27.3%)", fontsize=10.5, color=DARK)
+    ax.set_title("Human relevance, 3-rater panel\n"
+                 "(NaijaReviewer-8B win-rate 25.4%)", fontsize=10.5, color=DARK)
     ax.grid(axis="y", color="#eeeeee")
     fig.savefig(OUT / "fig_task_b_relevance.pdf")
     plt.close(fig)

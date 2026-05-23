@@ -150,9 +150,9 @@ app.include_router(lab.router)
 app.include_router(debug_auth.router)
 
 
-# ── Static frontend (React build) ─────────────────────────────────────────
-# In production we serve the built React SPA from frontend/dist/.
-# In dev, run `npm run dev` in frontend/ — Vite proxies API calls back here.
+# Static frontend (React build).
+# In production the FastAPI service serves the built SPA from frontend_v2/dist/.
+# In dev, run `npm run dev` in frontend_v2/ and Vite proxies API calls back here.
 from pathlib import Path as _Path
 from fastapi.staticfiles import StaticFiles as _StaticFiles
 from fastapi.responses import FileResponse as _FileResponse
