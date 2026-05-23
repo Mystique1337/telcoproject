@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Github,
+  History,
   Info,
   Loader2,
   MessageSquare,
@@ -40,6 +41,13 @@ import type {
   SimulateReviewResponse,
   TraceNode,
 } from "./types";
+import { useAuthStore } from "@/store/auth";
+import {
+  saveLabExperiment,
+  listLabExperiments,
+  deleteLabExperiment,
+  type LabExperiment,
+} from "@/lib/apiClient";
 
 
 // =========================================================================
@@ -741,6 +749,7 @@ function TabReview({ personas }: { personas: Persona[] }) {
   const [errA, setErrA] = useState<string | null>(null);
   const [errB, setErrB] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const session = useAuthStore((s) => s.session);
 
   // Generation knobs (target rating + aspect + length + tone)
   const [knobs, setKnobs] = useState<GenerationKnobs>({
@@ -768,11 +777,33 @@ function TabReview({ personas }: { personas: Persona[] }) {
       target_language: knobs.target_language ?? undefined,
     };
     const callA = api.simulateReview({ ...baseOpts, backbone_override: modelA })
-                       .then((d) => setIterA([{ data: d }]))
+                       .then((d) => {
+                         setIterA([{ data: d }]);
+                         if (session) {
+                           saveLabExperiment({
+                             experiment_type: "review",
+                             product_title: product.title ?? product.product_id,
+                             persona_id: persona.user_id,
+                             rating: d.rating ?? undefined,
+                             result: d,
+                           }).catch(() => {});
+                         }
+                       })
                        .catch((e) => setErrA(String(e)));
     const callB = compare
       ? api.simulateReview({ ...baseOpts, backbone_override: modelB })
-            .then((d) => setIterB([{ data: d }]))
+            .then((d) => {
+              setIterB([{ data: d }]);
+              if (session) {
+                saveLabExperiment({
+                  experiment_type: "review",
+                  product_title: product.title ?? product.product_id,
+                  persona_id: persona.user_id,
+                  rating: d.rating ?? undefined,
+                  result: d,
+                }).catch(() => {});
+              }
+            })
             .catch((e) => setErrB(String(e)))
       : Promise.resolve();
     await Promise.all([callA, callB]);
@@ -992,6 +1023,7 @@ function TabRecommend({ personas }: { personas: Persona[] }) {
   const [data, setData] = useState<RecommendResponse | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const session = useAuthStore((s) => s.session);
 
   useEffect(() => { if (!persona && personas.length) setPersona(personas[0]); }, [personas]);
 
@@ -1005,6 +1037,17 @@ function TabRecommend({ personas }: { personas: Persona[] }) {
         persona: active, domain, k, reranker_override: model,
       });
       setData(resp);
+      if (session) {
+        const topTitle = resp.recommendations?.[0]?.title
+          ?? resp.recommendations?.[0]?.product_id
+          ?? domain;
+        saveLabExperiment({
+          experiment_type: "recommend",
+          product_title: topTitle,
+          persona_id: persona.user_id,
+          result: resp,
+        }).catch(() => {});
+      }
     } catch (e) {
       setErr(String(e));
     }
@@ -1302,14 +1345,180 @@ function ChatBubble({ msg }: { msg: ChatMessageItem }) {
 
 
 // =========================================================================
+// Tab: Experiment History
+// =========================================================================
+
+function TabExperiments() {
+  const session = useAuthStore((s) => s.session);
+  const [experiments, setExperiments] = useState<LabExperiment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!session) return;
+    setLoading(true);
+    setError(null);
+    listLabExperiments()
+      .then((data) => setExperiments(data))
+      .catch((e) => setError(String(e)))
+      .finally(() => setLoading(false));
+  }, [session]);
+
+  function toggleExpand(id: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  async function handleDelete(id: string) {
+    if (!window.confirm("Delete this experiment?")) return;
+    setDeleting((prev) => new Set(prev).add(id));
+    try {
+      await deleteLabExperiment(id);
+      setExperiments((prev) => prev.filter((e) => e.id !== id));
+    } catch {
+      // silently ignore
+    }
+    setDeleting((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }
+
+  if (!session) {
+    return (
+      <div className="card flex flex-col items-center gap-4 py-16 text-center">
+        <History size={40} className="text-ink-600"/>
+        <div className="text-ink-300 text-lg font-medium">Sign in to save and view your experiment history</div>
+        <div className="text-ink-500 text-sm">Your review and recommendation runs will be saved automatically once you're signed in.</div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="card flex items-center justify-center py-16">
+        <Spinner label="Loading experiment history..."/>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="card border-red-700 text-red-300 text-sm py-6 text-center">
+        Failed to load experiments: {error}
+      </div>
+    );
+  }
+
+  if (experiments.length === 0) {
+    return (
+      <div className="card flex flex-col items-center gap-4 py-16 text-center">
+        <History size={40} className="text-ink-600"/>
+        <div className="text-ink-300 text-lg font-medium">No experiments yet</div>
+        <div className="text-ink-500 text-sm">Run an experiment to see it saved here.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-ink-300 uppercase tracking-wider flex items-center gap-2">
+          <History size={14}/> {experiments.length} saved experiment{experiments.length !== 1 ? "s" : ""}
+        </h3>
+      </div>
+      {experiments.map((exp) => {
+        const isExpanded = expanded.has(exp.id);
+        const isDeleting = deleting.has(exp.id);
+        const date = new Date(exp.created_at).toLocaleString("en-GB", {
+          day: "2-digit", month: "short", year: "numeric",
+          hour: "2-digit", minute: "2-digit",
+        });
+        return (
+          <div key={exp.id} className="card border border-ink-800 bg-ink-900/40 space-y-3">
+            {/* Row header */}
+            <div className="flex items-start gap-3">
+              {/* Type badge */}
+              <span className={`flex-shrink-0 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                exp.experiment_type === "review"
+                  ? "bg-naija-900/40 text-naija-300 border-naija-700/50"
+                  : "bg-sky-900/40 text-sky-300 border-sky-700/50"
+              }`}>
+                {exp.experiment_type}
+              </span>
+
+              {/* Product name — click to expand */}
+              <button
+                className="flex-1 text-left text-sm font-medium text-ink-100 hover:text-naija-300 transition-colors leading-snug"
+                onClick={() => toggleExpand(exp.id)}
+                title="Click to expand result"
+              >
+                {exp.product_title}
+              </button>
+
+              {/* Meta: persona, rating, date */}
+              <div className="flex items-center gap-3 flex-shrink-0 ml-auto">
+                {exp.persona_id && (
+                  <span className="text-xs text-ink-400 hidden sm:inline">{exp.persona_id}</span>
+                )}
+                {exp.rating != null && (
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <Star key={n} size={11}
+                            className={n <= exp.rating! ? "fill-amber-400 text-amber-400" : "text-ink-700"}/>
+                    ))}
+                  </div>
+                )}
+                <span className="text-[10px] text-ink-500 whitespace-nowrap">{date}</span>
+                <button
+                  onClick={() => handleDelete(exp.id)}
+                  disabled={isDeleting}
+                  className="text-ink-500 hover:text-red-400 transition-colors disabled:opacity-40 flex-shrink-0"
+                  title="Delete experiment"
+                >
+                  {isDeleting ? <Loader2 size={13} className="animate-spin"/> : <Trash2 size={13}/>}
+                </button>
+              </div>
+            </div>
+
+            {/* Persona sub-row on mobile */}
+            {exp.persona_id && (
+              <div className="text-xs text-ink-500 sm:hidden">persona: {exp.persona_id}</div>
+            )}
+
+            {/* Expanded JSON result */}
+            {isExpanded && (
+              <div className="mt-1">
+                <div className="text-[10px] text-ink-500 uppercase tracking-wider mb-1.5">Full result</div>
+                <pre className="bg-ink-950 border border-ink-800 rounded-lg p-3 text-xs text-ink-300 overflow-x-scroll leading-relaxed max-h-80 overflow-y-auto">
+                  {JSON.stringify(exp.result, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+
+// =========================================================================
 // Root App
 // =========================================================================
 
-type TabKey = "review" | "recommend" | "multiturn";
+type TabKey = "review" | "recommend" | "multiturn" | "experiments";
 const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-  { key: "review",    label: "Simulate Review", icon: <Sparkles size={14}/> },
-  { key: "recommend", label: "Recommend",        icon: <Target size={14}/> },
-  { key: "multiturn", label: "Chat",             icon: <MessageSquare size={14}/> },
+  { key: "review",      label: "Simulate Review",  icon: <Sparkles size={14}/> },
+  { key: "recommend",   label: "Recommend",         icon: <Target size={14}/> },
+  { key: "multiturn",   label: "Chat",              icon: <MessageSquare size={14}/> },
+  { key: "experiments", label: "My Experiments",    icon: <History size={15}/> },
 ];
 
 export default function App() {
@@ -1389,9 +1598,10 @@ export default function App() {
             {personas.length} personas · {(productsTotal || 6657).toLocaleString()} products
           </div>
         </nav>
-        {tab === "review"    && <TabReview     personas={personas}/>}
-        {tab === "recommend" && <TabRecommend  personas={personas}/>}
-        {tab === "multiturn" && <TabChat       personas={personas}/>}
+        {tab === "review"      && <TabReview      personas={personas}/>}
+        {tab === "recommend"   && <TabRecommend   personas={personas}/>}
+        {tab === "multiturn"   && <TabChat         personas={personas}/>}
+        {tab === "experiments" && <TabExperiments/>}
       </main>
       <footer className="border-t border-ink-800 mt-12">
         <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between text-xs text-ink-500">

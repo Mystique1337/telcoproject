@@ -25,7 +25,7 @@ except ImportError:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import simulate_review, recommend, elicit, health, catalog, chat, tts, panel, shop, auth, b2b, projects, runs, debug_auth, panel_personas, analytics, share, compare, shopeasy_profile
+from app.api.routers import simulate_review, recommend, elicit, health, catalog, chat, tts, panel, shop, auth, b2b, projects, runs, debug_auth, panel_personas, analytics, share, compare, shopeasy_profile, lab
 from app.config import get_settings
 
 settings = get_settings()
@@ -74,6 +74,19 @@ async def lifespan(app: FastAPI):
                 "product_price FLOAT, "
                 "product_category TEXT, "
                 "added_at TIMESTAMP NOT NULL"
+                ")"
+            ))
+            session.execute(text(
+                "CREATE TABLE IF NOT EXISTS lab_experiments ("
+                "id UUID PRIMARY KEY, "
+                "user_id UUID REFERENCES users(id), "
+                "experiment_type TEXT NOT NULL, "
+                "product_title TEXT NOT NULL, "
+                "product_description TEXT, "
+                "persona_id TEXT, "
+                "rating INTEGER, "
+                "result JSONB, "
+                "created_at TIMESTAMP NOT NULL"
                 ")"
             ))
         logger.info("schema migration OK")
@@ -132,6 +145,7 @@ app.include_router(analytics.router)
 app.include_router(share.router)
 app.include_router(compare.router)
 app.include_router(shopeasy_profile.router)
+app.include_router(lab.router)
 app.include_router(debug_auth.router)
 
 

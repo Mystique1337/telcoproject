@@ -225,3 +225,21 @@ class ShopWishlist(Base):
     product_price = Column(Float, nullable=True)
     product_category = Column(String, nullable=True)
     added_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+# ---------------------------------------------------------------------------
+# NaijaPersona Labz — experiment history
+# ---------------------------------------------------------------------------
+
+class LabExperiment(Base):
+    __tablename__ = "lab_experiments"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    experiment_type = Column(String, nullable=False)  # "review" | "recommend"
+    product_title = Column(String, nullable=False)
+    product_description = Column(Text, nullable=True)
+    persona_id = Column(String, nullable=True)
+    rating = Column(Integer, nullable=True)  # extracted from result for quick display
+    result = Column(JSON, nullable=False)    # full API response
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)

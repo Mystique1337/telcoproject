@@ -363,3 +363,25 @@ export interface CompareResponse {
 
 export const compareRuns = (runA: string, runB: string) =>
   request<CompareResponse>("GET", `/api/compare?run_a=${runA}&run_b=${runB}`);
+
+// ── Lab experiments ───────────────────────────────────────────────────────────
+
+export interface LabExperiment {
+  id: string;
+  experiment_type: "review" | "recommend";
+  product_title: string;
+  product_description?: string;
+  persona_id?: string;
+  rating?: number;
+  created_at: string;
+  result: unknown;
+}
+
+export const saveLabExperiment = (payload: Omit<LabExperiment, "id" | "created_at">) =>
+  request<{ id: string }>("POST", "/api/lab/experiments", payload);
+
+export const listLabExperiments = () =>
+  request<LabExperiment[]>("GET", "/api/lab/experiments");
+
+export const deleteLabExperiment = (id: string) =>
+  request<void>("DELETE", `/api/lab/experiments/${id}`);
