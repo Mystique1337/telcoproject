@@ -1,10 +1,13 @@
 # Paper
 
-Place the final paper PDFs here:
+Final paper PDFs for the DSN X BCT LLM Agent Challenge submission:
 
-- `final_paper_a.pdf` - Task A (User Modelling and review generation)
-- `final_paper_b.pdf` - Task B (Persona-aware recommendation)
+- `USER_MODELLING_TASK.pdf` - Task A (User Modelling and review generation)
+- `RECOMMENDATION_PAPER.pdf` - Task B (Persona-aware recommendation)
 
-Everything else in this directory is evaluation evidence (results, human-eval
-inputs and outputs, LLM-judge votes, audit) referenced by both papers and
-re-runnable through the scripts under `scripts/`.
+Everything else in this directory is the supporting evaluation evidence
+referenced by both papers (Task A and Task B results, the 5-rater human-eval
+for review quality, the 3-rater human-eval for recommendation relevance,
+the multi-judge LLM-as-Judge votes, the audit report, and the ablation
+tables). All evaluation artefacts are re-runnable through the scripts in
+`scripts/`.

@@ -10,9 +10,10 @@ Sources, per PRD v4 §8 + 2026-05-16 data hunt findings:
      10,559 Nigerian Pidgin tweets with sentiment (CC-BY 4.0).
      Claude reframes each as a product review while preserving authentic Pidgin.
 
-  3. **Synthetic (~2k)** — NVIDIA NeMo Data Designer / Nemotron
-     Schema-conditioned: 5 personas × Jumia products × 4 register tiers × 5 ratings.
-     Config: finetuning/configs/nemo_synthetic.yaml.
+  3. **Synthetic (~2k)** - NVIDIA NeMo Data Designer / Nemotron
+     Schema-conditioned: 5 personas x Jumia products x 4 register tiers x 5 ratings.
+     The notebook pipeline (notebooks/01_build_corpus.ipynb) is the canonical
+     build path; this CLI is preserved for headless re-runs.
 
 Output: data/finetune/v1_{train,val,test}.jsonl  +  data/finetune/DATA_CARD.md
 Splits: 90 / 5 / 5, seed=42, stratified by register_tier and rating.
@@ -894,8 +895,8 @@ Each row is an instruction-tuning example:
 ## Use
 
 ```bash
-poetry run python finetuning/train_naija_reviewer.py \\
-    --config finetuning/configs/naija_reviewer_qlora.yaml
+Then fine-tune via the released Colab notebook:
+    notebooks/02_finetune.ipynb
 ```
 
 The trainer reads `data/finetune/v1_train.jsonl` (set in the YAML).

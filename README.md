@@ -5,8 +5,8 @@
 Submission to the **DSN X BCT LLM Agent Challenge**.
 
 - **Live app:** <https://switteefranca2-0--naijapersona-web.modal.run/>
-- **Paper, Task A (User Modelling):** `paper/final_paper_a.pdf`
-- **Paper, Task B (Recommendation):** `paper/final_paper_b.pdf`
+- **Paper, Task A (User Modelling):** `paper/USER_MODELLING_TASK.pdf`
+- **Paper, Task B (Recommendation):** `paper/RECOMMENDATION_PAPER.pdf`
 - **Model weights (GGUF):** <https://huggingface.co/Shinzmann/naija-reviewer-8b-v2-Q4_K_M-GGUF>
 - **Training corpus:** <https://huggingface.co/datasets/Shinzmann/npa-corpus-v1>
 
@@ -65,8 +65,8 @@ Visit <https://switteefranca2-0--naijapersona-web.modal.run/>. The Modal endpoin
 
 ### Read the papers
 Both PDFs are checked in:
-- `paper/final_paper_a.pdf` covers user modelling and review generation.
-- `paper/final_paper_b.pdf` covers persona-aware recommendation.
+- `paper/USER_MODELLING_TASK.pdf` covers user modelling and review generation.
+- `paper/RECOMMENDATION_PAPER.pdf` covers persona-aware recommendation.
 
 The `.tex` sources, `references.bib`, and figures are alongside them.
 
