@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
-import InsideNaija from "@/InsideNaija";
+import InsideNaija, { Hero as InsideNaijaHero } from "@/InsideNaija";
 
 const STATS = [
   { value: "48.5%", label: "Win rate vs Claude Sonnet", sub: "blind human evaluation" },
@@ -53,71 +53,17 @@ export default function InsideNaijaPage() {
   const [showDemo, setShowDemo] = useState(false);
   const demoRef = useRef<HTMLElement>(null);
 
-  function toggleDemo() {
-    const next = !showDemo;
-    setShowDemo(next);
-    if (next) {
-      // Small delay so the DOM renders the section before scrolling
-      setTimeout(() => {
-        demoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 60);
-    }
+  function showDemoAndScroll() {
+    setShowDemo(true);
+    setTimeout(() => demoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
   }
 
   return (
     <div className="min-h-screen bg-ink-950 text-ink-50">
       <Navbar />
 
-      {/* Live demo — sits above the hero, hidden until "See it live" is clicked */}
-      {showDemo && (
-        <section ref={demoRef} className="max-w-6xl mx-auto px-6 pt-6 pb-2">
-          <div className="border border-naija-700/40 rounded-2xl overflow-hidden">
-            <div className="bg-ink-900 border-b border-ink-800 px-6 py-3 flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-red-500/60" />
-              <span className="w-3 h-3 rounded-full bg-amber-500/60" />
-              <span className="w-3 h-3 rounded-full bg-naija-500/60" />
-              <span className="ml-3 text-xs text-ink-500">InsideNaija — live demo</span>
-              <button
-                onClick={toggleDemo}
-                className="ml-auto text-xs text-ink-500 hover:text-ink-200 transition-colors"
-              >
-                Hide ×
-              </button>
-            </div>
-            <InsideNaija />
-          </div>
-        </section>
-      )}
-
-      {/* Hero */}
-      <section className="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center space-y-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-naija-700/50 bg-naija-900/30 text-naija-400 text-sm">
-          <span className="w-2 h-2 rounded-full bg-naija-500 animate-pulse" />
-          B2B · Consumer Research
-        </div>
-
-        <h1 className="text-5xl sm:text-6xl font-bold leading-tight">
-          Know what Nigeria<br />
-          <span className="text-naija-500">really thinks</span>
-        </h1>
-
-        <p className="text-xl text-ink-300 max-w-2xl mx-auto leading-relaxed">
-          A synthetic panel of 24 Nigerian personas — built on a fine-tuned 8B model —
-          gives you structured, culturally-grounded feedback on any product in under 2 minutes.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button size="lg" className="bg-naija-600 hover:bg-naija-700 text-white px-8 h-12 text-base"
-            onClick={() => navigate("/signup")}>
-            Start for free <ArrowRight size={18} className="ml-2" />
-          </Button>
-          <Button size="lg" variant="outline"
-            className="border-ink-700 text-ink-200 hover:border-naija-600 h-12 text-base"
-            onClick={toggleDemo}>
-            {showDemo ? "Hide demo" : "See it live"}
-          </Button>
-        </div>
-      </section>
+      {/* Hero — from the live demo component */}
+      <InsideNaijaHero onTryItOwn={showDemoAndScroll} />
 
       {/* Stats */}
       <section className="max-w-5xl mx-auto px-6 pb-16">
@@ -131,6 +77,24 @@ export default function InsideNaijaPage() {
           ))}
         </div>
       </section>
+
+      {/* Live demo — below stats, hidden until triggered */}
+      {showDemo && (
+        <section ref={demoRef} className="max-w-6xl mx-auto px-6 pb-8">
+          <div className="border border-naija-700/40 rounded-2xl overflow-hidden">
+            <div className="bg-ink-900 border-b border-ink-800 px-6 py-3 flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-red-500/60" />
+              <span className="w-3 h-3 rounded-full bg-amber-500/60" />
+              <span className="w-3 h-3 rounded-full bg-naija-500/60" />
+              <span className="ml-3 text-xs text-ink-500">InsideNaija — live demo</span>
+              <button onClick={() => setShowDemo(false)} className="ml-auto text-xs text-ink-500 hover:text-ink-200 transition-colors">
+                Hide ×
+              </button>
+            </div>
+            <InsideNaija />
+          </div>
+        </section>
+      )}
 
       {/* From product to verdict */}
       <section className="max-w-5xl mx-auto px-6 py-16">

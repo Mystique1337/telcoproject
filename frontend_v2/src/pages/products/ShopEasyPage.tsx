@@ -58,33 +58,48 @@ export default function ShopEasyPage() {
     <div className="min-h-screen bg-ink-950 text-ink-50">
       <Navbar />
 
-      {/* Hero */}
-      <section className="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center space-y-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-700/50 bg-amber-900/20 text-amber-400 text-sm">
-          <ShoppingBag size={14} />
-          B2C · Nigerian E-Commerce
-        </div>
-
-        <h1 className="text-5xl sm:text-6xl font-bold leading-tight">
-          Shopping that speaks<br />
-          <span className="text-amber-400">your language</span>
-        </h1>
-
-        <p className="text-xl text-ink-300 max-w-2xl mx-auto leading-relaxed">
-          A persona-aware Nigerian storefront with AI recommendations tuned to
-          how Nigerians actually shop — across languages, regions, and cultural context.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-8 h-12 text-base"
-            onClick={() => navigate("/signup")}>
-            Try ShopEasy <ArrowRight size={18} className="ml-2" />
-          </Button>
-          <Button size="lg" variant="outline"
-            className="border-ink-700 text-ink-200 hover:border-amber-600 h-12 text-base"
-            onClick={() => setShowDemo((d) => !d)}>
-            {showDemo ? "Hide demo" : "See it live"}
-          </Button>
+      {/* Hero — ported from the ShopEasy demo Home component */}
+      <section className="relative overflow-hidden">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-amber-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative max-w-5xl mx-auto px-6 pt-20 pb-12 grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 text-xs font-medium text-amber-300 bg-amber-900/30 border border-amber-700/40 rounded-full px-3 py-1 mb-6">
+              <Sparkles size={13} /> Nigeria's AI shopping assistant
+            </div>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-ink-50 leading-[1.1] tracking-tight">
+              Shop smarter,{" "}
+              <span className="text-amber-400">the Naija way.</span>
+            </h1>
+            <p className="mt-5 text-lg text-ink-300 leading-relaxed max-w-lg">
+              Type it, snap it, say it, or just chat — in English, Pidgin, Yorùbá,
+              Hausa or Igbo. ShopEasy understands what you mean and recommends what
+              actually fits you.
+            </p>
+            <div className="mt-8 flex items-center gap-3 flex-wrap">
+              <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-6 h-12 text-base"
+                onClick={() => navigate("/signup")}>
+                Start shopping <ArrowRight size={16} className="ml-2" />
+              </Button>
+              <Button size="lg" variant="outline"
+                className="border-ink-700 text-ink-200 hover:border-amber-600 h-12"
+                onClick={() => setShowDemo((d) => !d)}>
+                {showDemo ? "Hide demo" : "See it live"}
+              </Button>
+            </div>
+            <div className="mt-8 flex items-center gap-6 text-xs text-ink-400 flex-wrap">
+              <span className="inline-flex items-center gap-1.5"><ShoppingCart size={13} /> Pay on delivery</span>
+              <span className="inline-flex items-center gap-1.5"><Sparkles size={13} /> Persona-aware AI</span>
+              <span className="inline-flex items-center gap-1.5"><ShoppingBag size={13} /> 5 languages</span>
+            </div>
+          </div>
+          {/* Photo placeholder — gradient box matching ShopEasy amber theme */}
+          <div className="rounded-2xl min-h-[320px] border border-amber-800/40 bg-gradient-to-br from-amber-900/30 via-ink-900 to-ink-950 items-center justify-center hidden lg:flex">
+            <div className="text-center space-y-2 px-8">
+              <div className="text-5xl">🛒</div>
+              <p className="text-sm text-ink-500">Search by text, photo or voice</p>
+              <p className="text-xs text-ink-700">English · Pidgin · Yorùbá · Hausa · Igbo</p>
+            </div>
+          </div>
         </div>
       </section>
 

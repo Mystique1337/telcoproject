@@ -150,7 +150,7 @@ const HERO_PRODUCT: Product = {
   domain: "jumia",
 };
 
-function Hero({ onTryItOwn }: { onTryItOwn: () => void }) {
+export function Hero({ onTryItOwn }: { onTryItOwn: () => void }) {
   const [running, setRunning] = useState(false);
   const [done, setDone] = useState(false);
   const [shown, setShown] = useState<PanelReaction[]>([]);
@@ -731,7 +731,6 @@ export default function InsideNaija() {
         </div>
       </header>
 
-      <Hero onTryItOwn={scrollToPanel} />
       <ValueStrip />
       <div ref={panelRef}><PanelApp /></div>
     </div>
