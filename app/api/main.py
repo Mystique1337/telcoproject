@@ -46,6 +46,36 @@ async def lifespan(app: FastAPI):
             session.execute(text("ALTER TABLE panel_runs ADD COLUMN IF NOT EXISTS share_token TEXT"))
             session.execute(text("ALTER TABLE personas ADD COLUMN IF NOT EXISTS location TEXT"))
             session.execute(text("ALTER TABLE personas ADD COLUMN IF NOT EXISTS display_name TEXT"))
+            session.execute(text(
+                "CREATE TABLE IF NOT EXISTS shop_orders ("
+                "id UUID PRIMARY KEY, "
+                "user_id UUID REFERENCES users(id), "
+                "status TEXT NOT NULL DEFAULT 'placed', "
+                "total_naira FLOAT NOT NULL, "
+                "created_at TIMESTAMP NOT NULL"
+                ")"
+            ))
+            session.execute(text(
+                "CREATE TABLE IF NOT EXISTS shop_order_items ("
+                "id UUID PRIMARY KEY, "
+                "order_id UUID REFERENCES shop_orders(id), "
+                "product_id TEXT NOT NULL, "
+                "product_title TEXT NOT NULL, "
+                "quantity INTEGER NOT NULL DEFAULT 1, "
+                "unit_price_naira FLOAT NOT NULL"
+                ")"
+            ))
+            session.execute(text(
+                "CREATE TABLE IF NOT EXISTS shop_wishlist ("
+                "id UUID PRIMARY KEY, "
+                "user_id UUID REFERENCES users(id), "
+                "product_id TEXT NOT NULL, "
+                "product_title TEXT NOT NULL, "
+                "product_price FLOAT, "
+                "product_category TEXT, "
+                "added_at TIMESTAMP NOT NULL"
+                ")"
+            ))
         logger.info("schema migration OK")
     except Exception:
         logger.warning("schema migration skipped (DB not reachable or already applied)")

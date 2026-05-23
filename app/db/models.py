@@ -180,3 +180,48 @@ class OrderItem(Base):
 
     order = relationship("Order", back_populates="order_items")
     product = relationship("Product", back_populates="order_items")
+
+
+# ---------------------------------------------------------------------------
+# ShopEasy — shop orders (string product IDs, no FK to products table)
+# ---------------------------------------------------------------------------
+
+class ShopOrder(Base):
+    __tablename__ = "shop_orders"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    status = Column(String, nullable=False, default="placed")
+    total_naira = Column(Float, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    items = relationship("ShopOrderItem", back_populates="order")
+
+
+class ShopOrderItem(Base):
+    __tablename__ = "shop_order_items"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    order_id = Column(UUID(as_uuid=True), ForeignKey("shop_orders.id"), nullable=False)
+    product_id = Column(String, nullable=False)   # string, no FK to products
+    product_title = Column(String, nullable=False)
+    quantity = Column(Integer, nullable=False, default=1)
+    unit_price_naira = Column(Float, nullable=False)
+
+    order = relationship("ShopOrder", back_populates="items")
+
+
+# ---------------------------------------------------------------------------
+# ShopEasy — wishlist
+# ---------------------------------------------------------------------------
+
+class ShopWishlist(Base):
+    __tablename__ = "shop_wishlist"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    product_id = Column(String, nullable=False)
+    product_title = Column(String, nullable=False)
+    product_price = Column(Float, nullable=True)
+    product_category = Column(String, nullable=True)
+    added_at = Column(DateTime, nullable=False, default=datetime.utcnow)

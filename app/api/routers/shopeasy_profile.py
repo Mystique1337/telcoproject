@@ -9,7 +9,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from app.db.models import Persona
+from app.db.models import Persona, ShopOrder, ShopOrderItem, ShopWishlist
 from app.db.repositories.shared import UserRepository
 from app.db.storage import DBStorage
 from app.middleware.auth import get_current_user
@@ -146,3 +146,164 @@ async def setup_profile(
         "location": persona.location,
         "register_tier": persona.register_tier,
     }
+
+
+# ── Orders ────────────────────────────────────────────────────────────────────
+
+class OrderItemIn(BaseModel):
+    product_id: str
+    product_title: str
+    quantity: int = 1
+    unit_price_naira: float
+
+
+class PlaceOrderRequest(BaseModel):
+    items: list[OrderItemIn]
+    total_naira: float
+
+
+@router.post("/orders")
+async def place_order(
+    req: PlaceOrderRequest,
+    user: dict = Depends(_ensure_user),
+) -> dict[str, Any]:
+    """Record a new shop order for the current user."""
+    uid = uuid.UUID(user["user_id"])
+    order_id = uuid.uuid4()
+    db = DBStorage.get_instance()
+    with db.session() as session:
+        order = ShopOrder(
+            id=order_id,
+            user_id=uid,
+            status="placed",
+            total_naira=req.total_naira,
+            created_at=datetime.utcnow(),
+        )
+        session.add(order)
+        for item in req.items:
+            session.add(ShopOrderItem(
+                id=uuid.uuid4(),
+                order_id=order_id,
+                product_id=item.product_id,
+                product_title=item.product_title,
+                quantity=item.quantity,
+                unit_price_naira=item.unit_price_naira,
+            ))
+        session.flush()
+    return {"order_id": str(order_id), "status": "placed"}
+
+
+@router.get("/orders")
+async def list_orders(user: dict = Depends(_ensure_user)) -> list[dict[str, Any]]:
+    """Return the user's shop orders (newest first)."""
+    uid = uuid.UUID(user["user_id"])
+    db = DBStorage.get_instance()
+    with db.session() as session:
+        orders = (
+            session.query(ShopOrder)
+            .filter(ShopOrder.user_id == uid)
+            .order_by(ShopOrder.created_at.desc())
+            .all()
+        )
+        result = []
+        for o in orders:
+            items = session.query(ShopOrderItem).filter(ShopOrderItem.order_id == o.id).all()
+            result.append({
+                "id": str(o.id),
+                "status": o.status,
+                "total_naira": o.total_naira,
+                "created_at": o.created_at.isoformat(),
+                "items": [
+                    {
+                        "product_id": i.product_id,
+                        "product_title": i.product_title,
+                        "quantity": i.quantity,
+                        "unit_price_naira": i.unit_price_naira,
+                    }
+                    for i in items
+                ],
+            })
+    return result
+
+
+# ── Wishlist ──────────────────────────────────────────────────────────────────
+
+class WishlistItemIn(BaseModel):
+    product_id: str
+    product_title: str
+    product_price: float | None = None
+    product_category: str | None = None
+
+
+@router.get("/wishlist")
+async def get_wishlist(user: dict = Depends(_ensure_user)) -> list[dict[str, Any]]:
+    """Return the user's wishlisted products."""
+    uid = uuid.UUID(user["user_id"])
+    db = DBStorage.get_instance()
+    with db.session() as session:
+        items = (
+            session.query(ShopWishlist)
+            .filter(ShopWishlist.user_id == uid)
+            .order_by(ShopWishlist.added_at.desc())
+            .all()
+        )
+        return [
+            {
+                "id": str(i.id),
+                "product_id": i.product_id,
+                "product_title": i.product_title,
+                "product_price": i.product_price,
+                "product_category": i.product_category,
+                "added_at": i.added_at.isoformat(),
+            }
+            for i in items
+        ]
+
+
+@router.post("/wishlist")
+async def add_to_wishlist(
+    req: WishlistItemIn,
+    user: dict = Depends(_ensure_user),
+) -> dict[str, Any]:
+    """Add a product to the user's wishlist (idempotent — skips duplicate)."""
+    uid = uuid.UUID(user["user_id"])
+    db = DBStorage.get_instance()
+    with db.session() as session:
+        existing = (
+            session.query(ShopWishlist)
+            .filter(ShopWishlist.user_id == uid, ShopWishlist.product_id == req.product_id)
+            .first()
+        )
+        if existing:
+            return {"id": str(existing.id), "product_id": req.product_id, "added": False}
+        item = ShopWishlist(
+            id=uuid.uuid4(),
+            user_id=uid,
+            product_id=req.product_id,
+            product_title=req.product_title,
+            product_price=req.product_price,
+            product_category=req.product_category,
+            added_at=datetime.utcnow(),
+        )
+        session.add(item)
+        session.flush()
+        return {"id": str(item.id), "product_id": req.product_id, "added": True}
+
+
+@router.delete("/wishlist/{product_id}")
+async def remove_from_wishlist(
+    product_id: str,
+    user: dict = Depends(_ensure_user),
+) -> dict[str, Any]:
+    """Remove a product from the user's wishlist."""
+    uid = uuid.UUID(user["user_id"])
+    db = DBStorage.get_instance()
+    with db.session() as session:
+        item = (
+            session.query(ShopWishlist)
+            .filter(ShopWishlist.user_id == uid, ShopWishlist.product_id == product_id)
+            .first()
+        )
+        if item:
+            session.delete(item)
+    return {"product_id": product_id, "removed": True}

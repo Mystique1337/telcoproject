@@ -4,9 +4,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  Baby, Camera, Check, Gamepad2, Headphones, Home as HomeIcon, ImageIcon, Laptop,
-  Loader2, MessageSquare, Music, Package, Search, Shirt, ShoppingBasket,
-  ShoppingCart, Smartphone, Sparkles, Send, Star, Users, X,
+  ArrowLeft, Baby, Camera, Check, Gamepad2, Headphones, Heart, Heart as HeartOutline,
+  History, Home as HomeIcon, ImageIcon, Laptop, Loader2, MessageSquare, Music,
+  Package, Search, Shirt, ShoppingBasket, ShoppingCart, Smartphone, Sparkles,
+  Send, Star, Users, X,
 } from "lucide-react";
 
 import { api } from "./api";
@@ -14,6 +15,18 @@ import { LanguageGate, type AppLang } from "./LanguageGate";
 import { Onboarding, loadProfile, type ShopProfile } from "./Onboarding";
 import { ArrowRight, LogIn, Mic, Sparkles as SparklesIcon } from "lucide-react";
 import type { ConversationTurn, PanelReaction, Persona, ShopProduct } from "./types";
+import {
+  getShopPersona,
+  setupShopPersona,
+  placeShopOrder,
+  listShopOrders,
+  getWishlist,
+  addToWishlist,
+  removeFromWishlist,
+  type ShopPersona,
+  type ShopOrder,
+  type ShopWishlistItem,
+} from "./lib/apiClient";
 
 // Compact switcher presenting the two products as separate, linkable apps.
 function ProductSwitcher({ current }: { current: "panel" | "shop" }) {
@@ -48,9 +61,6 @@ const T: Record<AppLang, Record<string, string>> = {
 };
 
 // ── Thumbnails ──────────────────────────────────────────────────────────────
-// The catalogue has no product images, so we render a clean, deterministic
-// category-icon tile (branded gradient + matching icon) instead of unreliable
-// keyword stock photos. Looks intentional and is always relevant to category.
 function hashNum(s: string): number {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 100000;
@@ -85,7 +95,6 @@ function iconFor(p: ShopProduct): typeof Package {
   return (CAT_ICON.find((c) => c.match.some((m) => hay.includes(m)))?.Icon) || Package;
 }
 
-// Module-level cache so the same product doesn't refetch its image across renders.
 const _imgCache = new Map<string, string | null>();
 
 function IconTile({ p, className, iconSize }: { p: ShopProduct; className: string; iconSize: number }) {
@@ -133,15 +142,31 @@ function StarsRow({ n }: { n: number }) {
   );
 }
 
-// Parse a description into spec bullets (split on common delimiters).
 function toSpecs(desc?: string): string[] {
   if (!desc) return [];
   return desc.split(/[•·,;\n]|\s-\s/).map((s) => s.trim()).filter((s) => s.length > 2).slice(0, 8);
 }
 
-// ── Product detail page (pics + specs + simulated reviews + order) ───────────
-function OrderPage({ p, t, onClose }:
-  { p: ShopProduct; t: Record<string, string>; onClose: () => void }) {
+// ── Bar component (for profile page) ────────────────────────────────────────
+function Bar({ label, value, leftLabel, rightLabel, color = "bg-amber-500" }:
+  { label: string; value: number; leftLabel?: string; rightLabel?: string; color?: string }) {
+  const pct = Math.round(value * 100);
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-xs text-ink-400">
+        <span>{leftLabel || label}</span>
+        {rightLabel && <span>{rightLabel}</span>}
+      </div>
+      <div className="h-2 bg-ink-800 rounded-full overflow-hidden">
+        <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+// ── Product detail page ───────────────────────────────────────────────────────
+function OrderPage({ p, t, onClose, hasSession }:
+  { p: ShopProduct; t: Record<string, string>; onClose: () => void; hasSession: boolean }) {
   const [qty, setQty] = useState(1);
   const [placed, setPlaced] = useState(false);
   const [tab, setTab] = useState<"specs" | "reviews">("specs");
@@ -150,7 +175,6 @@ function OrderPage({ p, t, onClose }:
   const [loadingR, setLoadingR] = useState(true);
   const specs = toSpecs(p.description);
 
-  // Pull a few simulated Nigerian reviews from the panel engine for this product.
   useEffect(() => {
     let cancelled = false;
     const ids = ["chinwe_owerri", "tunde_lagos", "aisha_kano", "blessing_warri", "kelechi_lagos"];
@@ -158,13 +182,32 @@ function OrderPage({ p, t, onClose }:
       product: { product_id: p.product_id, title: p.title, category: p.category || undefined,
                  price_naira: p.price_naira ?? undefined, description: p.description, domain: "jumia" },
       persona_ids: ids,
-      backbone_override: "anthropic:claude-sonnet-4-20250514",  // fast reviews for the click
+      backbone_override: "anthropic:claude-sonnet-4-20250514",
     }).then((r) => {
       if (cancelled) return;
       setReviews(r.reactions); setAvg(r.aggregate?.avg_rating ?? null); setLoadingR(false);
     }).catch(() => { if (!cancelled) setLoadingR(false); });
     return () => { cancelled = true; };
   }, [p.product_id]);
+
+  async function handlePlaceOrder() {
+    setPlaced(true);
+    if (hasSession) {
+      try {
+        await placeShopOrder({
+          items: [{
+            product_id: p.product_id,
+            product_title: p.title,
+            quantity: qty,
+            unit_price_naira: p.price_naira || 0,
+          }],
+          total_naira: (p.price_naira || 0) * qty,
+        });
+      } catch {
+        // order save is best-effort; don't block the UX
+      }
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto" onClick={onClose}>
@@ -183,9 +226,7 @@ function OrderPage({ p, t, onClose }:
         ) : (
           <>
             <div className="grid md:grid-cols-2">
-              {/* Pics */}
               <Thumb p={p} className="w-full h-72 md:h-full min-h-[18rem]" iconSize={64} />
-              {/* Summary + buy */}
               <div className="p-6 relative">
                 <button onClick={onClose} className="absolute top-4 right-4 text-ink-400 hover:text-ink-50"><X size={18} /></button>
                 <div className="text-[10px] uppercase tracking-wide text-ink-400">{(p.category || "").replace(/-/g, " ")}</div>
@@ -198,7 +239,11 @@ function OrderPage({ p, t, onClose }:
                   <Check size={11} className="text-amber-400" /> Sold by <span className="text-ink-200">{p.seller || "Verified ShopEasy Seller"}</span>
                 </div>
                 <div className="text-2xl font-bold text-amber-300 mt-3">{naira(p.price_naira)}</div>
-                {p.rationale && <div className="text-xs text-amber-300/90 italic mt-2">✓ {p.rationale}</div>}
+                {p.rationale && (
+                  <div className="text-xs text-amber-300/90 mt-2 bg-amber-900/20 border border-amber-700/30 rounded-md px-2 py-1">
+                    ✓ {p.rationale}
+                  </div>
+                )}
                 <div className="flex items-center gap-3 mt-5">
                   <span className="text-xs text-ink-400">{t.qty}</span>
                   <div className="flex items-center border border-ink-700 rounded-lg">
@@ -207,14 +252,13 @@ function OrderPage({ p, t, onClose }:
                     <button onClick={() => setQty(qty + 1)} className="px-3 py-1 text-ink-300 hover:text-ink-50">+</button>
                   </div>
                 </div>
-                <button onClick={() => setPlaced(true)}
+                <button onClick={handlePlaceOrder}
                         className="w-full mt-5 inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg py-3 transition-colors">
                   <ShoppingCart size={17} /> {t.place} · {naira((p.price_naira || 0) * qty)}
                 </button>
               </div>
             </div>
 
-            {/* Specs / Reviews tabs */}
             <div className="border-t border-ink-800 px-6 pt-4 pb-6">
               <div className="flex gap-4 border-b border-ink-800 mb-4">
                 <button onClick={() => setTab("specs")}
@@ -264,29 +308,44 @@ function OrderPage({ p, t, onClose }:
 }
 
 // ── Product card ──────────────────────────────────────────────────────────
-function Card({ p, t, onOpen }: { p: ShopProduct; t: Record<string, string>; onOpen: () => void }) {
+function Card({ p, t, onOpen, wishlisted, onToggleWishlist }:
+  { p: ShopProduct; t: Record<string, string>; onOpen: () => void; wishlisted: boolean; onToggleWishlist: () => void }) {
   return (
-    <button onClick={onOpen}
-            className="group text-left bg-ink-900/50 border border-ink-800 hover:border-amber-600/60 rounded-xl overflow-hidden transition-all hover:-translate-y-0.5">
-      <div className="relative aspect-square overflow-hidden">
-        <Thumb p={p} className="w-full h-full group-hover:scale-105 transition-transform duration-300" />
-        {p.category && (
-          <span className="absolute top-2 left-2 text-[10px] bg-black/60 text-ink-100 rounded px-1.5 py-0.5 capitalize">
-            {p.category.replace(/-/g, " ")}
-          </span>
-        )}
-      </div>
-      <div className="p-3">
-        <div className="text-sm text-ink-100 leading-snug line-clamp-2 min-h-[2.5rem]">{p.title}</div>
-        {p.rationale && (
-          <div className="text-[10px] text-amber-300/90 leading-snug mt-1 line-clamp-2 italic">✓ {p.rationale}</div>
-        )}
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-base font-bold text-amber-300">{naira(p.price_naira)}</span>
-          <span className="text-xs text-amber-400 group-hover:text-amber-300 inline-flex items-center gap-1">{t.order} →</span>
+    <div className="group text-left bg-ink-900/50 border border-ink-800 hover:border-amber-600/60 rounded-xl overflow-hidden transition-all hover:-translate-y-0.5 relative">
+      {/* Wishlist heart button */}
+      <button
+        onClick={(e) => { e.stopPropagation(); onToggleWishlist(); }}
+        className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center transition-colors hover:bg-black/70"
+        title={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+      >
+        <Heart
+          size={14}
+          className={wishlisted ? "fill-amber-400 text-amber-400" : "text-white/70"}
+        />
+      </button>
+      <button onClick={onOpen} className="w-full text-left">
+        <div className="relative aspect-square overflow-hidden">
+          <Thumb p={p} className="w-full h-full group-hover:scale-105 transition-transform duration-300" />
+          {p.category && (
+            <span className="absolute top-2 left-2 text-[10px] bg-black/60 text-ink-100 rounded px-1.5 py-0.5 capitalize">
+              {p.category.replace(/-/g, " ")}
+            </span>
+          )}
         </div>
-      </div>
-    </button>
+        <div className="p-3">
+          <div className="text-sm text-ink-100 leading-snug line-clamp-2 min-h-[2.5rem]">{p.title}</div>
+          {p.rationale && (
+            <div className="text-xs text-amber-300/90 leading-snug mt-1.5 line-clamp-2 bg-amber-900/20 border border-amber-700/30 rounded-md px-2 py-1">
+              ✓ {p.rationale}
+            </div>
+          )}
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-base font-bold text-amber-300">{naira(p.price_naira)}</span>
+            <span className="text-xs text-amber-400 group-hover:text-amber-300 inline-flex items-center gap-1">{t.order} →</span>
+          </div>
+        </div>
+      </button>
+    </div>
   );
 }
 
@@ -417,7 +476,7 @@ function ChatPanel({ lang, persona, onOpen }:
   );
 }
 
-// ── Voice input (browser Web Speech API) ────────────────────────────────────
+// ── Voice input ──────────────────────────────────────────────────────────────
 function useVoice(onResult: (text: string) => void) {
   const [listening, setListening] = useState(false);
   const recRef = useRef<any>(null);
@@ -437,13 +496,313 @@ function useVoice(onResult: (text: string) => void) {
   return { listening, toggle, supported };
 }
 
-// ── Store ───────────────────────────────────────────────────────────────────
-function Store({ lang, profile, onHome, onSignIn }:
-  { lang: AppLang; profile: ShopProfile | null; onHome: () => void; onSignIn: () => void }) {
+// ── Order History ─────────────────────────────────────────────────────────────
+function OrderHistory({ onBack }: { onBack: () => void }) {
+  const [orders, setOrders] = useState<ShopOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  useEffect(() => {
+    listShopOrders()
+      .then(setOrders)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-ink-950 text-ink-100">
+      <header className="sticky top-0 z-30 border-b border-ink-800 bg-ink-950/80 backdrop-blur-md">
+        <div className="max-w-3xl mx-auto px-6 py-3.5 flex items-center gap-3">
+          <button onClick={onBack} className="text-ink-400 hover:text-ink-50 p-1">
+            <ArrowLeft size={18} />
+          </button>
+          <div className="flex items-center gap-2">
+            <History size={16} className="text-amber-400" />
+            <span className="font-semibold text-ink-50">Order History</span>
+          </div>
+        </div>
+      </header>
+      <div className="max-w-3xl mx-auto px-6 py-8">
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <Loader2 size={24} className="animate-spin text-amber-400" />
+          </div>
+        ) : orders.length === 0 ? (
+          <div className="flex flex-col items-center py-20 text-ink-500">
+            <ShoppingCart size={40} className="mb-4 text-ink-700" />
+            <p className="text-sm">No orders yet. Start shopping!</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {orders.map((order) => (
+              <div key={order.id} className="bg-ink-900 border border-ink-800 rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setExpanded(expanded === order.id ? null : order.id)}
+                  className="w-full px-4 py-3 flex items-center justify-between text-left"
+                >
+                  <div>
+                    <div className="text-sm font-medium text-ink-100">
+                      {new Date(order.created_at).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
+                    </div>
+                    <div className="text-xs text-ink-400 mt-0.5">
+                      {order.items.length} item{order.items.length !== 1 ? "s" : ""} · {naira(order.total_naira)}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-900/40 border border-amber-700/50 text-amber-300 capitalize">
+                      {order.status}
+                    </span>
+                    <span className="text-ink-500 text-xs">{expanded === order.id ? "▲" : "▼"}</span>
+                  </div>
+                </button>
+                {expanded === order.id && (
+                  <div className="border-t border-ink-800 px-4 pb-4 pt-3 space-y-2">
+                    {order.items.map((item, i) => (
+                      <div key={i} className="flex items-center justify-between text-sm">
+                        <span className="text-ink-200 line-clamp-1">{item.product_title}</span>
+                        <span className="text-ink-400 text-xs ml-2 whitespace-nowrap">×{item.quantity} · {naira(item.unit_price_naira)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Wishlist Page ─────────────────────────────────────────────────────────────
+function WishlistPage({ onBack, onSignIn }: { onBack: () => void; onSignIn: () => void }) {
+  const hasSession = !!localStorage.getItem("shop_profile_id");
+  const [items, setItems] = useState<ShopWishlistItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!hasSession) { setLoading(false); return; }
+    getWishlist()
+      .then(setItems)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function remove(productId: string) {
+    setItems((prev) => prev.filter((i) => i.product_id !== productId));
+    try { await removeFromWishlist(productId); } catch { /* best-effort */ }
+  }
+
+  return (
+    <div className="min-h-screen bg-ink-950 text-ink-100">
+      <header className="sticky top-0 z-30 border-b border-ink-800 bg-ink-950/80 backdrop-blur-md">
+        <div className="max-w-3xl mx-auto px-6 py-3.5 flex items-center gap-3">
+          <button onClick={onBack} className="text-ink-400 hover:text-ink-50 p-1">
+            <ArrowLeft size={18} />
+          </button>
+          <div className="flex items-center gap-2">
+            <Heart size={16} className="text-amber-400" />
+            <span className="font-semibold text-ink-50">Wishlist</span>
+          </div>
+        </div>
+      </header>
+      <div className="max-w-3xl mx-auto px-6 py-8">
+        {!hasSession ? (
+          <div className="flex flex-col items-center py-20 text-ink-500">
+            <Heart size={40} className="mb-4 text-ink-700" />
+            <p className="text-sm mb-4">Sign in to save products to your wishlist.</p>
+            <button onClick={onSignIn} className="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2 rounded-lg text-sm font-medium">
+              Sign in
+            </button>
+          </div>
+        ) : loading ? (
+          <div className="flex justify-center py-16">
+            <Loader2 size={24} className="animate-spin text-amber-400" />
+          </div>
+        ) : items.length === 0 ? (
+          <div className="flex flex-col items-center py-20 text-ink-500">
+            <Heart size={40} className="mb-4 text-ink-700" />
+            <p className="text-sm">Your wishlist is empty. Heart a product to save it!</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {items.map((item) => (
+              <div key={item.id} className="bg-ink-900 border border-ink-800 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm text-ink-100 line-clamp-1 font-medium">{item.product_title}</div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {item.product_category && (
+                      <span className="text-[10px] text-ink-500 capitalize">{item.product_category.replace(/-/g, " ")}</span>
+                    )}
+                    {item.product_price && (
+                      <span className="text-xs font-bold text-amber-300">{naira(item.product_price)}</span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => remove(item.product_id)}
+                  className="flex-shrink-0 text-ink-500 hover:text-red-400 transition-colors p-1"
+                  title="Remove"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Profile Page ─────────────────────────────────────────────────────────────
+function ProfilePage({ profile, persona, onBack, onSignOut }:
+  { profile: ShopProfile | null; persona: ShopPersona | null; onBack: () => void; onSignOut: () => void }) {
+  const [editLang, setEditLang] = useState(persona?.language || "english");
+  const [editLoc, setEditLoc] = useState(persona?.location || "");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const aspectEntries = Object.entries(persona?.aspect_priority || {})
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5);
+
+  async function handleSave() {
+    if (!profile) return;
+    setSaving(true);
+    try {
+      await setupShopPersona({
+        display_name: profile.name,
+        language: editLang,
+        location: editLoc,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch { /* best-effort */ }
+    setSaving(false);
+  }
+
+  return (
+    <div className="min-h-screen bg-ink-950 text-ink-100">
+      <header className="sticky top-0 z-30 border-b border-ink-800 bg-ink-950/80 backdrop-blur-md">
+        <div className="max-w-2xl mx-auto px-6 py-3.5 flex items-center gap-3">
+          <button onClick={onBack} className="text-ink-400 hover:text-ink-50 p-1">
+            <ArrowLeft size={18} />
+          </button>
+          <span className="font-semibold text-ink-50">My Profile</span>
+        </div>
+      </header>
+      <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
+        {/* Avatar + basics */}
+        {profile && (
+          <div className="bg-ink-900 border border-ink-800 rounded-2xl p-5 flex items-center gap-4">
+            <img src={personaAvatar(profile.id)} alt="" className="w-16 h-16 rounded-full border-2 border-amber-600/50" />
+            <div>
+              <div className="text-lg font-bold text-ink-50">{profile.name}</div>
+              {persona && (
+                <>
+                  <div className="text-sm text-ink-300 mt-0.5">{persona.location} · {persona.language}</div>
+                  <div className="text-xs text-ink-500 mt-0.5 capitalize">{persona.register_tier?.replace(/_/g, " ")}</div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Cognitive dimensions */}
+        {persona && (
+          <div className="bg-ink-900 border border-ink-800 rounded-2xl p-5 space-y-4">
+            <div className="text-sm font-semibold text-ink-200 mb-3">Shopping style</div>
+            <Bar
+              label="Hedonic / Utilitarian"
+              leftLabel="Hedonic (emotional)"
+              rightLabel="Utilitarian (practical)"
+              value={persona.hedonic_utilitarian}
+              color="bg-amber-500"
+            />
+            <Bar
+              label="Individual / Communal"
+              leftLabel="Individual"
+              rightLabel="Communal"
+              value={1 - persona.communal_individual}
+              color="bg-sky-500"
+            />
+          </div>
+        )}
+
+        {/* Aspect priorities */}
+        {aspectEntries.length > 0 && (
+          <div className="bg-ink-900 border border-ink-800 rounded-2xl p-5 space-y-3">
+            <div className="text-sm font-semibold text-ink-200 mb-3">What you care about</div>
+            {aspectEntries.map(([key, val]) => (
+              <Bar
+                key={key}
+                label={key.replace(/_/g, " ")}
+                leftLabel={key.replace(/_/g, " ")}
+                value={val as number}
+                color="bg-emerald-500"
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Edit section */}
+        <div className="bg-ink-900 border border-ink-800 rounded-2xl p-5 space-y-4">
+          <div className="text-sm font-semibold text-ink-200">Edit preferences</div>
+          <div>
+            <label className="text-xs text-ink-400 block mb-1">Language</label>
+            <select
+              value={editLang}
+              onChange={(e) => setEditLang(e.target.value)}
+              className="w-full bg-ink-950 border border-ink-700 focus:border-amber-600 rounded-lg px-3 py-2 text-sm text-ink-100 outline-none"
+            >
+              {["english", "pidgin", "yoruba", "hausa", "igbo"].map((l) => (
+                <option key={l} value={l} className="capitalize">{l.charAt(0).toUpperCase() + l.slice(1)}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-ink-400 block mb-1">Location</label>
+            <input
+              value={editLoc}
+              onChange={(e) => setEditLoc(e.target.value)}
+              placeholder="e.g. Lagos, Kano, Enugu…"
+              className="w-full bg-ink-950 border border-ink-700 focus:border-amber-600 rounded-lg px-3 py-2 text-sm text-ink-100 outline-none"
+            />
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-semibold rounded-lg py-2.5 text-sm transition-colors inline-flex items-center justify-center gap-2"
+          >
+            {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <Check size={14} /> : null}
+            {saved ? "Saved!" : "Save changes"}
+          </button>
+        </div>
+
+        {/* Sign out */}
+        <button
+          onClick={onSignOut}
+          className="w-full bg-ink-900 border border-ink-800 hover:border-red-700/50 text-ink-400 hover:text-red-400 font-medium rounded-xl py-3 text-sm transition-colors"
+        >
+          Sign out
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Store ─────────────────────────────────────────────────────────────────────
+function Store({ lang, profile, shopPersona, onHome, onSignIn, onProfile, onOrders, onWishlist, initialCategory }:
+  {
+    lang: AppLang; profile: ShopProfile | null; shopPersona: ShopPersona | null;
+    onHome: () => void; onSignIn: () => void; onProfile: () => void;
+    onOrders: () => void; onWishlist: () => void; initialCategory?: string;
+  }) {
   const t = T[lang] ?? T.english;
   const ct = CT[lang] ?? CT.english;
   const [mode, setMode] = useState<"search" | "chat">("search");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialCategory || "");
   const [loading, setLoading] = useState(false);
   const [detected, setDetected] = useState<string | null>(null);
   const [products, setProducts] = useState<ShopProduct[]>([]);
@@ -451,12 +810,29 @@ function Store({ lang, profile, onHome, onSignIn }:
   const [open, setOpen] = useState<ShopProduct | null>(null);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [personaId, setPersonaId] = useState<string | null>(null);
+  const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
   const profileId = profile?.id ?? null;
+  const hasSession = !!localStorage.getItem("shop_profile_id");
 
   useEffect(() => {
     api.personas().then((r) => setPersonas(r.personas)).catch(() => {});
   }, []);
-  // Active persona for chat: logged-in profile takes precedence, else a chosen test persona.
+
+  // Load wishlist if signed in
+  useEffect(() => {
+    if (!hasSession) return;
+    getWishlist()
+      .then((items) => setWishlistIds(new Set(items.map((i) => i.product_id))))
+      .catch(() => {});
+  }, [hasSession]);
+
+  // Auto-search if initial category was provided
+  useEffect(() => {
+    if (initialCategory) {
+      runText(initialCategory);
+    }
+  }, []);
+
   const persona = profile?.persona ?? (personas.find((p) => p.user_id === personaId) || null);
   const voice = useVoice((text) => { setQuery(text); setTimeout(() => runText(text), 50); });
 
@@ -489,6 +865,40 @@ function Store({ lang, profile, onHome, onSignIn }:
     setLoading(false);
   }
 
+  async function toggleWishlist(p: ShopProduct) {
+    if (!hasSession) { onSignIn(); return; }
+    const wasWishlisted = wishlistIds.has(p.product_id);
+    // Optimistic update
+    setWishlistIds((prev) => {
+      const next = new Set(prev);
+      if (wasWishlisted) next.delete(p.product_id);
+      else next.add(p.product_id);
+      return next;
+    });
+    try {
+      if (wasWishlisted) {
+        await removeFromWishlist(p.product_id);
+      } else {
+        await addToWishlist({
+          product_id: p.product_id,
+          product_title: p.title,
+          product_price: p.price_naira,
+          product_category: p.category,
+        });
+      }
+    } catch {
+      // Revert on failure
+      setWishlistIds((prev) => {
+        const next = new Set(prev);
+        if (wasWishlisted) next.add(p.product_id);
+        else next.delete(p.product_id);
+        return next;
+      });
+    }
+  }
+
+  const wishlistCount = wishlistIds.size;
+
   return (
     <div className="min-h-screen bg-ink-950 text-ink-100">
       <header className="sticky top-0 z-30 border-b border-ink-800 bg-ink-950/80 backdrop-blur-md">
@@ -502,14 +912,27 @@ function Store({ lang, profile, onHome, onSignIn }:
           </div>
           <nav className="flex items-center gap-3 text-xs">
             <button onClick={onHome} className="text-ink-300 hover:text-ink-50">Home</button>
+            {hasSession && (
+              <button onClick={onOrders} className="text-ink-300 hover:text-ink-50 inline-flex items-center gap-1">
+                <History size={12} /> Orders
+              </button>
+            )}
+            <button onClick={onWishlist} className="text-ink-300 hover:text-ink-50 inline-flex items-center gap-1 relative">
+              <Heart size={12} /> Wishlist
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-amber-600 text-[9px] text-white flex items-center justify-center font-bold">
+                  {wishlistCount > 9 ? "9+" : wishlistCount}
+                </span>
+              )}
+            </button>
             <a href="#b2b" className="text-ink-300 hover:text-ink-50">For Business</a>
             <button onClick={() => { localStorage.removeItem("shopeasy_lang"); window.location.reload(); }}
                     className="text-ink-400 hover:text-ink-200 capitalize">{lang} ⌄</button>
             {profile ? (
-              <span className="inline-flex items-center gap-1.5 bg-ink-900 border border-ink-700 rounded-full pl-1 pr-3 py-1">
+              <button onClick={onProfile} className="inline-flex items-center gap-1.5 bg-ink-900 border border-ink-700 rounded-full pl-1 pr-3 py-1 hover:border-amber-600/60 transition-colors">
                 <img src={personaAvatar(profile.id)} alt="" className="w-5 h-5 rounded-full" />
                 <span className="text-ink-200">{profile.name}</span>
-              </span>
+              </button>
             ) : (
               <button onClick={onSignIn}
                       className="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg px-3 py-1.5 font-medium">
@@ -520,8 +943,18 @@ function Store({ lang, profile, onHome, onSignIn }:
         </div>
       </header>
 
+      {/* Persona pill (Feature 1a) */}
+      {shopPersona && (
+        <div className="max-w-6xl mx-auto px-6 pt-3 flex justify-end">
+          <span className="inline-flex items-center gap-1.5 bg-amber-900/30 border border-amber-700/40 rounded-full px-3 py-1 text-xs text-amber-300">
+            <SparklesIcon size={11} className="text-amber-400" />
+            Shopping as: {shopPersona.location} · {shopPersona.language.charAt(0).toUpperCase() + shopPersona.language.slice(1)}
+          </span>
+        </div>
+      )}
+
       {/* Mode toggle */}
-      <div className="max-w-3xl mx-auto px-6 pt-8 flex justify-center">
+      <div className="max-w-3xl mx-auto px-6 pt-6 flex justify-center">
         <div className="inline-flex bg-ink-900 border border-ink-700 rounded-lg p-1">
           <button onClick={() => setMode("search")}
                   className={`text-sm font-medium rounded-md px-4 py-1.5 inline-flex items-center gap-1.5 transition-colors ${mode === "search" ? "bg-amber-600 text-white" : "text-ink-300 hover:text-ink-50"}`}>
@@ -609,6 +1042,12 @@ function Store({ lang, profile, onHome, onSignIn }:
             <span className="text-ink-500">AI saw:</span> "{detected}"
           </div>
         )}
+        {/* Feature 1c: empty state with location/language hint */}
+        {!loading && products.length === 0 && !err && shopPersona && (
+          <div className="mt-4 text-xs text-ink-400">
+            Your recommendations are tuned to <span className="text-amber-300">{shopPersona.location}</span> · <span className="text-amber-300">{shopPersona.language}</span>
+          </div>
+        )}
       </section>
       )}
 
@@ -622,33 +1061,61 @@ function Store({ lang, profile, onHome, onSignIn }:
             <span className="text-sm">Finding the best products for you…</span>
           </div>
         )}
-        {!loading && products.length === 0 && !err && (
+        {!loading && products.length === 0 && !err && !shopPersona && (
           <div className="text-center py-16 text-ink-500 text-sm">{t.empty}</div>
         )}
         {!loading && products.length > 0 && (
           <>
             <h2 className="text-sm font-semibold text-ink-200 mb-4">{t.results} · {products.length}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {products.map((p) => <Card key={p.product_id} p={p} t={t} onOpen={() => setOpen(p)} />)}
+              {products.map((p) => (
+                <Card
+                  key={p.product_id}
+                  p={p}
+                  t={t}
+                  onOpen={() => setOpen(p)}
+                  wishlisted={wishlistIds.has(p.product_id)}
+                  onToggleWishlist={() => toggleWishlist(p)}
+                />
+              ))}
             </div>
           </>
         )}
       </section>
       )}
 
-      {open && <OrderPage p={open} t={t} onClose={() => setOpen(null)} />}
+      {open && (
+        <OrderPage
+          p={open}
+          t={t}
+          onClose={() => setOpen(null)}
+          hasSession={hasSession}
+        />
+      )}
     </div>
   );
 }
 
 // ── Home landing ─────────────────────────────────────────────────────────────
+const HOME_CATEGORIES = [
+  { label: "All", Icon: ShoppingCart, color: "text-amber-400", query: "trending" },
+  { label: "Phones", Icon: Smartphone, color: "text-sky-400", query: "phones" },
+  { label: "Fashion", Icon: Shirt, color: "text-pink-400", query: "fashion clothing" },
+  { label: "Beauty", Icon: Sparkles, color: "text-purple-400", query: "beauty cosmetics" },
+  { label: "Electronics", Icon: Headphones, color: "text-blue-400", query: "electronics" },
+  { label: "Food", Icon: ShoppingBasket, color: "text-lime-400", query: "food groceries" },
+  { label: "Home", Icon: HomeIcon, color: "text-orange-400", query: "home appliances" },
+  { label: "Gaming", Icon: Gamepad2, color: "text-violet-400", query: "gaming" },
+];
+
+const FEATURED = [
+  { label: "Latest Smartphones", gradient: "from-sky-600/30 to-sky-900/30", Icon: Smartphone },
+  { label: "Fashion Drops", gradient: "from-rose-600/30 to-rose-900/30", Icon: Shirt },
+  { label: "Best in Gaming", gradient: "from-violet-600/30 to-violet-900/30", Icon: Gamepad2 },
+];
+
 function Home({ profile, onStart, onSignIn }:
-  { profile: ShopProfile | null; onStart: () => void; onSignIn: () => void }) {
-  const steps = [
-    { icon: <Search size={18} />, t: "Search any way", d: "Type, snap a photo, talk, or just chat - in your language." },
-    { icon: <SparklesIcon size={18} />, t: "We learn you", d: "Tell us your area & taste once; recommendations get personal." },
-    { icon: <ShoppingCart size={18} />, t: "Order in clicks", d: "Real prices, clear picks, pay on delivery." },
-  ];
+  { profile: ShopProfile | null; onStart: (category?: string) => void; onSignIn: () => void }) {
   return (
     <div className="min-h-screen bg-ink-950 text-ink-100">
       <header className="sticky top-0 z-30 border-b border-ink-800 bg-ink-950/80 backdrop-blur-md">
@@ -661,7 +1128,7 @@ function Home({ profile, onStart, onSignIn }:
             <ProductSwitcher current="shop" />
           </div>
           <nav className="flex items-center gap-3 text-xs">
-            <button onClick={onStart} className="text-ink-300 hover:text-ink-50">Browse</button>
+            <button onClick={() => onStart()} className="text-ink-300 hover:text-ink-50">Browse</button>
             <a href="#b2b" className="text-ink-300 hover:text-ink-50">For Business</a>
             {profile
               ? <span className="inline-flex items-center gap-1.5 bg-ink-900 border border-ink-700 rounded-full pl-1 pr-3 py-1"><img src={personaAvatar(profile.id)} alt="" className="w-5 h-5 rounded-full" /><span className="text-ink-200">{profile.name}</span></span>
@@ -670,46 +1137,184 @@ function Home({ profile, onStart, onSignIn }:
         </div>
       </header>
 
+      <div className="max-w-4xl mx-auto px-6">
+        {/* Hero */}
+        <div className="pt-14 pb-10 text-center">
+          {profile ? (
+            <>
+              <div className="text-amber-300 text-sm font-medium mb-2">Welcome back, {profile.name}!</div>
+              <h1 className="text-4xl font-extrabold text-ink-50 tracking-tight">Ready to shop today?</h1>
+            </>
+          ) : (
+            <>
+              <h1 className="text-4xl font-extrabold text-ink-50 tracking-tight leading-tight">
+                Shop smarter,<br />
+                <span className="text-amber-400">the Naija way.</span>
+              </h1>
+              <p className="text-ink-400 mt-3 text-sm">AI recommendations tuned for Nigerian shoppers.</p>
+            </>
+          )}
+          <div className="mt-8 flex items-center justify-center gap-3 flex-wrap">
+            <button
+              onClick={() => onStart()}
+              className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl px-7 py-3 transition-colors"
+            >
+              <ShoppingCart size={17} /> Start shopping <ArrowRight size={15} />
+            </button>
+            {!profile && (
+              <button
+                onClick={onSignIn}
+                className="inline-flex items-center gap-2 bg-ink-900 border border-ink-700 hover:border-amber-600/60 text-ink-200 font-medium rounded-xl px-6 py-3 transition-colors"
+              >
+                Set up your profile
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Category tiles */}
+        <div className="pb-8">
+          <div className="text-xs font-semibold text-ink-400 uppercase tracking-widest mb-4">Shop by category</div>
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {HOME_CATEGORIES.map(({ label, Icon, color, query }) => (
+              <button
+                key={label}
+                onClick={() => onStart(query)}
+                className="flex-shrink-0 flex flex-col items-center justify-center gap-2 w-20 h-20 rounded-xl bg-ink-900 border border-ink-800 hover:border-amber-600/50 transition-all hover:-translate-y-0.5"
+              >
+                <Icon size={22} className={color} />
+                <span className="text-[11px] text-ink-300 font-medium">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Featured section */}
+        <div className="pb-10">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-sm font-semibold text-ink-200">Trending in Nigeria</div>
+            <button onClick={() => onStart()} className="text-xs text-amber-400 hover:text-amber-300">Browse all →</button>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {FEATURED.map(({ label, gradient, Icon }) => (
+              <button
+                key={label}
+                onClick={() => onStart(label)}
+                className={`bg-gradient-to-br ${gradient} rounded-xl p-4 border border-ink-800 hover:border-amber-600/40 transition-all hover:-translate-y-0.5 text-left`}
+              >
+                <Icon size={22} className="text-white/70 mb-3" strokeWidth={1.4} />
+                <div className="text-xs font-semibold text-ink-100 leading-snug">{label}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick stats */}
+        <div className="pb-12 flex items-center justify-center gap-4 flex-wrap">
+          {[
+            { label: "5 languages", desc: "Shop in your language" },
+            { label: "Persona-aware AI", desc: "Tailored to you" },
+            { label: "Pay on delivery", desc: "No upfront risk" },
+          ].map(({ label, desc }) => (
+            <div key={label} className="inline-flex items-center gap-2 bg-ink-900 border border-ink-800 rounded-full px-4 py-2">
+              <Check size={12} className="text-amber-400" />
+              <div>
+                <div className="text-xs font-semibold text-ink-100">{label}</div>
+                <div className="text-[10px] text-ink-500">{desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-function SectionPhotoShop({ q, className = "" }: { q: string; className?: string }) {
-  const [url, setUrl] = useState<string | null>(null);
-  useEffect(() => {
-    let c = false;
-    fetch(`/shop/photo?q=${encodeURIComponent(q)}`).then((r) => r.json())
-      .then((d) => { if (!c) setUrl(d.url || null); }).catch(() => {});
-    return () => { c = true; };
-  }, [q]);
-  return (
-    <div className={`relative overflow-hidden bg-ink-800 ${className}`}>
-      {url && <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />}
-      <div className="absolute inset-0 bg-gradient-to-tr from-black/60 to-transparent" />
-    </div>
-  );
-}
+// ── ShopApp state machine ─────────────────────────────────────────────────────
+type View = "home" | "store" | "profile" | "orders" | "wishlist";
 
 function ShopApp({ lang }: { lang: AppLang }) {
-  const [view, setView] = useState<"home" | "store">("store");
+  const [view, setView] = useState<View>("store");
   const [profile, setProfile] = useState<ShopProfile | null>(null);
+  const [shopPersona, setShopPersona] = useState<ShopPersona | null>(null);
   const [onboarding, setOnboarding] = useState(false);
+  const [storeCategory, setStoreCategory] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const p = loadProfile();
-    if (p) api.getProfile(p.id)
-      .then((r) => setProfile({ id: p.id, name: r.name, persona: r.persona }))
-      .catch(() => {});
+    if (p) {
+      api.getProfile(p.id)
+        .then((r) => setProfile({ id: p.id, name: r.name, persona: r.persona }))
+        .catch(() => {});
+    }
+    // Load DB-backed persona if signed in via Supabase
+    const hasSession = !!localStorage.getItem("shop_profile_id");
+    if (hasSession) {
+      getShopPersona().then(setShopPersona).catch(() => {});
+    }
   }, []);
 
+  function goStore(category?: string) {
+    setStoreCategory(category);
+    setView("store");
+  }
+
+  function handleSignOut() {
+    localStorage.removeItem("shop_profile_id");
+    localStorage.removeItem("shop_profile_name");
+    setProfile(null);
+    setShopPersona(null);
+    setView("home");
+  }
+
+  if (view === "home") {
+    return (
+      <>
+        <Home profile={profile} onStart={goStore} onSignIn={() => setOnboarding(true)} />
+        {onboarding && (
+          <Onboarding onClose={() => setOnboarding(false)}
+                      onDone={(p) => { setProfile(p); setOnboarding(false); setView("store"); }} />
+        )}
+      </>
+    );
+  }
+
+  if (view === "profile") {
+    return (
+      <ProfilePage
+        profile={profile}
+        persona={shopPersona}
+        onBack={() => setView("store")}
+        onSignOut={handleSignOut}
+      />
+    );
+  }
+
+  if (view === "orders") {
+    return <OrderHistory onBack={() => setView("store")} />;
+  }
+
+  if (view === "wishlist") {
+    return <WishlistPage onBack={() => setView("store")} onSignIn={() => setOnboarding(true)} />;
+  }
+
+  // view === "store"
   return (
     <>
-      {view === "home"
-        ? <Home profile={profile} onStart={() => setView("store")} onSignIn={() => setOnboarding(true)} />
-        : <Store lang={lang} profile={profile} onHome={() => setView("home")} onSignIn={() => setOnboarding(true)} />}
+      <Store
+        lang={lang}
+        profile={profile}
+        shopPersona={shopPersona}
+        onHome={() => setView("home")}
+        onSignIn={() => setOnboarding(true)}
+        onProfile={() => setView("profile")}
+        onOrders={() => setView("orders")}
+        onWishlist={() => setView("wishlist")}
+        initialCategory={storeCategory}
+      />
       {onboarding && (
         <Onboarding onClose={() => setOnboarding(false)}
-                    onDone={(p) => { setProfile(p); setOnboarding(false); setView("store"); }} />
+                    onDone={(p) => { setProfile(p); setOnboarding(false); }} />
       )}
     </>
   );

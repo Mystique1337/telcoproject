@@ -256,6 +256,55 @@ export const setupShopPersona = (payload: {
   location: string;
 }) => request<ShopPersona>("POST", "/api/shopeasy/profile", payload);
 
+// ── ShopEasy Orders ───────────────────────────────────────────────────────────
+
+export interface ShopOrderItem {
+  product_id: string;
+  product_title: string;
+  quantity: number;
+  unit_price_naira: number;
+}
+
+export interface ShopOrder {
+  id: string;
+  status: string;
+  total_naira: number;
+  created_at: string;
+  items: ShopOrderItem[];
+}
+
+export const placeShopOrder = (payload: {
+  items: ShopOrderItem[];
+  total_naira: number;
+}) => request<{ order_id: string; status: string }>("POST", "/api/shopeasy/orders", payload);
+
+export const listShopOrders = () =>
+  request<ShopOrder[]>("GET", "/api/shopeasy/orders");
+
+// ── ShopEasy Wishlist ─────────────────────────────────────────────────────────
+
+export interface ShopWishlistItem {
+  id: string;
+  product_id: string;
+  product_title: string;
+  product_price: number | null;
+  product_category: string | null;
+  added_at: string;
+}
+
+export const getWishlist = () =>
+  request<ShopWishlistItem[]>("GET", "/api/shopeasy/wishlist");
+
+export const addToWishlist = (payload: {
+  product_id: string;
+  product_title: string;
+  product_price?: number | null;
+  product_category?: string | null;
+}) => request<{ id: string; product_id: string; added: boolean }>("POST", "/api/shopeasy/wishlist", payload);
+
+export const removeFromWishlist = (productId: string) =>
+  request<{ product_id: string; removed: boolean }>("DELETE", `/api/shopeasy/wishlist/${productId}`);
+
 // ── Share ────────────────────────────────────────────────────────────────────
 
 export interface ShareResponse {
