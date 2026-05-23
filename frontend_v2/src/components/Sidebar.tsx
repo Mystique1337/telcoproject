@@ -6,6 +6,7 @@ import {
   ShoppingBag,
   LogOut,
   History,
+  Users,
   Menu,
   X,
   ChevronRight,
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
       { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
       { label: "New project", icon: Plus, href: "/projects/new", accent: true },
       { label: "History", icon: History, href: "/history" },
+      { label: "Personas", icon: Users, href: "/personas" },
     ],
   },
   {

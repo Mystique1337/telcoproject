@@ -127,3 +127,24 @@ export interface RunSummary {
 }
 
 export const listRuns = () => request<RunSummary[]>("GET", "/api/runs");
+
+// ── Panel personas ───────────────────────────────────────────────────────────
+
+export interface PanelPersona {
+  user_id: string;
+  demographics: {
+    age_range?: string;
+    location?: string;
+    occupation?: string;
+  };
+  hedonic_utilitarian: number;
+  communal_individual: number;
+  aspect_priority: Record<string, number>;
+  register_tier: string;
+  register_markers: string[];
+  register_confidence: number;
+  history_count: number;
+}
+
+export const getPanelPersonas = () =>
+  fetch("/api/panel-personas").then((r) => r.json()) as Promise<PanelPersona[]>;

@@ -25,7 +25,7 @@ except ImportError:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import simulate_review, recommend, elicit, health, catalog, chat, tts, panel, shop, auth, b2b, projects, runs, debug_auth
+from app.api.routers import simulate_review, recommend, elicit, health, catalog, chat, tts, panel, shop, auth, b2b, projects, runs, debug_auth, panel_personas
 from app.config import get_settings
 
 settings = get_settings()
@@ -86,6 +86,7 @@ app.include_router(auth.router)
 app.include_router(b2b.router)
 app.include_router(projects.router)
 app.include_router(runs.router)
+app.include_router(panel_personas.router)
 app.include_router(debug_auth.router)
 
 

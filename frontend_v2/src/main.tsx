@@ -17,6 +17,7 @@ import Dashboard from "@/pages/dashboard/Dashboard";
 import NewProject from "@/pages/dashboard/NewProject";
 import RunResults from "@/pages/dashboard/RunResults";
 import History from "@/pages/dashboard/History";
+import Personas from "@/pages/dashboard/Personas";
 
 // Existing product components (preserved from v1)
 import InsideNaija from "./InsideNaija";
@@ -124,6 +125,15 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               element={
                 <ProtectedRoute>
                   <History />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/personas"
+              element={
+                <ProtectedRoute>
+                  <Personas />
                 </ProtectedRoute>
               }
             />
