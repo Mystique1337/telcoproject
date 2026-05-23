@@ -65,6 +65,23 @@ export const listProjects = () =>
 export const createProject = (payload: CreateProjectPayload) =>
   request<CreateProjectResponse>("POST", "/api/projects", payload);
 
+export interface BulkProjectItem {
+  name: string;
+  description: string;
+  category: string;
+  image_url?: string;
+}
+
+export interface BulkProjectResult {
+  project_id: string;
+  run_id: string;
+  name: string;
+  status: string;
+}
+
+export const createProjectsBulk = (items: BulkProjectItem[]) =>
+  request<BulkProjectResult[]>("POST", "/api/projects/bulk", items);
+
 // ── Runs ────────────────────────────────────────────────────────────────────
 
 export interface PersonaResult {

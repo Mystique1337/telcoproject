@@ -97,6 +97,56 @@ async def list_projects(
     return result
 
 
+class BulkProjectItem(BaseModel):
+    name: str
+    description: str
+    category: str = "general"
+    image_url: str | None = None
+
+
+@router.post("/bulk")
+async def create_projects_bulk(
+    items: list[BulkProjectItem],
+    background_tasks: BackgroundTasks,
+    user: dict = Depends(_ensure_user),
+) -> list[dict[str, Any]]:
+    if not items:
+        return []
+    if len(items) > 25:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Max 25 projects per bulk import")
+
+    project_svc = ProjectService()
+    run_svc = PanelRunService()
+    results = []
+
+    for item in items:
+        project = project_svc.create(
+            user_id=user["user_id"],
+            name=item.name,
+            description=item.description,
+            category=item.category,
+            image_url=item.image_url,
+        )
+        run = run_svc.create_run(str(project.id))
+        product = ProductSchema(
+            product_id=str(uuid.uuid4()),
+            title=item.name,
+            description=item.description,
+            category=item.category,
+            metadata={"image_url": item.image_url} if item.image_url else {},
+        )
+        background_tasks.add_task(run_svc.execute_run, str(run.id), product)
+        results.append({
+            "project_id": str(project.id),
+            "run_id": str(run.id),
+            "name": item.name,
+            "status": "running",
+        })
+
+    return results
+
+
 @router.get("/stats")
 async def get_stats(
     user: dict = Depends(_ensure_user),
