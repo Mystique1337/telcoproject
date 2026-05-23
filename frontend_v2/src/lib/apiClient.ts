@@ -129,6 +129,18 @@ export interface RunSummary {
 
 export const listRuns = () => request<RunSummary[]>("GET", "/api/runs");
 
+export interface ActiveRun {
+  run_id: string;
+  project_id: string;
+  project_name: string;
+  project_category: string;
+  created_at: string;
+  completed: number;
+  total: number;
+}
+
+export const getActiveRuns = () => request<ActiveRun[]>("GET", "/api/runs/active");
+
 // ── Panel personas ───────────────────────────────────────────────────────────
 
 export interface PanelPersona {

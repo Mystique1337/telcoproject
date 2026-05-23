@@ -18,6 +18,40 @@ async def _ensure_user(user_data: dict = Depends(get_current_user)) -> dict:
     return user_data
 
 
+@router.get("/active")
+async def list_active_runs(
+    user: dict = Depends(_ensure_user),
+) -> list[dict[str, Any]]:
+    """Running panel runs with live progress — for the dashboard live strip."""
+    from app.db.repositories.insidenaija import PanelRunRepository as _RunRepo
+    from app.db.repositories.insidenaija import ResultRepository as _ResultRepo
+    project_svc = ProjectService()
+    run_repo = _RunRepo()
+    result_repo = _ResultRepo()
+
+    projects = project_svc.list_for_user(user["user_id"])
+    project_map = {str(p.id): p for p in projects}
+
+    active = []
+    for p in projects:
+        for run in run_repo.find_all_for_project(str(p.id)):
+            if run.status != "running":
+                continue
+            completed = len(result_repo.find_by_run(str(run.id)))
+            active.append({
+                "run_id": str(run.id),
+                "project_id": str(run.project_id),
+                "project_name": p.name,
+                "project_category": p.category,
+                "created_at": run.created_at.isoformat(),
+                "completed": completed,
+                "total": 24,
+            })
+
+    active.sort(key=lambda r: r["created_at"])
+    return active
+
+
 @router.get("")
 async def list_runs(
     user: dict = Depends(_ensure_user),

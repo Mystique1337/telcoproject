@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DashboardLayout from "@/components/DashboardLayout";
-import { getDashboardStats, getAnalytics } from "@/lib/apiClient";
+import { getDashboardStats, getAnalytics, getActiveRuns, type ActiveRun } from "@/lib/apiClient";
 
 // ── Colour palette ────────────────────────────────────────────────────────────
 
@@ -76,6 +76,79 @@ function SectionHeader({ title, sub }: { title: string; sub?: string }) {
     <div className="space-y-0.5">
       <h2 className="font-semibold text-ink-100">{title}</h2>
       {sub && <p className="text-xs text-ink-500">{sub}</p>}
+    </div>
+  );
+}
+
+// ── Running strip ─────────────────────────────────────────────────────────────
+
+function useElapsed(isoDate: string) {
+  const started = new Date(isoDate).getTime();
+  const now = Date.now();
+  const secs = Math.floor((now - started) / 1000);
+  if (secs < 60) return `${secs}s`;
+  return `${Math.floor(secs / 60)}m ${secs % 60}s`;
+}
+
+function RunningCard({ run }: { run: ActiveRun }) {
+  const navigate = useNavigate();
+  const pct = run.total > 0 ? Math.round((run.completed / run.total) * 100) : 0;
+  const elapsed = useElapsed(run.created_at);
+
+  return (
+    <div
+      onClick={() => navigate(`/runs/${run.run_id}`)}
+      className="w-56 shrink-0 bg-ink-900 border border-naija-700/40 hover:border-naija-500/60 rounded-xl p-4 cursor-pointer transition-all group space-y-3"
+    >
+      {/* Top row */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-ink-50 truncate group-hover:text-naija-300 transition-colors">
+            {run.project_name}
+          </p>
+          <p className="text-xs text-ink-600 mt-0.5">{run.project_category}</p>
+        </div>
+        <Loader2 size={14} className="text-naija-400 animate-spin shrink-0 mt-0.5" />
+      </div>
+
+      {/* Progress bar */}
+      <div className="space-y-1.5">
+        <div className="h-1.5 bg-ink-800 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-naija-600 rounded-full transition-all duration-700 ease-out"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <div className="flex items-center justify-between text-xs text-ink-500">
+          <span>
+            <span className="text-naija-400 font-semibold">{run.completed}</span>
+            <span className="text-ink-700">/{run.total}</span>
+            <span className="ml-1">personas</span>
+          </span>
+          <span className="text-ink-700">{elapsed}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RunningStrip({ runs }: { runs: ActiveRun[] }) {
+  if (runs.length === 0) return null;
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <span className="w-2 h-2 rounded-full bg-naija-500 animate-pulse" />
+        <h2 className="text-sm font-semibold text-ink-300">
+          Running now
+          <span className="ml-2 text-xs font-normal text-ink-600">
+            {runs.length} panel{runs.length !== 1 ? "s" : ""} in progress
+          </span>
+        </h2>
+      </div>
+      {/* Fixed-height scrollable horizontal strip */}
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+        {runs.map((r) => <RunningCard key={r.run_id} run={r} />)}
+      </div>
     </div>
   );
 }
@@ -152,6 +225,13 @@ export default function Dashboard() {
     refetchInterval: 15000,
   });
 
+  const { data: activeRuns = [] } = useQuery({
+    queryKey: ["active-runs"],
+    queryFn: getActiveRuns,
+    // Poll every 2s so the strip stays live; slow down when nothing running
+    refetchInterval: (q) => (q.state.data?.length ?? 0) > 0 ? 2000 : 10000,
+  });
+
   const { data: analytics, isLoading } = useQuery({
     queryKey: ["analytics"],
     queryFn: getAnalytics,
@@ -224,6 +304,9 @@ export default function Dashboard() {
             color="text-blue-400"
           />
         </div>
+
+        {/* Live running strip */}
+        <RunningStrip runs={activeRuns} />
 
         {/* Loading */}
         {isLoading && (
