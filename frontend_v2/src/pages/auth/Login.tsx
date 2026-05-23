@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Navbar from "@/components/Navbar";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -35,7 +36,9 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-ink-950">
+    <div className="min-h-screen bg-ink-950">
+      <Navbar />
+      <div className="flex items-center justify-center py-16 px-4">
       <Card className="w-full max-w-md bg-ink-900 border-ink-700">
         <CardHeader>
           <CardTitle className="text-ink-50">Sign in</CardTitle>
@@ -84,6 +87,7 @@ export default function Login() {
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
