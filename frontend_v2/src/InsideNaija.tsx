@@ -733,7 +733,6 @@ export default function InsideNaija() {
 
       <Hero onTryItOwn={scrollToPanel} />
       <ValueStrip />
-      <HowItWorks onTry={scrollToPanel} />
       <InsightBand />
       <WhySection />
       <div ref={panelRef}><PanelApp /></div>

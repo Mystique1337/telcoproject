@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, Users, Globe, BarChart3, Zap,
-  TrendingUp, DollarSign, Clock, ShieldCheck,
+  TrendingUp, DollarSign, Clock, ShieldCheck, Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
@@ -15,12 +15,6 @@ const STATS = [
   { value: "4×", label: "Smaller than frontier models", sub: "same quality, fraction of cost" },
 ];
 
-const HOW_IT_WORKS = [
-  { step: "01", title: "Describe your product", body: "Name, description, category. Upload an image if you have one." },
-  { step: "02", title: "Panel runs automatically", body: "24 personas evaluate your product from their unique cultural lens." },
-  { step: "03", title: "Read the room", body: "Sentiment breakdown, top themes, register distribution — all structured." },
-  { step: "04", title: "Export & share", body: "PDF report or CSV. Ready for your deck, your client, or your team." },
-];
 
 const BUSINESS_VALUE = [
   {
@@ -138,15 +132,27 @@ export default function InsideNaijaPage() {
         </div>
       </section>
 
-      {/* How it works */}
+      {/* From product to verdict */}
       <section className="max-w-5xl mx-auto px-6 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">How it works</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {HOW_IT_WORKS.map((h) => (
-            <div key={h.step} className="space-y-3">
-              <span className="text-4xl font-bold text-naija-700">{h.step}</span>
-              <h3 className="font-semibold text-ink-100">{h.title}</h3>
-              <p className="text-sm text-ink-400 leading-relaxed">{h.body}</p>
+        <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+          <h2 className="text-3xl font-bold text-ink-50 tracking-tight">From product to verdict in 90 seconds</h2>
+          <p className="text-ink-400">A traditional Nigerian panel study costs ₦5M and takes 6 weeks. InsideNaija simulates one instantly so you can kill bad ideas before they cost you.</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            { n: 1, icon: Package,   t: "Describe your product", d: "Title, price, a line of detail. Takes 20 seconds." },
+            { n: 2, icon: Users,     t: "The panel reacts",       d: "24 Nigerian personas across 6 zones rate it and write a real review in their own register." },
+            { n: 3, icon: BarChart3, t: "Read the verdict",       d: "Predicted rating, buy-likelihood, who's warm/cold, and the recurring praise & concerns." },
+          ].map(({ n, icon: Icon, t, d }) => (
+            <div key={n} className="bg-ink-900/40 border border-ink-800 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-naija-600/20 border border-naija-700/40 text-naija-300 flex items-center justify-center">
+                  <Icon size={20} />
+                </div>
+                <span className="text-xs text-ink-500 font-mono">STEP {n}</span>
+              </div>
+              <h3 className="text-lg font-semibold text-ink-50">{t}</h3>
+              <p className="text-sm text-ink-400 mt-2 leading-relaxed">{d}</p>
             </div>
           ))}
         </div>
