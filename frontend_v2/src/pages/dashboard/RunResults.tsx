@@ -208,14 +208,46 @@ function CohortTable({ data }: { data: Record<string, { n: number; avg_rating: n
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
+function copyToClipboard(text: string): Promise<void> {
+  // Modern clipboard API (requires HTTPS or localhost with secure context)
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text);
+  }
+  // Fallback for HTTP: create a temporary input, select all, execCommand
+  return new Promise((resolve, reject) => {
+    const el = document.createElement("input");
+    el.value = text;
+    el.style.cssText = "position:fixed;left:-9999px;top:-9999px;opacity:0";
+    document.body.appendChild(el);
+    el.focus();
+    el.select();
+    try {
+      const ok = document.execCommand("copy");
+      document.body.removeChild(el);
+      ok ? resolve() : reject(new Error("execCommand failed"));
+    } catch (err) {
+      document.body.removeChild(el);
+      reject(err);
+    }
+  });
+}
+
 function ShareModal({ shareUrl, onClose }: { shareUrl: string; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
   const fullUrl = `${window.location.origin}${shareUrl}`;
+
   function copy() {
-    navigator.clipboard.writeText(fullUrl).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+    copyToClipboard(fullUrl)
+      .then(() => {
+        setCopied(true);
+        setCopyFailed(false);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {
+        setCopyFailed(true);
+        setTimeout(() => setCopyFailed(false), 3000);
+      });
   }
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
@@ -226,20 +258,34 @@ function ShareModal({ shareUrl, onClose }: { shareUrl: string; onClose: () => vo
         </div>
         <p className="text-sm text-ink-400">Anyone with this link can view the panel results (no login required).</p>
         <div className="flex items-center gap-2 bg-ink-800 border border-ink-700 rounded-lg px-3 py-2">
-          <span className="text-xs text-ink-300 flex-1 truncate font-mono">{fullUrl}</span>
+          <input
+            readOnly
+            value={fullUrl}
+            onFocus={(e) => e.target.select()}
+            className="text-xs text-ink-300 flex-1 min-w-0 bg-transparent outline-none font-mono cursor-text"
+          />
           <button
             onClick={copy}
-            className={`shrink-0 flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-all ${
+            className={`shrink-0 flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-all whitespace-nowrap ${
               copied
                 ? "bg-naija-700/60 text-naija-300 border border-naija-600/50"
+                : copyFailed
+                ? "bg-red-900/30 text-red-400 border border-red-700/40"
                 : "bg-ink-700 hover:bg-ink-600 text-ink-200 border border-ink-600"
             }`}
           >
             {copied
               ? <><CheckCircle2 size={13} className="text-naija-400" /> Copied!</>
+              : copyFailed
+              ? <>Failed — select &amp; copy</>
               : <><Copy size={13} /> Copy</>}
           </button>
         </div>
+        {copyFailed && (
+          <p className="text-xs text-ink-600">
+            Click the URL to select it, then press Ctrl+C / ⌘C.
+          </p>
+        )}
       </div>
     </div>
   );
