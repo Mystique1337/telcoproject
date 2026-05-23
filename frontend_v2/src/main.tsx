@@ -165,15 +165,13 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <Route
               path="/lab"
               element={
-                <ProtectedRoute>
-                  <LanguageGate
-                    storageKey="lab_lang"
-                    title="NaijaPersona Lab"
-                    subtitle="Pick a default language for the developer console."
-                  >
-                    {() => <App />}
-                  </LanguageGate>
-                </ProtectedRoute>
+                <LanguageGate
+                  storageKey="lab_lang"
+                  title="NaijaPersona Labz"
+                  subtitle="Pick a language for the developer console."
+                >
+                  {() => <App />}
+                </LanguageGate>
               }
             />
 

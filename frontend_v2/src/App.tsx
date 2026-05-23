@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Activity,
   AlertCircle,
   AlertTriangle,
+  ArrowLeft,
   Bot,
   CheckCircle2,
   ChevronDown,
@@ -1348,8 +1350,21 @@ export default function App() {
       }).catch(() => {});
   }, []);
 
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-ink-950">
+      {/* Back bar */}
+      <div className="border-b border-ink-800 bg-ink-950/80 backdrop-blur sticky top-0 z-40 px-6 py-2 flex items-center gap-3">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1.5 text-sm text-ink-400 hover:text-ink-100 transition-colors"
+        >
+          <ArrowLeft size={15} /> Back
+        </button>
+        <span className="text-ink-700 text-xs">|</span>
+        <span className="text-xs text-ink-600">NaijaPersona Labz — developer console</span>
+      </div>
       <Header health={health}/>
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         <section>

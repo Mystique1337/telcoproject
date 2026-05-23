@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Moon, Sun, ChevronDown, ArrowRight } from "lucide-react";
+import { Moon, Sun, ChevronDown, ArrowRight, FlaskConical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/auth";
 
@@ -152,6 +152,16 @@ export default function Navbar() {
         >
           {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
         </button>
+
+        {/* Labz — ash tint, always visible */}
+        <Button
+          size="sm"
+          variant="outline"
+          className="border-ink-600 bg-ink-800/50 text-ink-400 hover:bg-ink-700 hover:text-ink-200 hover:border-ink-500"
+          onClick={() => navigate("/lab")}
+        >
+          <FlaskConical size={13} className="mr-1" /> Labz
+        </Button>
 
         {session ? (
           <>
