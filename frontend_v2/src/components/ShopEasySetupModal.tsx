@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Loader2, MapPin, ShoppingCart, ChevronDown } from "lucide-react";
-import { api } from "@/api";
+import { setupShopPersona } from "@/lib/apiClient";
 
 const LANGUAGES = [
   { value: "english", label: "English" },
@@ -19,7 +19,7 @@ const CITIES = [
 
 interface Props {
   userName: string;
-  onComplete: () => void;
+  onComplete: (persona: { display_name: string; language: string; location: string }) => void;
   onSkip: () => void;
 }
 
@@ -33,15 +33,12 @@ export default function ShopEasySetupModal({ userName, onComplete, onSkip }: Pro
     if (!location.trim()) { setError("Please enter your city or state."); return; }
     setSaving(true); setError("");
     try {
-      const r = await api.register({
-        name: userName,
-        location: location.trim(),
+      const persona = await setupShopPersona({
+        display_name: userName,
         language,
-        interests: [],
+        location: location.trim(),
       });
-      localStorage.setItem("shop_profile_id", r.profile_id);
-      localStorage.setItem("shop_profile_name", userName);
-      onComplete();
+      onComplete({ display_name: persona.display_name, language: persona.language, location: persona.location });
     } catch {
       setError("Something went wrong. Try again.");
       setSaving(false);
@@ -50,9 +47,8 @@ export default function ShopEasySetupModal({ userName, onComplete, onSkip }: Pro
 
   return (
     <div className="min-h-screen bg-ink-950 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Amber glow background */}
       <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 right-1/4 w-[400px] h-[400px] bg-amber-500/6 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative bg-ink-900 border border-amber-700/30 rounded-2xl max-w-md w-full p-8 shadow-2xl space-y-6">
         {/* Header */}
@@ -66,7 +62,6 @@ export default function ShopEasySetupModal({ userName, onComplete, onSkip }: Pro
           </div>
         </div>
 
-        {/* Welcome message */}
         <p className="text-sm text-ink-300 leading-relaxed">
           Hey <span className="text-amber-300 font-medium">{userName}</span>! You're already signed in.
           Two quick things so we can personalise your shopping experience.
@@ -103,10 +98,10 @@ export default function ShopEasySetupModal({ userName, onComplete, onSkip }: Pro
             onKeyDown={(e) => e.key === "Enter" && handleStart()}
             placeholder="e.g. Lagos, Kano, Abuja…"
             disabled={saving}
-            list="cities"
+            list="shopeasy-cities"
             className="w-full rounded-xl border border-ink-700 bg-ink-950 px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent disabled:opacity-50"
           />
-          <datalist id="cities">
+          <datalist id="shopeasy-cities">
             {CITIES.map((c) => <option key={c} value={c} />)}
           </datalist>
         </div>
@@ -117,7 +112,6 @@ export default function ShopEasySetupModal({ userName, onComplete, onSkip }: Pro
           </p>
         )}
 
-        {/* CTA */}
         <button
           onClick={handleStart}
           disabled={saving || !location.trim()}
@@ -125,7 +119,7 @@ export default function ShopEasySetupModal({ userName, onComplete, onSkip }: Pro
         >
           {saving
             ? <><Loader2 size={16} className="animate-spin" /> Setting up…</>
-            : <>Start shopping →</>}
+            : "Start shopping →"}
         </button>
 
         <button

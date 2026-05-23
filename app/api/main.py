@@ -25,7 +25,7 @@ except ImportError:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import simulate_review, recommend, elicit, health, catalog, chat, tts, panel, shop, auth, b2b, projects, runs, debug_auth, panel_personas, analytics, share, compare
+from app.api.routers import simulate_review, recommend, elicit, health, catalog, chat, tts, panel, shop, auth, b2b, projects, runs, debug_auth, panel_personas, analytics, share, compare, shopeasy_profile
 from app.config import get_settings
 
 settings = get_settings()
@@ -42,12 +42,10 @@ async def lifespan(app: FastAPI):
         from app.db.storage import DBStorage
         db = DBStorage.get_instance()
         with db.session() as session:
-            session.execute(text(
-                "ALTER TABLE panel_runs ADD COLUMN IF NOT EXISTS meta JSONB"
-            ))
-            session.execute(text(
-                "ALTER TABLE panel_runs ADD COLUMN IF NOT EXISTS share_token TEXT"
-            ))
+            session.execute(text("ALTER TABLE panel_runs ADD COLUMN IF NOT EXISTS meta JSONB"))
+            session.execute(text("ALTER TABLE panel_runs ADD COLUMN IF NOT EXISTS share_token TEXT"))
+            session.execute(text("ALTER TABLE personas ADD COLUMN IF NOT EXISTS location TEXT"))
+            session.execute(text("ALTER TABLE personas ADD COLUMN IF NOT EXISTS display_name TEXT"))
         logger.info("schema migration OK")
     except Exception:
         logger.warning("schema migration skipped (DB not reachable or already applied)")
@@ -93,6 +91,7 @@ app.include_router(panel_personas.router)
 app.include_router(analytics.router)
 app.include_router(share.router)
 app.include_router(compare.router)
+app.include_router(shopeasy_profile.router)
 app.include_router(debug_auth.router)
 
 

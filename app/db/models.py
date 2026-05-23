@@ -134,6 +134,8 @@ class Persona(Base):
     communal_individual = Column(Float, nullable=False, default=0.5)
     aspect_priority = Column(JSON, nullable=False, default=dict)
     language_preference = Column(String, nullable=False, default="english")
+    location = Column(String, nullable=True)
+    display_name = Column(String, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 

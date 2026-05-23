@@ -234,6 +234,28 @@ export interface AnalyticsData {
 export const getAnalytics = () =>
   request<AnalyticsData>("GET", "/api/analytics");
 
+// ── ShopEasy persona (DB-backed) ─────────────────────────────────────────────
+
+export interface ShopPersona {
+  user_id: string;
+  display_name: string;
+  language: string;
+  location: string;
+  register_tier: string;
+  hedonic_utilitarian: number;
+  communal_individual: number;
+  aspect_priority: Record<string, number>;
+}
+
+export const getShopPersona = () =>
+  request<ShopPersona>("GET", "/api/shopeasy/profile");
+
+export const setupShopPersona = (payload: {
+  display_name: string;
+  language: string;
+  location: string;
+}) => request<ShopPersona>("POST", "/api/shopeasy/profile", payload);
+
 // ── Share ────────────────────────────────────────────────────────────────────
 
 export interface ShareResponse {
