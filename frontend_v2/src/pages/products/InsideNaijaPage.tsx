@@ -292,8 +292,29 @@ export default function InsideNaijaPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="max-w-4xl mx-auto px-6 py-20 text-center space-y-6">
+      {/* Stop guessing — gradient CTA band */}
+      <section className="max-w-5xl mx-auto px-6 py-10">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-naija-700 via-naija-800 to-naija-900 p-10 md:p-14 text-center shadow-2xl">
+          <div className="absolute -top-24 -right-24 w-72 h-72 bg-naija-400/25 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-amber-400/15 rounded-full blur-3xl pointer-events-none" />
+          <h2 className="relative text-3xl md:text-4xl font-extrabold text-white tracking-tight max-w-2xl mx-auto leading-tight">
+            Stop guessing how Nigeria will react. Find out in 90 seconds.
+          </h2>
+          <p className="relative text-white/80 mt-4 max-w-xl mx-auto">
+            Run an unlimited synthetic panel free. No card, no setup — just drop a product.
+          </p>
+          <Button
+            size="lg"
+            className="relative mt-8 bg-white hover:bg-white/90 text-naija-800 font-bold px-8 h-12 text-base"
+            onClick={() => navigate("/signup")}
+          >
+            Run a free study <ArrowRight size={18} className="ml-2" />
+          </Button>
+        </div>
+      </section>
+
+      {/* Ready to run */}
+      <section className="max-w-4xl mx-auto px-6 py-16 text-center space-y-6">
         <h2 className="text-4xl font-bold">Ready to run your first panel?</h2>
         <p className="text-ink-400 text-lg max-w-xl mx-auto">
           Create an account, describe your product, and get results before your next meeting.
@@ -311,6 +332,44 @@ export default function InsideNaijaPage() {
         </div>
         <p className="text-sm text-ink-600">No credit card · Results in under 2 minutes</p>
       </section>
+
+      {/* Footer */}
+      <footer className="border-t border-ink-800">
+        <div className="max-w-5xl mx-auto px-6 py-12 grid md:grid-cols-4 gap-8">
+          <div className="md:col-span-2">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-7 h-7 rounded-lg bg-naija-600 flex items-center justify-center text-base">🇳🇬</div>
+              <span className="font-bold text-ink-50">InsideNaija</span>
+            </div>
+            <p className="text-sm text-ink-400 max-w-xs leading-relaxed">
+              The synthetic Nigerian customer panel. Predict how the market reacts before you launch —
+              across every region, register and religion.
+            </p>
+          </div>
+          <div>
+            <div className="text-xs font-semibold text-ink-300 uppercase tracking-wider mb-3">Products</div>
+            <ul className="space-y-2 text-sm text-ink-400">
+              <li><button onClick={() => navigate("/products/insidenaija")} className="hover:text-naija-300 transition-colors">InsideNaija — Panel</button></li>
+              <li><button onClick={() => navigate("/products/shopeasy")} className="hover:text-naija-300 transition-colors">ShopEasy — Shopping</button></li>
+              <li><button onClick={() => navigate("/signup")} className="hover:text-naija-300 transition-colors">Get started free</button></li>
+            </ul>
+          </div>
+          <div>
+            <div className="text-xs font-semibold text-ink-300 uppercase tracking-wider mb-3">Engine</div>
+            <ul className="space-y-2 text-sm text-ink-400">
+              <li>NaijaReviewer-8B</li>
+              <li>24 personas · 6 zones</li>
+              <li>5 languages + voice</li>
+            </ul>
+          </div>
+        </div>
+        <div className="border-t border-ink-800/70">
+          <div className="max-w-5xl mx-auto px-6 py-5 text-xs text-ink-600 flex items-center justify-between flex-wrap gap-2">
+            <span>© 2026 Naija Persona. Predicts reactions; complements human research, doesn't replace it.</span>
+            <span>Powered by NaijaReviewer-8B</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

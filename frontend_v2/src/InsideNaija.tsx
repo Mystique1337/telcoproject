@@ -734,44 +734,6 @@ export default function InsideNaija() {
       <Hero onTryItOwn={scrollToPanel} />
       <ValueStrip />
       <div ref={panelRef}><PanelApp /></div>
-      <ClosingCTA onTry={scrollToPanel} />
-
-      <footer className="border-t border-ink-800">
-        <div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-4 gap-8">
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-naija-500 to-naija-800 flex items-center justify-center text-base">🇳🇬</div>
-              <span className="font-bold text-ink-50">Inside<span className="brand-text">Naija</span></span>
-            </div>
-            <p className="text-sm text-ink-400 max-w-xs leading-relaxed">
-              The synthetic Nigerian customer panel. Predict how the market reacts
-              before you launch - across every region, register and religion.
-            </p>
-          </div>
-          <div>
-            <div className="text-xs font-semibold text-ink-300 uppercase tracking-wider mb-3">Products</div>
-            <ul className="space-y-2 text-sm text-ink-400">
-              <li><a href="#" className="hover:text-naija-300">InsideNaija - Panel</a></li>
-              <li><a href="#shopeasy" className="hover:text-naija-300">ShopEasy - Shopping</a></li>
-              <li><a href="#b2b" className="hover:text-naija-300">For Business</a></li>
-            </ul>
-          </div>
-          <div>
-            <div className="text-xs font-semibold text-ink-300 uppercase tracking-wider mb-3">Engine</div>
-            <ul className="space-y-2 text-sm text-ink-400">
-              <li>NaijaReviewer-8B</li>
-              <li>24 personas · 6 zones</li>
-              <li>5 languages + voice</li>
-            </ul>
-          </div>
-        </div>
-        <div className="border-t border-ink-800/70">
-          <div className="max-w-6xl mx-auto px-6 py-5 text-xs text-ink-500 flex items-center justify-between flex-wrap gap-2">
-            <span>© 2026 InsideNaija. Predicts reactions; complements human research, doesn't replace it.</span>
-            <span>Powered by NaijaReviewer-8B</span>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
