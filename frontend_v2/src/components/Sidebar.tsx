@@ -10,10 +10,19 @@ import {
   Menu,
   X,
   ChevronRight,
+  DoorOpen,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 
-const NAV_ITEMS = [
+type NavItemDef = {
+  label: string;
+  icon: React.ElementType;
+  href: string;
+  accent?: boolean;
+  shopeasy?: boolean;
+};
+
+const NAV_ITEMS: { section: string; color: string; items: NavItemDef[] }[] = [
   {
     section: "InsideNaija",
     color: "text-naija-400",
@@ -28,7 +37,7 @@ const NAV_ITEMS = [
     section: "ShopEasy",
     color: "text-amber-400",
     items: [
-      { label: "Store", icon: ShoppingBag, href: "/shop" },
+      { label: "Store", icon: ShoppingBag, href: "/shop", shopeasy: true },
     ],
   },
 ];
@@ -38,6 +47,7 @@ function NavItem({
   icon: Icon,
   href,
   accent,
+  shopeasy,
   active,
   onClick,
 }: {
@@ -45,9 +55,27 @@ function NavItem({
   icon: React.ElementType;
   href: string;
   accent?: boolean;
+  shopeasy?: boolean;
   active: boolean;
   onClick: () => void;
 }) {
+  if (shopeasy) {
+    return (
+      <button
+        onClick={onClick}
+        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all border ${
+          active
+            ? "bg-amber-900/50 border-amber-700/60 text-amber-200"
+            : "bg-amber-900/20 border-amber-700/30 text-amber-400 hover:bg-amber-900/40 hover:border-amber-600/50 hover:text-amber-300"
+        }`}
+      >
+        <Icon size={16} className="shrink-0" />
+        {label}
+        <DoorOpen size={14} className="ml-auto text-amber-500/70 shrink-0" />
+      </button>
+    );
+  }
+
   return (
     <button
       onClick={onClick}
