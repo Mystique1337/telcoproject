@@ -19,8 +19,8 @@ app = modal.App("naijapersona")
 image = (
     modal.Image.debian_slim(python_version="3.11")
     .apt_install("git", "libpq-dev", "gcc")
-    # Copy requirements first, then install — avoids path resolution issues
-    .add_local_file("requirements.txt", "/tmp/requirements.txt")
+    # copy=True bakes the file into the image at build time so run_commands can use it
+    .add_local_file("requirements.txt", "/tmp/requirements.txt", copy=True)
     .run_commands("pip install --no-cache-dir -r /tmp/requirements.txt")
     # App source, static data, and built React frontend
     .add_local_dir("app",              remote_path="/app/app")
