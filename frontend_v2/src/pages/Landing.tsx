@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Users, BarChart3, ShoppingBag, Cpu } from "lucide-react";
+import { ArrowRight, Users, BarChart3, ShoppingBag, Cpu, FlaskConical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/auth";
 import Navbar from "@/components/Navbar";
@@ -97,6 +97,11 @@ export default function Landing() {
               </Button>
             </>
           )}
+          <Button size="lg" variant="outline"
+            className="border-purple-700/50 text-purple-300 hover:border-purple-500 hover:bg-purple-900/20 h-12 text-base"
+            onClick={() => navigate("/lab")}>
+            <FlaskConical size={16} className="mr-2" /> Labz
+          </Button>
         </div>
       </section>
 
@@ -192,6 +197,7 @@ export default function Landing() {
           <button onClick={() => navigate("/products/insidenaija")} className="hover:text-ink-300">InsideNaija</button>
           <button onClick={() => navigate("/products/shopeasy")} className="hover:text-ink-300">ShopEasy</button>
           <button onClick={() => navigate("/login")} className="hover:text-ink-300">Sign in</button>
+          <button onClick={() => navigate("/lab")} className="hover:text-purple-400 text-purple-500">Labz ⚗️</button>
         </div>
       </footer>
     </div>
