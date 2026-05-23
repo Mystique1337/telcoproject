@@ -18,6 +18,8 @@ import NewProject from "@/pages/dashboard/NewProject";
 import RunResults from "@/pages/dashboard/RunResults";
 import History from "@/pages/dashboard/History";
 import Personas from "@/pages/dashboard/Personas";
+import ShareView from "@/pages/ShareView";
+import Compare from "@/pages/dashboard/Compare";
 
 // Existing product components (preserved from v1)
 import InsideNaija from "./InsideNaija";
@@ -137,6 +139,17 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/compare"
+              element={
+                <ProtectedRoute>
+                  <Compare />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Public share */}
+            <Route path="/share/:token" element={<ShareView />} />
 
             {/* ShopEasy */}
             <Route path="/shop" element={<ShopPage />} />

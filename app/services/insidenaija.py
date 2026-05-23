@@ -53,7 +53,9 @@ class PanelRunService:
         run = PanelRun(project_id=uuid.UUID(project_id), status="running")
         return self.run_repo.save(run)
 
-    async def execute_run(self, run_id: str, product: ProductSchema) -> None:
+    async def execute_run(
+        self, run_id: str, product: ProductSchema, user_email: str = ""
+    ) -> None:
         """Background task: runs the persona panel, saving each result as it arrives."""
         from app.agents.panel_agent import run_panel
 
@@ -103,6 +105,23 @@ class PanelRunService:
                         "latency_ms": panel_result.get("latency_ms"),
                     },
                 )
+
+            # Send completion email (best-effort — never raises)
+            try:
+                from app.services.email import send_run_complete_email
+                agg = panel_result.get("aggregate") or {}
+                send_run_complete_email(
+                    to_email=user_email,
+                    project_name=product.title,
+                    run_id=run_id,
+                    avg_rating=agg.get("avg_rating"),
+                    buy_likelihood=agg.get("buy_likelihood"),
+                    n_personas=agg.get("n_personas", len(reactions)),
+                    themes_praised=(agg.get("themes") or {}).get("praised", []),
+                )
+            except Exception:
+                logger.warning("send_run_complete_email raised unexpectedly for run %s", run_id)
+
         except Exception:
             logger.exception("panel run %s failed", run_id)
             run = run_repo.find(rid)

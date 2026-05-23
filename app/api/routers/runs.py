@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import secrets
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,6 +17,32 @@ router = APIRouter(prefix="/api/runs", tags=["runs"])
 async def _ensure_user(user_data: dict = Depends(get_current_user)) -> dict:
     UserRepository().get_or_create(user_data["user_id"], user_data["email"])
     return user_data
+
+
+@router.post("/{run_id}/share")
+async def share_run(
+    run_id: str,
+    user: dict = Depends(_ensure_user),
+) -> dict[str, Any]:
+    """Generate (or return existing) a shareable token for a completed run."""
+    from app.db.repositories.insidenaija import PanelRunRepository as _RunRepo
+    run_repo = _RunRepo()
+    run_svc = PanelRunService()
+    project_svc = ProjectService()
+
+    run = run_svc.get_run(run_id)
+    if not run:
+        raise HTTPException(status_code=404, detail="Run not found")
+
+    project = project_svc.get(str(run.project_id))
+    if not project or str(project.user_id) != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    token = run.share_token or secrets.token_urlsafe(16)
+    if not run.share_token:
+        run_repo.update(run, share_token=token)
+
+    return {"token": token, "url": f"/share/{token}"}
 
 
 @router.get("/active")

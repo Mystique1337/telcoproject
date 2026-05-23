@@ -25,7 +25,7 @@ except ImportError:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import simulate_review, recommend, elicit, health, catalog, chat, tts, panel, shop, auth, b2b, projects, runs, debug_auth, panel_personas, analytics
+from app.api.routers import simulate_review, recommend, elicit, health, catalog, chat, tts, panel, shop, auth, b2b, projects, runs, debug_auth, panel_personas, analytics, share, compare
 from app.config import get_settings
 
 settings = get_settings()
@@ -44,6 +44,9 @@ async def lifespan(app: FastAPI):
         with db.session() as session:
             session.execute(text(
                 "ALTER TABLE panel_runs ADD COLUMN IF NOT EXISTS meta JSONB"
+            ))
+            session.execute(text(
+                "ALTER TABLE panel_runs ADD COLUMN IF NOT EXISTS share_token TEXT"
             ))
         logger.info("schema migration OK")
     except Exception:
@@ -88,6 +91,8 @@ app.include_router(projects.router)
 app.include_router(runs.router)
 app.include_router(panel_personas.router)
 app.include_router(analytics.router)
+app.include_router(share.router)
+app.include_router(compare.router)
 app.include_router(debug_auth.router)
 
 

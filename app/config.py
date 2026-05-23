@@ -81,6 +81,10 @@ class Settings(BaseSettings):
     # to rebuild the Chroma collection with matching dimensionality.
     embedding_model: str = "local:paraphrase-MiniLM-L6-v2"
 
+    # --- Email (Resend) ---
+    resend_api_key: str | None = Field(default=None, alias="RESEND_API_KEY")
+    app_base_url: str = Field(default="http://localhost:8765", alias="APP_BASE_URL")
+
     # --- Supabase / Database ---
     supabase_url: str | None = None
     supabase_service_key: str | None = Field(default=None, alias="SUPABASE_SERVICE_KEY")

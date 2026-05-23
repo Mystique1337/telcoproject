@@ -11,7 +11,9 @@ import {
   X,
   ChevronRight,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/auth";
+import { getDashboardStats } from "@/lib/apiClient";
 
 const NAV_ITEMS = [
   {
@@ -68,6 +70,44 @@ function NavItem({
   );
 }
 
+function QuotaBar() {
+  const session = useAuthStore((s) => s.session);
+  const { data: stats } = useQuery({
+    queryKey: ["dashboard-stats"],
+    queryFn: getDashboardStats,
+    staleTime: 30000,
+    enabled: !!session,
+  });
+
+  const quota = stats?.quota;
+  if (!quota) return null;
+
+  const pct = quota.limit > 0 ? Math.round((quota.used / quota.limit) * 100) : 0;
+  const barColor =
+    quota.used >= quota.limit
+      ? "bg-red-500"
+      : quota.used >= 7
+      ? "bg-amber-400"
+      : "bg-naija-500";
+
+  return (
+    <div className="px-3 pb-1 space-y-1.5">
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-ink-600">{quota.used} / {quota.limit} runs used</span>
+        {quota.remaining === 0 && (
+          <span className="text-xs text-red-400 font-medium">Limit reached</span>
+        )}
+      </div>
+      <div className="h-1.5 bg-ink-800 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -121,6 +161,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             {session.user.email}
           </p>
         )}
+        <QuotaBar />
         <button
           onClick={signOut}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-500 hover:text-red-400 hover:bg-red-900/10 transition-all"

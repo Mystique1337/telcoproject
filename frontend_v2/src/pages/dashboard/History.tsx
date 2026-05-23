@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle, XCircle, Loader2, Star, ArrowRight, Clock } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, Star, ArrowRight, Clock, RefreshCw, GitCompare } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { listRuns, type RunSummary } from "@/lib/apiClient";
+import { listRuns, rerunProject, type RunSummary } from "@/lib/apiClient";
 
 function StatusBadge({ status }: { status: RunSummary["status"] }) {
   if (status === "running")
@@ -68,18 +69,63 @@ function EmptyHistory() {
 
 export default function History() {
   const navigate = useNavigate();
+  const [compareMode, setCompareMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [rerunningId, setRerunningId] = useState<string | null>(null);
+
   const { data: runs, isLoading, error } = useQuery({
     queryKey: ["runs-history"],
     queryFn: listRuns,
     refetchInterval: 10000,
   });
 
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : prev.length < 2 ? [...prev, id] : prev
+    );
+  }
+
+  async function handleRerun(e: React.MouseEvent, projectId: string) {
+    e.stopPropagation();
+    setRerunningId(projectId);
+    try {
+      const res = await rerunProject(projectId);
+      navigate(`/runs/${res.run_id}`);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRerunningId(null);
+    }
+  }
+
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-ink-50">History</h1>
-          <p className="text-sm text-ink-400 mt-0.5">All panel runs across your projects</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-ink-50">History</h1>
+            <p className="text-sm text-ink-400 mt-0.5">All panel runs across your projects</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {compareMode && selectedIds.length === 2 && (
+              <button
+                onClick={() => navigate(`/compare?a=${selectedIds[0]}&b=${selectedIds[1]}`)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-naija-600 hover:bg-naija-500 text-white text-sm font-medium transition-colors"
+              >
+                <GitCompare size={14} /> Compare
+              </button>
+            )}
+            <button
+              onClick={() => { setCompareMode((m) => !m); setSelectedIds([]); }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                compareMode
+                  ? "bg-ink-800 border-naija-600 text-naija-300"
+                  : "border-ink-700 text-ink-400 hover:text-ink-200 hover:border-ink-600"
+              }`}
+            >
+              <GitCompare size={14} /> {compareMode ? "Cancel" : "Compare"}
+            </button>
+          </div>
         </div>
 
         {isLoading && (
@@ -99,9 +145,9 @@ export default function History() {
         {!isLoading && !error && runs && runs.length > 0 && (
           <div className="bg-ink-900 border border-ink-800 rounded-xl overflow-hidden">
             {/* Table header */}
-            <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] items-center gap-4 px-5 py-3 border-b border-ink-800 bg-ink-950/40">
-              {["Project", "Date", "Status", "Avg rating", "Buy %", ""].map((h) => (
-                <span key={h} className="text-xs font-medium text-ink-500 uppercase tracking-wider">
+            <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto_auto] items-center gap-4 px-5 py-3 border-b border-ink-800 bg-ink-950/40">
+              {(compareMode ? ["", "Project", "Date", "Status", "Avg rating", "Buy %", "", ""] : ["Project", "Date", "Status", "Avg rating", "Buy %", "", ""]).map((h, i) => (
+                <span key={i} className="text-xs font-medium text-ink-500 uppercase tracking-wider">
                   {h}
                 </span>
               ))}
@@ -112,9 +158,28 @@ export default function History() {
               {runs.map((run) => (
                 <div
                   key={run.id}
-                  className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] items-center gap-4 px-5 py-4 hover:bg-ink-800/30 transition-colors cursor-pointer group"
-                  onClick={() => navigate(`/runs/${run.id}`)}
+                  className={`grid items-center gap-4 px-5 py-4 transition-colors cursor-pointer group ${
+                    compareMode
+                      ? "grid-cols-[auto_1fr_auto_auto_auto_auto_auto_auto]"
+                      : "grid-cols-[1fr_auto_auto_auto_auto_auto_auto]"
+                  } ${
+                    compareMode && selectedIds.includes(run.id)
+                      ? "bg-naija-900/20 hover:bg-naija-900/30"
+                      : "hover:bg-ink-800/30"
+                  }`}
+                  onClick={() => compareMode ? toggleSelect(run.id) : navigate(`/runs/${run.id}`)}
                 >
+                  {/* Compare checkbox */}
+                  {compareMode && (
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(run.id)}
+                      onChange={() => toggleSelect(run.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-4 h-4 accent-naija-500 cursor-pointer"
+                    />
+                  )}
+
                   {/* Project name */}
                   <div className="min-w-0">
                     <p className="font-medium text-ink-100 truncate group-hover:text-naija-300 transition-colors">
@@ -150,6 +215,19 @@ export default function History() {
                       <span className="text-xs text-ink-700">—</span>
                     )}
                   </div>
+
+                  {/* Rerun icon */}
+                  <button
+                    onClick={(e) => handleRerun(e, run.project_id)}
+                    className="text-ink-600 hover:text-naija-400 transition-colors p-1 rounded"
+                    title="Run again"
+                    disabled={rerunningId === run.project_id}
+                  >
+                    {rerunningId === run.project_id
+                      ? <Loader2 size={14} className="animate-spin" />
+                      : <RefreshCw size={14} />
+                    }
+                  </button>
 
                   {/* Arrow */}
                   <ArrowRight size={15} className="text-ink-700 group-hover:text-naija-400 transition-colors" />

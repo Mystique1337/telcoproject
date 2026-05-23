@@ -127,6 +127,11 @@ export interface DashboardStats {
   running_runs: number;
   avg_rating: number | null;
   total_personas_evaluated: number;
+  quota: {
+    used: number;
+    limit: number;
+    remaining: number;
+  };
 }
 
 export const getDashboardStats = () =>
@@ -231,3 +236,62 @@ export interface AnalyticsData {
 
 export const getAnalytics = () =>
   request<AnalyticsData>("GET", "/api/analytics");
+
+// ── Share ────────────────────────────────────────────────────────────────────
+
+export interface ShareResponse {
+  token: string;
+  url: string;
+}
+
+export const shareRun = (runId: string) =>
+  request<ShareResponse>("POST", `/api/runs/${runId}/share`);
+
+export interface SharedRunDetail {
+  run_id: string;
+  project_name: string;
+  project_category: string;
+  created_at: string;
+  completed_at: string | null;
+  aggregate: RunDetail["aggregate"];
+  results: PersonaResult[];
+}
+
+export async function getSharedRun(token: string): Promise<SharedRunDetail> {
+  const res = await fetch(`/api/share/${token}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail ?? "Not found");
+  }
+  return res.json();
+}
+
+// ── Re-run ───────────────────────────────────────────────────────────────────
+
+export interface RerunResponse {
+  run_id: string;
+  status: string;
+}
+
+export const rerunProject = (projectId: string) =>
+  request<RerunResponse>("POST", `/api/projects/${projectId}/rerun`);
+
+// ── Compare ──────────────────────────────────────────────────────────────────
+
+export interface RunCompareSide {
+  id: string;
+  project_name: string;
+  project_category: string;
+  created_at: string;
+  completed_at: string | null;
+  aggregate: RunDetail["aggregate"];
+  results_count: number;
+}
+
+export interface CompareResponse {
+  run_a: RunCompareSide;
+  run_b: RunCompareSide;
+}
+
+export const compareRuns = (runA: string, runB: string) =>
+  request<CompareResponse>("GET", `/api/compare?run_a=${runA}&run_b=${runB}`);

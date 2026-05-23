@@ -56,7 +56,7 @@ async def create_project(
         metadata={"image_url": req.image_url} if req.image_url else {},
     )
 
-    background_tasks.add_task(run_svc.execute_run, str(run.id), product)
+    background_tasks.add_task(run_svc.execute_run, str(run.id), product, user["email"])
 
     return {
         "project_id": str(project.id),
@@ -136,7 +136,7 @@ async def create_projects_bulk(
             category=item.category,
             metadata={"image_url": item.image_url} if item.image_url else {},
         )
-        background_tasks.add_task(run_svc.execute_run, str(run.id), product)
+        background_tasks.add_task(run_svc.execute_run, str(run.id), product, user["email"])
         results.append({
             "project_id": str(project.id),
             "run_id": str(run.id),
@@ -178,6 +178,11 @@ async def get_stats(
         "running_runs": running,
         "avg_rating": round(total_rating / rated_runs, 2) if rated_runs else None,
         "total_personas_evaluated": total_personas,
+        "quota": {
+            "used": completed,
+            "limit": 10,
+            "remaining": max(0, 10 - completed),
+        },
     }
 
 
@@ -199,4 +204,36 @@ async def get_project(
         "description": project.description,
         "category": project.category,
         "created_at": project.created_at.isoformat(),
+    }
+
+
+@router.post("/{project_id}/rerun")
+async def rerun_project(
+    project_id: str,
+    background_tasks: BackgroundTasks,
+    user: dict = Depends(_ensure_user),
+) -> dict[str, Any]:
+    """Create a new panel run for an existing project."""
+    project_svc = ProjectService()
+    run_svc = PanelRunService()
+
+    project = project_svc.get(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if str(project.user_id) != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    run = run_svc.create_run(project_id)
+    product = ProductSchema(
+        product_id=str(uuid.uuid4()),
+        title=project.name,
+        description=project.description,
+        category=project.category,
+        metadata={},
+    )
+    background_tasks.add_task(run_svc.execute_run, str(run.id), product, user["email"])
+
+    return {
+        "run_id": str(run.id),
+        "status": "running",
     }

@@ -78,6 +78,7 @@ class PanelRun(Base):
     meta = Column(JSON, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
+    share_token = Column(String, nullable=True)
 
     project = relationship("Project", back_populates="panel_runs")
     results = relationship("Result", back_populates="run",

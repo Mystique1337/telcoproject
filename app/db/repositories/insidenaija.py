@@ -29,6 +29,17 @@ class ProjectRepository(BaseRepository[Project]):
 class PanelRunRepository(BaseRepository[PanelRun]):
     model_class = PanelRun
 
+    def find_by_share_token(self, token: str) -> PanelRun | None:
+        with self.db.session() as session:
+            row = (
+                session.query(PanelRun)
+                .filter(PanelRun.share_token == token)
+                .first()
+            )
+            if row:
+                session.expunge(row)
+            return row
+
     def find_latest_for_project(self, project_id: str) -> PanelRun | None:
         pid = uuid.UUID(project_id)
         with self.db.session() as session:

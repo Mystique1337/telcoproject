@@ -2,11 +2,11 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
-  ArrowLeft, CheckCircle, Download, Loader2, Star, XCircle, Clock,
+  ArrowLeft, CheckCircle, Download, Loader2, Star, XCircle, Clock, Share2, RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DashboardLayout from "@/components/DashboardLayout";
-import { getRun, getPanelPersonas, type PersonaResult, type RunDetail } from "@/lib/apiClient";
+import { getRun, getPanelPersonas, shareRun, rerunProject, type PersonaResult, type RunDetail } from "@/lib/apiClient";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -208,11 +208,45 @@ function CohortTable({ data }: { data: Record<string, { n: number; avg_rating: n
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
+function ShareModal({ shareUrl, onClose }: { shareUrl: string; onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const fullUrl = `${window.location.origin}${shareUrl}`;
+  function copy() {
+    navigator.clipboard.writeText(fullUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-ink-900 border border-ink-700 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between">
+          <h3 className="font-semibold text-ink-50">Share results</h3>
+          <button onClick={onClose} className="text-ink-500 hover:text-ink-100 text-xl">×</button>
+        </div>
+        <p className="text-sm text-ink-400">Anyone with this link can view the panel results (no login required).</p>
+        <div className="flex items-center gap-2 bg-ink-800 border border-ink-700 rounded-lg px-3 py-2">
+          <span className="text-xs text-ink-300 flex-1 truncate">{fullUrl}</span>
+          <button
+            onClick={copy}
+            className="shrink-0 text-xs font-medium px-2.5 py-1 rounded bg-naija-700 hover:bg-naija-600 text-naija-100 transition-colors"
+          >
+            {copied ? "Copied!" : "Copy"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RunResults() {
   const { runId } = useParams<{ runId: string }>();
   const navigate = useNavigate();
   const [expandedPersona, setExpandedPersona] = useState<PersonaResult | null>(null);
   const [cohortTab, setCohortTab] = useState<"by_zone" | "by_register" | "by_age">("by_zone");
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [sharingLoading, setSharingLoading] = useState(false);
+  const [rerunLoading, setRerunLoading] = useState(false);
 
   const { data: run, error } = useQuery({
     queryKey: ["run", runId],
@@ -228,6 +262,32 @@ export default function RunResults() {
     queryFn: getPanelPersonas,
     staleTime: Infinity,
   });
+
+  async function handleShare() {
+    if (!runId) return;
+    setSharingLoading(true);
+    try {
+      const res = await shareRun(runId);
+      setShareUrl(res.url);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSharingLoading(false);
+    }
+  }
+
+  async function handleRerun() {
+    if (!run) return;
+    setRerunLoading(true);
+    try {
+      const res = await rerunProject(run.project_id);
+      navigate(`/runs/${res.run_id}`);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setRerunLoading(false);
+    }
+  }
 
   if (!run && !error) {
     return (
@@ -275,16 +335,40 @@ export default function RunResults() {
               </p>
             </div>
           </div>
-          {isDone && (
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1.5 text-sm text-naija-400">
-                <CheckCircle size={15} /> Complete
-              </span>
-              <Button size="sm" variant="outline" className="border-ink-700 text-ink-300 hover:border-naija-600" onClick={() => exportCSV(run)}>
-                <Download size={13} className="mr-1.5" /> CSV
+          <div className="flex items-center gap-2">
+            {isDone && (
+              <>
+                <span className="flex items-center gap-1.5 text-sm text-naija-400">
+                  <CheckCircle size={15} /> Complete
+                </span>
+                <Button size="sm" variant="outline" className="border-ink-700 text-ink-300 hover:border-naija-600" onClick={() => exportCSV(run)}>
+                  <Download size={13} className="mr-1.5" /> CSV
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-ink-700 text-ink-300 hover:border-naija-600"
+                  onClick={handleShare}
+                  disabled={sharingLoading}
+                >
+                  {sharingLoading ? <Loader2 size={13} className="animate-spin mr-1.5" /> : <Share2 size={13} className="mr-1.5" />}
+                  Share
+                </Button>
+              </>
+            )}
+            {(isDone || isFailed) && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-ink-700 text-ink-300 hover:border-naija-600"
+                onClick={handleRerun}
+                disabled={rerunLoading}
+              >
+                {rerunLoading ? <Loader2 size={13} className="animate-spin mr-1.5" /> : <RefreshCw size={13} className="mr-1.5" />}
+                Run again
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Live progress bar (shown while running) */}
@@ -403,6 +487,7 @@ export default function RunResults() {
       </div>
 
       {expandedPersona && <ReviewModal result={expandedPersona} onClose={() => setExpandedPersona(null)} />}
+      {shareUrl && <ShareModal shareUrl={shareUrl} onClose={() => setShareUrl(null)} />}
     </DashboardLayout>
   );
 }
