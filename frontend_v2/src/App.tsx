@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { LabSidebar, LabMobileNav } from "@/components/LabSidebar";
 import {
   Activity,
   AlertCircle,
@@ -1562,53 +1563,34 @@ export default function App() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-ink-950">
-      {/* Back bar */}
-      <div className="border-b border-ink-800 bg-ink-950/80 backdrop-blur sticky top-0 z-40 px-6 py-2 flex items-center gap-3">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm text-ink-400 hover:text-ink-100 transition-colors"
-        >
-          <ArrowLeft size={15} /> Back
-        </button>
-        <span className="text-ink-700 text-xs">|</span>
-        <span className="text-xs text-ink-600">NaijaPersona Labz — developer console</span>
-      </div>
-      <Header health={health}/>
-      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        <section>
-          <HeroStats personasCount={personas.length}
-                     productsCount={productsTotal || 6657}
-                     evalData={evalData}/>
-        </section>
-        <nav className="flex items-center gap-1 border-b border-ink-800">
-          {TABS.map((t) => {
-            const active = tab === t.key;
-            return (
-              <button key={t.key} onClick={() => setTab(t.key)}
-                      className={`flex items-center gap-2 px-4 py-3 text-sm transition-colors border-b-2 -mb-px ${
-                        active ? "border-naija-500 text-ink-50"
-                               : "border-transparent text-ink-400 hover:text-ink-200"}`}>
-                {t.icon} {t.label}
-              </button>
-            );
-          })}
-          <div className="ml-auto text-xs text-ink-500 flex items-center gap-2 pb-3">
-            <Activity size={12}/>
-            {personas.length} personas · {(productsTotal || 6657).toLocaleString()} products
+    <div className="flex min-h-screen bg-ink-950 text-ink-50">
+      {/* Sidebar */}
+      <LabSidebar tab={tab} onTabChange={setTab} apiOnline={!!health} />
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <LabMobileNav tab={tab} onTabChange={setTab} apiOnline={!!health} />
+
+        <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-8 space-y-8">
+          <section>
+            <HeroStats personasCount={personas.length}
+                       productsCount={productsTotal || 6657}
+                       evalData={evalData}/>
+          </section>
+          {/* Tab content — sidebar controls which tab is active */}
+          {tab === "review"      && <TabReview      personas={personas}/>}
+          {tab === "recommend"   && <TabRecommend   personas={personas}/>}
+          {tab === "multiturn"   && <TabChat         personas={personas}/>}
+          {tab === "experiments" && <TabExperiments/>}
+        </main>
+
+        <footer className="border-t border-ink-800 mt-8">
+          <div className="px-6 py-4 flex items-center justify-between text-xs text-ink-600">
+            <span>NaijaPersona Labz · developer console</span>
+            <span className="font-mono text-ink-700">v0.2</span>
           </div>
-        </nav>
-        {tab === "review"      && <TabReview      personas={personas}/>}
-        {tab === "recommend"   && <TabRecommend   personas={personas}/>}
-        {tab === "multiturn"   && <TabChat         personas={personas}/>}
-        {tab === "experiments" && <TabExperiments/>}
-      </main>
-      <footer className="border-t border-ink-800 mt-12">
-        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between text-xs text-ink-500">
-          <span>Open-source · Bluechip Tech Hackathon submission · Team Ashinze · Franca</span>
-          <span className="font-mono">naija-persona-agent · v0.2</span>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   );
 }
