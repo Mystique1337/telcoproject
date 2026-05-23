@@ -1,40 +1,53 @@
 /**
  * LabGate — smart entry point for /lab
  *
- * Signed in:
- *   - Fetch language from DB persona
+ * Signed in to either product (Supabase session exists):
+ *   - Fetch language_preference from DB persona
  *   - Pre-set lab_lang in localStorage so App picks it up
- *   - Skip LanguageGate entirely → straight to Lab
+ *   - Skip LanguageGate entirely → straight into the Lab
  *
- * Not signed in:
+ * Not signed in (or session not found):
  *   - Existing public flow: LanguageGate → pick language → Lab
+ *
+ * Why we don't use useAuthStore here:
+ *   The Zustand store starts as null and is populated asynchronously by
+ *   AuthProvider's useEffect — so on the first render, session is always
+ *   null even for logged-in users. We check Supabase directly instead.
  */
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { useAuthStore } from "@/store/auth";
+import { supabase } from "@/lib/supabase";
 import { getShopPersona } from "@/lib/apiClient";
 import { LanguageGate } from "@/LanguageGate";
 import App from "@/App";
 
 export default function LabGate() {
-  const session = useAuthStore((s) => s.session);
-  // If no session, we're ready immediately (public flow)
-  const [ready, setReady] = useState(!session);
+  // Never start ready — always wait for the async session check
+  const [ready, setReady] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
-    if (!session) { setReady(true); return; }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        // No session — show public LanguageGate flow
+        setReady(true);
+        return;
+      }
 
-    getShopPersona()
-      .then((persona) => {
-        if (persona.language) {
-          localStorage.setItem("lab_lang", persona.language);
-        }
-      })
-      .catch(() => {
-        // No persona set up yet — proceed without pre-setting language
-      })
-      .finally(() => setReady(true));
-  }, [session?.user?.id]);
+      // Session exists — fetch language from DB persona
+      setSignedIn(true);
+      getShopPersona()
+        .then((persona) => {
+          if (persona.language) {
+            localStorage.setItem("lab_lang", persona.language);
+          }
+        })
+        .catch(() => {
+          // No persona yet — fine, proceed without pre-setting language
+        })
+        .finally(() => setReady(true));
+    });
+  }, []);
 
   if (!ready) {
     return (
@@ -44,10 +57,10 @@ export default function LabGate() {
     );
   }
 
-  // Signed in → go straight to the lab (language pre-set from DB)
-  if (session) return <App />;
+  // Signed in → skip LanguageGate
+  if (signedIn) return <App />;
 
-  // Not signed in → public LanguageGate flow
+  // Not signed in → public flow
   return (
     <LanguageGate
       storageKey="lab_lang"
