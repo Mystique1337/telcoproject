@@ -1,19 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
-  ArrowLeft,
-  CheckCircle,
-  Download,
-  Loader2,
-  Star,
-  XCircle,
+  ArrowLeft, CheckCircle, Download, Loader2, Star, XCircle, Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DashboardLayout from "@/components/DashboardLayout";
-import { getRun, type PersonaResult, type RunDetail } from "@/lib/apiClient";
+import { getRun, getPanelPersonas, type PersonaResult, type RunDetail } from "@/lib/apiClient";
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function sentimentColor(s: string) {
   if (s === "positive") return "text-naija-400 bg-naija-900/30 border-naija-700/50";
@@ -21,15 +16,11 @@ function sentimentColor(s: string) {
   return "text-ink-400 bg-ink-800 border-ink-700";
 }
 
-function StarRating({ rating }: { rating: number }) {
+function StarRating({ rating, size = 12 }: { rating: number; size?: number }) {
   return (
     <span className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((i) => (
-        <Star
-          key={i}
-          size={12}
-          className={i <= rating ? "text-amber-400 fill-amber-400" : "text-ink-700"}
-        />
+        <Star key={i} size={size} className={i <= rating ? "text-amber-400 fill-amber-400" : "text-ink-700"} />
       ))}
     </span>
   );
@@ -41,84 +32,122 @@ function RatingBar({ label, count, total }: { label: string; count: number; tota
     <div className="flex items-center gap-3">
       <span className="text-xs text-ink-400 w-4 shrink-0">{label}★</span>
       <div className="flex-1 h-2 bg-ink-800 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-naija-600 rounded-full transition-all duration-500"
-          style={{ width: `${pct}%` }}
-        />
+        <div className="h-full bg-naija-600 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs text-ink-500 w-8 text-right">{count}</span>
+      <span className="text-xs text-ink-500 w-6 text-right">{count}</span>
     </div>
   );
 }
-
-// ── CSV export ────────────────────────────────────────────────────────────────
 
 function exportCSV(run: RunDetail) {
   const rows = [
     ["Persona", "Rating", "Sentiment", "Register", "Review"],
     ...run.results.map((r) => [
-      r.persona_name,
-      r.rating,
-      r.sentiment,
-      r.register_tier,
+      r.persona_name, r.rating, r.sentiment, r.register_tier,
       `"${r.review_text.replace(/"/g, '""')}"`,
     ]),
   ];
-  const csv = rows.map((r) => r.join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${run.project_name}-results.csv`;
+  const blob = new Blob([rows.map((r) => r.join(",")).join("\n")], { type: "text/csv" });
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: `${run.project_name}-results.csv` });
   a.click();
-  URL.revokeObjectURL(url);
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// ── Live persona grid card ────────────────────────────────────────────────────
 
-function RunningState({ projectName }: { projectName: string }) {
-  const [dots, setDots] = useState(".");
-  useEffect(() => {
-    const id = setInterval(
-      () => setDots((d) => (d.length >= 3 ? "." : d + ".")),
-      600,
+function PersonaCard({
+  personaId, personaName, result, onClick,
+}: {
+  personaId: string;
+  personaName: string;
+  result?: PersonaResult;
+  onClick?: () => void;
+}) {
+  if (!result) {
+    return (
+      <div className="bg-ink-900/60 border border-ink-800 rounded-xl p-4 space-y-2 animate-pulse">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-ink-800 shrink-0" />
+          <div className="space-y-1 flex-1">
+            <div className="h-3 bg-ink-800 rounded w-24" />
+            <div className="h-2 bg-ink-800/60 rounded w-16" />
+          </div>
+          <Clock size={13} className="text-ink-700 shrink-0" />
+        </div>
+        <p className="text-xs text-ink-700">Waiting…</p>
+      </div>
     );
-    return () => clearInterval(id);
-  }, []);
+  }
 
   return (
-    <div className="flex flex-col items-center justify-center py-24 space-y-6 text-center">
-      <div className="relative">
-        <div className="w-20 h-20 rounded-full border-2 border-naija-700/30 flex items-center justify-center">
-          <Loader2 size={32} className="text-naija-400 animate-spin" />
-        </div>
-        <div className="absolute inset-0 rounded-full border-2 border-naija-500/20 animate-ping" />
-      </div>
-      <div className="space-y-2">
-        <h2 className="text-xl font-semibold text-ink-100">{projectName}</h2>
-        <p className="text-naija-400 font-medium">Panel running{dots}</p>
-        <p className="text-sm text-ink-400 max-w-sm">
-          24 Nigerian personas are evaluating your product. This takes about 90 seconds.
-        </p>
-      </div>
-      <div className="grid grid-cols-3 gap-4 mt-4">
-        {["24 personas", "6 zones", "<2 min"].map((s) => (
-          <div key={s} className="bg-ink-900 border border-ink-800 rounded-xl px-4 py-3 text-center">
-            <p className="text-sm font-semibold text-naija-400">{s}</p>
+    <div
+      className="bg-ink-900 border border-ink-800 hover:border-naija-700/50 rounded-xl p-4 space-y-2.5 cursor-pointer transition-all group"
+      onClick={onClick}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-7 h-7 rounded-lg bg-naija-900/50 border border-naija-700/30 flex items-center justify-center text-naija-400 text-xs font-bold shrink-0">
+            {personaName.charAt(0)}
           </div>
-        ))}
+          <span className="text-sm font-medium text-ink-100 truncate group-hover:text-naija-300 transition-colors">
+            {personaName}
+          </span>
+        </div>
+        <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded-full border font-medium ${sentimentColor(result.sentiment)}`}>
+          {result.sentiment}
+        </span>
+      </div>
+      <StarRating rating={result.rating} />
+      <p className="text-xs text-ink-500 leading-relaxed line-clamp-2">{result.review_text}</p>
+    </div>
+  );
+}
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+
+function LiveProgress({ completed, total, projectName }: { completed: number; total: number; projectName: string }) {
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  return (
+    <div className="bg-ink-900 border border-naija-700/30 rounded-xl p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Loader2 size={20} className="text-naija-400 animate-spin" />
+          </div>
+          <div>
+            <p className="font-semibold text-ink-50">{projectName}</p>
+            <p className="text-xs text-naija-400">Panel running live</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-2xl font-bold text-naija-400">{completed}<span className="text-ink-600 text-base font-normal">/{total}</span></p>
+          <p className="text-xs text-ink-500">personas done</p>
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        <div className="h-2.5 bg-ink-800 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-naija-600 rounded-full transition-all duration-700 ease-out"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <div className="flex justify-between text-xs text-ink-600">
+          <span>{pct}% complete</span>
+          <span>{total - completed} remaining</span>
+        </div>
       </div>
     </div>
   );
 }
 
-function FailedState({ error }: { error?: string }) {
+// ── Failed state ──────────────────────────────────────────────────────────────
+
+function FailedState() {
   const navigate = useNavigate();
   return (
-    <div className="flex flex-col items-center justify-center py-24 space-y-4 text-center">
-      <XCircle size={40} className="text-red-400" />
-      <h2 className="text-xl font-semibold text-ink-100">Panel run failed</h2>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+    <div className="flex flex-col items-center justify-center py-20 space-y-4 text-center">
+      <XCircle size={36} className="text-red-400" />
+      <h2 className="text-lg font-semibold text-ink-100">Panel run failed</h2>
+      <p className="text-sm text-ink-500">Something went wrong during the evaluation.</p>
       <Button variant="outline" className="border-ink-700 text-ink-200" onClick={() => navigate("/dashboard")}>
         Back to dashboard
       </Button>
@@ -126,63 +155,58 @@ function FailedState({ error }: { error?: string }) {
   );
 }
 
-function CohortTable({ data }: { data: Record<string, { n: number; avg_rating: number; buy_likelihood: number }> }) {
+// ── Review detail modal ───────────────────────────────────────────────────────
+
+function ReviewModal({ result, onClose }: { result: PersonaResult; onClose: () => void }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-ink-800">
-            <th className="text-left py-2 px-3 text-xs font-medium text-ink-500">Segment</th>
-            <th className="text-right py-2 px-3 text-xs font-medium text-ink-500">n</th>
-            <th className="text-right py-2 px-3 text-xs font-medium text-ink-500">Avg rating</th>
-            <th className="text-right py-2 px-3 text-xs font-medium text-ink-500">Buy likelihood</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(data).map(([key, val]) => (
-            <tr key={key} className="border-b border-ink-800/50 hover:bg-ink-800/30 transition-colors">
-              <td className="py-2.5 px-3 text-ink-200">{key}</td>
-              <td className="py-2.5 px-3 text-right text-ink-400">{val.n}</td>
-              <td className="py-2.5 px-3 text-right text-amber-400 font-medium">
-                {val.avg_rating.toFixed(1)}
-              </td>
-              <td className="py-2.5 px-3 text-right text-naija-400">{val.buy_likelihood}%</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-ink-900 border border-ink-700 rounded-2xl p-6 max-w-lg w-full space-y-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between">
+          <div className="space-y-1.5">
+            <h3 className="font-semibold text-ink-50">{result.persona_name}</h3>
+            <div className="flex items-center gap-2">
+              <StarRating rating={result.rating} />
+              <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${sentimentColor(result.sentiment)}`}>
+                {result.sentiment}
+              </span>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-ink-500 hover:text-ink-100 text-xl">×</button>
+        </div>
+        <p className="text-sm text-ink-300 leading-relaxed whitespace-pre-wrap">{result.review_text}</p>
+        <p className="text-xs text-ink-600">Register: {result.register_tier?.replace(/_/g, " ")}</p>
+      </div>
     </div>
   );
 }
 
-function PersonaRow({ result, onClick }: { result: PersonaResult; onClick: () => void }) {
+// ── CohortTable + RatingDist (reused from before) ─────────────────────────────
+
+function CohortTable({ data }: { data: Record<string, { n: number; avg_rating: number; buy_likelihood: number }> }) {
   return (
-    <tr
-      className="border-b border-ink-800/50 hover:bg-ink-800/30 transition-colors cursor-pointer"
-      onClick={onClick}
-    >
-      <td className="py-3 px-4">
-        <span className="font-medium text-ink-200">{result.persona_name}</span>
-      </td>
-      <td className="py-3 px-4">
-        <StarRating rating={result.rating} />
-      </td>
-      <td className="py-3 px-4">
-        <span
-          className={`text-xs px-2 py-0.5 rounded-full border font-medium ${sentimentColor(result.sentiment)}`}
-        >
-          {result.sentiment}
-        </span>
-      </td>
-      <td className="py-3 px-4 text-xs text-ink-500">{result.register_tier?.replace(/_/g, " ")}</td>
-      <td className="py-3 px-4 max-w-xs">
-        <p className="text-xs text-ink-400 truncate">{result.review_text}</p>
-      </td>
-    </tr>
+    <table className="w-full text-sm">
+      <thead>
+        <tr className="border-b border-ink-800">
+          {["Segment", "n", "Avg rating", "Buy %"].map((h) => (
+            <th key={h} className={`py-2 px-3 text-xs font-medium text-ink-500 ${h === "Segment" ? "text-left" : "text-right"}`}>{h}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {Object.entries(data).map(([key, val]) => (
+          <tr key={key} className="border-b border-ink-800/50 hover:bg-ink-800/20">
+            <td className="py-2.5 px-3 text-ink-200">{key}</td>
+            <td className="py-2.5 px-3 text-right text-ink-400">{val.n}</td>
+            <td className="py-2.5 px-3 text-right text-amber-400 font-medium">{val.avg_rating.toFixed(1)}</td>
+            <td className="py-2.5 px-3 text-right text-naija-400">{val.buy_likelihood}%</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
-// ── Results page ──────────────────────────────────────────────────────────────
+// ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function RunResults() {
   const { runId } = useParams<{ runId: string }>();
@@ -193,9 +217,16 @@ export default function RunResults() {
   const { data: run, error } = useQuery({
     queryKey: ["run", runId],
     queryFn: () => getRun(runId!),
-    refetchInterval: (query) =>
-      query.state.data?.status === "running" ? 4000 : false,
+    // Poll every 2s while running for live updates, stop when done
+    refetchInterval: (query) => query.state.data?.status === "running" ? 2000 : false,
     enabled: !!runId,
+  });
+
+  // Load all 24 panel personas for the grid (public endpoint, no auth)
+  const { data: panelPersonas } = useQuery({
+    queryKey: ["panel-personas"],
+    queryFn: getPanelPersonas,
+    staleTime: Infinity,
   });
 
   if (!run && !error) {
@@ -206,275 +237,172 @@ export default function RunResults() {
     );
   }
 
-  if (error) {
-    return (
-      <DashboardLayout>
-        <FailedState error={(error as Error).message} />
-      </DashboardLayout>
-    );
+  if (error || !run) {
+    return <DashboardLayout><FailedState /></DashboardLayout>;
   }
 
-  const agg = run!.aggregate;
+  const isRunning = run.status === "running";
+  const isFailed = run.status === "failed";
+  const isDone = run.status === "completed";
+  const agg = run.aggregate;
+  const { completed, total } = run.progress ?? { completed: run.results.length, total: 24 };
+
+  // Index results by persona_id for the grid
+  const resultByPersonaId = Object.fromEntries(run.results.map((r) => [r.persona_id, r]));
+
+  // Ordered list of all 24 slots — completed ones first, then pending
+  const allSlots = panelPersonas ?? [];
+  const completedIds = new Set(run.results.map((r) => r.persona_id));
+  const orderedSlots = [
+    ...allSlots.filter((p) => completedIds.has(p.user_id)),
+    ...allSlots.filter((p) => !completedIds.has(p.user_id)),
+  ];
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
+      <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="text-ink-400 hover:text-ink-100 transition-colors"
-            >
+            <button onClick={() => navigate("/dashboard")} className="text-ink-400 hover:text-ink-100 transition-colors">
               <ArrowLeft size={20} />
             </button>
             <div>
-              <h1 className="text-xl font-bold text-ink-50">{run!.project_name}</h1>
+              <h1 className="text-xl font-bold text-ink-50">{run.project_name}</h1>
               <p className="text-xs text-ink-500">
-                {new Date(run!.created_at).toLocaleDateString("en-GB", {
-                  day: "numeric", month: "long", year: "numeric",
-                })}
+                {new Date(run.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
               </p>
             </div>
           </div>
-
-          {run!.status === "completed" && (
+          {isDone && (
             <div className="flex items-center gap-2">
               <span className="flex items-center gap-1.5 text-sm text-naija-400">
-                <CheckCircle size={16} />
-                Complete
+                <CheckCircle size={15} /> Complete
               </span>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-ink-700 text-ink-300 hover:border-naija-600"
-                onClick={() => exportCSV(run!)}
-              >
-                <Download size={14} className="mr-1.5" />
-                Export CSV
+              <Button size="sm" variant="outline" className="border-ink-700 text-ink-300 hover:border-naija-600" onClick={() => exportCSV(run)}>
+                <Download size={13} className="mr-1.5" /> CSV
               </Button>
             </div>
           )}
         </div>
 
-        {/* Content by status */}
-        {run!.status === "running" && <RunningState projectName={run!.project_name} />}
+        {/* Live progress bar (shown while running) */}
+        {isRunning && <LiveProgress completed={completed} total={total} projectName={run.project_name} />}
 
-        {run!.status === "failed" && (
-          <FailedState error={agg ? undefined : "Panel run could not complete."} />
+        {/* Failed */}
+        {isFailed && <FailedState />}
+
+        {/* Live persona grid — shown while running AND when done */}
+        {(isRunning || isDone) && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-ink-400 uppercase tracking-wider">
+                {isRunning ? "Live results" : `All ${run.results.length} personas`}
+              </h2>
+              {isRunning && (
+                <span className="text-xs text-ink-500">
+                  {completed} done · {total - completed} pending
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {orderedSlots.length > 0
+                ? orderedSlots.map((p) => (
+                    <PersonaCard
+                      key={p.user_id}
+                      personaId={p.user_id}
+                      personaName={p.user_id.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                      result={resultByPersonaId[p.user_id]}
+                      onClick={resultByPersonaId[p.user_id] ? () => setExpandedPersona(resultByPersonaId[p.user_id]) : undefined}
+                    />
+                  ))
+                : // Fallback if panel personas haven't loaded yet
+                  run.results.map((r) => (
+                    <PersonaCard
+                      key={r.id}
+                      personaId={r.persona_id}
+                      personaName={r.persona_name}
+                      result={r}
+                      onClick={() => setExpandedPersona(r)}
+                    />
+                  ))}
+            </div>
+          </div>
         )}
 
-        {run!.status === "completed" && agg && (
+        {/* Aggregate analytics — only shown when complete */}
+        {isDone && agg && (
           <>
             {/* Stat cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
-                {
-                  label: "Avg rating",
-                  value: agg.avg_rating.toFixed(1),
-                  sub: "out of 5",
-                  color: "text-amber-400",
-                },
-                {
-                  label: "Buy likelihood",
-                  value: `${agg.buy_likelihood}%`,
-                  sub: "rated ≥4 stars",
-                  color: "text-naija-400",
-                },
-                {
-                  label: "Personas",
-                  value: agg.n_personas,
-                  sub: "evaluated",
-                  color: "text-blue-400",
-                },
-                {
-                  label: "Positive",
-                  value: agg.sentiment_split?.positive ?? 0,
-                  sub: "of personas",
-                  color: "text-naija-400",
-                },
-              ].map(({ label, value, sub, color }) => (
-                <div
-                  key={label}
-                  className="bg-ink-900 border border-ink-800 rounded-xl p-5 space-y-1"
-                >
+                { label: "Avg rating", value: `${agg.avg_rating.toFixed(1)} / 5`, color: "text-amber-400" },
+                { label: "Buy likelihood", value: `${agg.buy_likelihood}%`, color: "text-naija-400" },
+                { label: "Personas", value: agg.n_personas, color: "text-blue-400" },
+                { label: "Positive", value: agg.sentiment_split?.positive ?? 0, color: "text-naija-400" },
+              ].map(({ label, value, color }) => (
+                <div key={label} className="bg-ink-900 border border-ink-800 rounded-xl p-5 space-y-1">
                   <p className={`text-2xl font-bold ${color}`}>{value}</p>
                   <p className="text-xs font-medium text-ink-200">{label}</p>
-                  <p className="text-xs text-ink-600">{sub}</p>
                 </div>
               ))}
             </div>
 
-            {/* Rating distribution + Themes */}
+            {/* Rating dist + Themes */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {/* Rating distribution */}
               <div className="bg-ink-900 border border-ink-800 rounded-xl p-6 space-y-4">
                 <h2 className="font-semibold text-ink-100">Rating distribution</h2>
                 <div className="space-y-2">
                   {[5, 4, 3, 2, 1].map((star) => (
-                    <RatingBar
-                      key={star}
-                      label={String(star)}
-                      count={agg.rating_distribution?.[String(star)] ?? 0}
-                      total={agg.n_personas}
-                    />
+                    <RatingBar key={star} label={String(star)} count={agg.rating_distribution?.[String(star)] ?? 0} total={agg.n_personas} />
                   ))}
                 </div>
               </div>
-
-              {/* Themes */}
               <div className="bg-ink-900 border border-ink-800 rounded-xl p-6 space-y-4">
                 <h2 className="font-semibold text-ink-100">Top themes</h2>
                 {agg.themes ? (
                   <div className="space-y-4">
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-naija-400 uppercase tracking-wider">
-                        Praised
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {agg.themes.praised.map((t) => (
-                          <span
-                            key={t}
-                            className="text-xs px-2.5 py-1 rounded-full bg-naija-900/40 border border-naija-700/40 text-naija-300"
-                          >
-                            {t}
-                          </span>
-                        ))}
+                    {[
+                      { label: "Praised", items: agg.themes.praised, cls: "bg-naija-900/40 border-naija-700/40 text-naija-300" },
+                      { label: "Concerns", items: agg.themes.complaints, cls: "bg-red-900/20 border-red-700/30 text-red-300" },
+                    ].map(({ label, items, cls }) => (
+                      <div key={label} className="space-y-2">
+                        <p className="text-xs font-medium text-ink-500 uppercase tracking-wider">{label}</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {items.map((t) => <span key={t} className={`text-xs px-2.5 py-1 rounded-full border ${cls}`}>{t}</span>)}
+                        </div>
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-red-400 uppercase tracking-wider">
-                        Concerns
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {agg.themes.complaints.map((t) => (
-                          <span
-                            key={t}
-                            className="text-xs px-2.5 py-1 rounded-full bg-red-900/20 border border-red-700/30 text-red-300"
-                          >
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ) : (
-                  <p className="text-sm text-ink-500">Theme extraction not available.</p>
-                )}
+                ) : <p className="text-sm text-ink-500">No theme data.</p>}
               </div>
             </div>
 
             {/* Cohort breakdown */}
             <div className="bg-ink-900 border border-ink-800 rounded-xl overflow-hidden">
               <div className="flex border-b border-ink-800">
-                {(
-                  [
-                    ["by_zone", "By zone"],
-                    ["by_register", "By register"],
-                    ["by_age", "By age"],
-                  ] as const
-                ).map(([key, label]) => (
+                {([["by_zone", "By zone"], ["by_register", "By register"], ["by_age", "By age"]] as const).map(([key, label]) => (
                   <button
                     key={key}
                     onClick={() => setCohortTab(key)}
-                    className={`px-5 py-3 text-sm font-medium transition-colors ${
-                      cohortTab === key
-                        ? "text-naija-400 border-b-2 border-naija-500"
-                        : "text-ink-400 hover:text-ink-200"
-                    }`}
+                    className={`px-5 py-3 text-sm font-medium transition-colors ${cohortTab === key ? "text-naija-400 border-b-2 border-naija-500" : "text-ink-400 hover:text-ink-200"}`}
                   >
                     {label}
                   </button>
                 ))}
               </div>
               <div className="p-4">
-                {agg[cohortTab] && Object.keys(agg[cohortTab]).length > 0 ? (
-                  <CohortTable data={agg[cohortTab]} />
-                ) : (
-                  <p className="text-sm text-ink-500 py-4 text-center">No data</p>
-                )}
-              </div>
-            </div>
-
-            {/* Per-persona results */}
-            <div className="bg-ink-900 border border-ink-800 rounded-xl overflow-hidden">
-              <div className="px-6 py-4 border-b border-ink-800 flex items-center justify-between">
-                <h2 className="font-semibold text-ink-100">
-                  Persona reviews{" "}
-                  <span className="text-sm font-normal text-ink-500">
-                    ({run!.results.length})
-                  </span>
-                </h2>
-                <p className="text-xs text-ink-500">Click a row to read the full review</p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-ink-950/50">
-                    <tr>
-                      {["Persona", "Rating", "Sentiment", "Register", "Review"].map((h) => (
-                        <th
-                          key={h}
-                          className="text-left py-2.5 px-4 text-xs font-medium text-ink-500 border-b border-ink-800"
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {run!.results.map((r) => (
-                      <PersonaRow
-                        key={r.id}
-                        result={r}
-                        onClick={() => setExpandedPersona(r)}
-                      />
-                    ))}
-                  </tbody>
-                </table>
+                {agg[cohortTab] && Object.keys(agg[cohortTab]).length > 0
+                  ? <CohortTable data={agg[cohortTab]} />
+                  : <p className="text-sm text-ink-500 py-4 text-center">No data</p>}
               </div>
             </div>
           </>
         )}
       </div>
 
-      {/* Review modal */}
-      {expandedPersona && (
-        <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => setExpandedPersona(null)}
-        >
-          <div
-            className="bg-ink-900 border border-ink-700 rounded-2xl p-6 max-w-lg w-full space-y-4 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <h3 className="font-semibold text-ink-50">{expandedPersona.persona_name}</h3>
-                <div className="flex items-center gap-2">
-                  <StarRating rating={expandedPersona.rating} />
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full border font-medium ${sentimentColor(expandedPersona.sentiment)}`}
-                  >
-                    {expandedPersona.sentiment}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => setExpandedPersona(null)}
-                className="text-ink-500 hover:text-ink-100 text-xl leading-none"
-              >
-                ×
-              </button>
-            </div>
-            <p className="text-sm text-ink-300 leading-relaxed whitespace-pre-wrap">
-              {expandedPersona.review_text}
-            </p>
-            <p className="text-xs text-ink-600">
-              Register: {expandedPersona.register_tier?.replace(/_/g, " ")}
-            </p>
-          </div>
-        </div>
-      )}
+      {expandedPersona && <ReviewModal result={expandedPersona} onClose={() => setExpandedPersona(null)} />}
     </DashboardLayout>
   );
 }

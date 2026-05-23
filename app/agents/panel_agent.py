@@ -139,6 +139,7 @@ async def run_panel(
     target_language: str | None = None,
     concurrency: int = 6,
     include_reasoning: bool = False,
+    on_result=None,  # Optional[Callable[[dict], Awaitable[None]]] — called per persona as it finishes
 ) -> dict[str, Any]:
     """Run the full panel against one product and aggregate insights."""
     started = time.perf_counter()
@@ -146,11 +147,6 @@ async def run_panel(
     if not personas:
         return {"error": "no personas loaded", "reactions": [], "aggregate": {}}
 
-    # Default to NaijaReviewer-8B (the Nigerian-context fine-tune — our moat),
-    # and fall back to a frontier LLM per-persona if it errors or isn't reachable
-    # (e.g. LM Studio not running). This keeps the panel robust: when the
-    # fine-tune is up it drives the ratings; when it's down everything degrades
-    # gracefully to the frontier model instead of failing.
     primary = backbone_override or settings.task1_backbone
     fallback = settings.task1_fallback
     used_fallback = {"n": 0}
@@ -188,7 +184,7 @@ async def run_panel(
                 return None
             demo = persona.demographics or {}
             rating = int(res["rating"])
-            return {
+            reaction = {
                 "persona_id": persona.user_id,
                 "location": demo.get("location"),
                 "zone": _zone_for(demo.get("location")),
@@ -201,6 +197,13 @@ async def run_panel(
                 "original_review": res.get("original_review"),
                 "sentiment": _sentiment_of(rating),
             }
+            # Fire the per-result callback immediately so callers can persist/stream
+            if on_result is not None:
+                try:
+                    await on_result(reaction)
+                except Exception as e:  # noqa: BLE001
+                    logger.warning("on_result callback failed for %s: %s", persona.user_id, e)
+            return reaction
 
     results = await asyncio.gather(*[_one(p) for p in personas])
     reactions = [r for r in results if r]

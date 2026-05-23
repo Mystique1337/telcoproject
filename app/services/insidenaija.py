@@ -54,15 +54,28 @@ class PanelRunService:
         return self.run_repo.save(run)
 
     async def execute_run(self, run_id: str, product: ProductSchema) -> None:
-        """Background task: runs the persona panel and persists results."""
+        """Background task: runs the persona panel, saving each result as it arrives."""
         from app.agents.panel_agent import run_panel
 
         run_repo = PanelRunRepository()
         result_repo = ResultRepository()
         rid = uuid.UUID(run_id)
 
+        async def _save_on_result(reaction: dict[str, Any]) -> None:
+            """Called by run_panel as each persona finishes — persists immediately."""
+            result = Result(
+                run_id=rid,
+                persona_id=reaction["persona_id"],
+                persona_name=reaction["persona_id"].replace("_", " ").title(),
+                review_text=reaction.get("review", ""),
+                rating=int(reaction["rating"]),
+                register_tier=reaction.get("register_tier"),
+                sentiment=reaction.get("sentiment"),
+            )
+            result_repo.save(result)
+
         try:
-            panel_result = await run_panel(product=product)
+            panel_result = await run_panel(product=product, on_result=_save_on_result)
 
             if panel_result.get("error"):
                 run = run_repo.find(rid)
@@ -76,19 +89,6 @@ class PanelRunService:
                 return
 
             reactions: list[dict[str, Any]] = panel_result.get("reactions", [])
-
-            for r in reactions:
-                result = Result(
-                    run_id=rid,
-                    persona_id=r["persona_id"],
-                    persona_name=r["persona_id"].replace("_", " ").title(),
-                    review_text=r.get("review", ""),
-                    rating=int(r["rating"]),
-                    register_tier=r.get("register_tier"),
-                    sentiment=r.get("sentiment"),
-                )
-                result_repo.save(result)
-
             run = run_repo.find(rid)
             if run:
                 run_repo.update(

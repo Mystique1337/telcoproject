@@ -84,6 +84,7 @@ export interface RunDetail {
   status: "running" | "completed" | "failed";
   created_at: string;
   completed_at: string | null;
+  progress: { completed: number; total: number };
   aggregate: {
     n_personas: number;
     avg_rating: number;

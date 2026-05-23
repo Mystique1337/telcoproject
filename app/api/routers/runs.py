@@ -66,8 +66,10 @@ async def get_run(
     if not project or str(project.user_id) != user["user_id"]:
         raise HTTPException(status_code=403, detail="Access denied")
 
-    results = run_svc.get_results(run_id) if run.status == "completed" else []
+    # Always return results — even mid-run so the UI can show live progress
+    results = run_svc.get_results(run_id)
     meta = run.meta or {}
+    total_personas = len(run.personas_used) if run.personas_used else 24
 
     return {
         "id": str(run.id),
@@ -76,6 +78,10 @@ async def get_run(
         "status": run.status,
         "created_at": run.created_at.isoformat(),
         "completed_at": run.completed_at.isoformat() if run.completed_at else None,
+        "progress": {
+            "completed": len(results),
+            "total": total_personas,
+        },
         "aggregate": meta.get("aggregate"),
         "backbone": meta.get("backbone"),
         "latency_ms": meta.get("latency_ms"),
