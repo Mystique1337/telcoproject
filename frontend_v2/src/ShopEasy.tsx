@@ -13,6 +13,13 @@ import {
 import { api } from "./api";
 import { LanguageGate, type AppLang } from "./LanguageGate";
 import { Onboarding, loadProfile, type ShopProfile } from "./Onboarding";
+import ShopLayout from "@/components/ShopLayout";
+import { type ShopView } from "@/components/ShopSidebar";
+
+type View = ShopView;
+
+// Alias so the rest of the file works unchanged
+const ShopLayoutWrapper = ShopLayout;
 import { ArrowRight, LogIn, Mic, Sparkles as SparklesIcon } from "lucide-react";
 import type { ConversationTurn, PanelReaction, Persona, ShopProduct } from "./types";
 import {
@@ -510,18 +517,7 @@ function OrderHistory({ onBack }: { onBack: () => void }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-ink-950 text-ink-100">
-      <header className="sticky top-0 z-30 border-b border-ink-800 bg-ink-950/80 backdrop-blur-md">
-        <div className="max-w-3xl mx-auto px-6 py-3.5 flex items-center gap-3">
-          <button onClick={onBack} className="text-ink-400 hover:text-ink-50 p-1">
-            <ArrowLeft size={18} />
-          </button>
-          <div className="flex items-center gap-2">
-            <History size={16} className="text-amber-400" />
-            <span className="font-semibold text-ink-50">Order History</span>
-          </div>
-        </div>
-      </header>
+    <div className="bg-ink-950 text-ink-100">
       <div className="max-w-3xl mx-auto px-6 py-8">
         {loading ? (
           <div className="flex justify-center py-16">
@@ -575,7 +571,7 @@ function OrderHistory({ onBack }: { onBack: () => void }) {
 }
 
 // ── Wishlist Page ─────────────────────────────────────────────────────────────
-function WishlistPage({ onBack, onSignIn }: { onBack: () => void; onSignIn: () => void }) {
+function WishlistPage({ onBack, onSignIn, onWishlistChange }: { onBack: () => void; onSignIn: () => void; onWishlistChange?: (n: number) => void }) {
   const hasSession = !!localStorage.getItem("shop_profile_id");
   const [items, setItems] = useState<ShopWishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -583,29 +579,20 @@ function WishlistPage({ onBack, onSignIn }: { onBack: () => void; onSignIn: () =
   useEffect(() => {
     if (!hasSession) { setLoading(false); return; }
     getWishlist()
-      .then(setItems)
+      .then((data) => { setItems(data); onWishlistChange?.(data.length); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
   async function remove(productId: string) {
-    setItems((prev) => prev.filter((i) => i.product_id !== productId));
+    const next = items.filter((i) => i.product_id !== productId);
+    setItems(next);
+    onWishlistChange?.(next.length);
     try { await removeFromWishlist(productId); } catch { /* best-effort */ }
   }
 
   return (
-    <div className="min-h-screen bg-ink-950 text-ink-100">
-      <header className="sticky top-0 z-30 border-b border-ink-800 bg-ink-950/80 backdrop-blur-md">
-        <div className="max-w-3xl mx-auto px-6 py-3.5 flex items-center gap-3">
-          <button onClick={onBack} className="text-ink-400 hover:text-ink-50 p-1">
-            <ArrowLeft size={18} />
-          </button>
-          <div className="flex items-center gap-2">
-            <Heart size={16} className="text-amber-400" />
-            <span className="font-semibold text-ink-50">Wishlist</span>
-          </div>
-        </div>
-      </header>
+    <div className="bg-ink-950 text-ink-100">
       <div className="max-w-3xl mx-auto px-6 py-8">
         {!hasSession ? (
           <div className="flex flex-col items-center py-20 text-ink-500">
@@ -683,15 +670,7 @@ function ProfilePage({ profile, persona, onBack, onSignOut }:
   }
 
   return (
-    <div className="min-h-screen bg-ink-950 text-ink-100">
-      <header className="sticky top-0 z-30 border-b border-ink-800 bg-ink-950/80 backdrop-blur-md">
-        <div className="max-w-2xl mx-auto px-6 py-3.5 flex items-center gap-3">
-          <button onClick={onBack} className="text-ink-400 hover:text-ink-50 p-1">
-            <ArrowLeft size={18} />
-          </button>
-          <span className="font-semibold text-ink-50">My Profile</span>
-        </div>
-      </header>
+    <div className="bg-ink-950 text-ink-100">
       <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
         {/* Avatar + basics */}
         {profile && (
@@ -793,11 +772,12 @@ function ProfilePage({ profile, persona, onBack, onSignOut }:
 }
 
 // ── Store ─────────────────────────────────────────────────────────────────────
-function Store({ lang, profile, shopPersona, onHome, onSignIn, onProfile, onOrders, onWishlist, initialCategory }:
+function Store({ lang, profile, shopPersona, onHome, onSignIn, onProfile, onOrders, onWishlist, initialCategory, onWishlistCountChange }:
   {
     lang: AppLang; profile: ShopProfile | null; shopPersona: ShopPersona | null;
     onHome: () => void; onSignIn: () => void; onProfile: () => void;
     onOrders: () => void; onWishlist: () => void; initialCategory?: string;
+    onWishlistCountChange?: (n: number) => void;
   }) {
   const t = T[lang] ?? T.english;
   const ct = CT[lang] ?? CT.english;
@@ -868,11 +848,11 @@ function Store({ lang, profile, shopPersona, onHome, onSignIn, onProfile, onOrde
   async function toggleWishlist(p: ShopProduct) {
     if (!hasSession) { onSignIn(); return; }
     const wasWishlisted = wishlistIds.has(p.product_id);
-    // Optimistic update
     setWishlistIds((prev) => {
       const next = new Set(prev);
       if (wasWishlisted) next.delete(p.product_id);
       else next.add(p.product_id);
+      onWishlistCountChange?.(next.size);
       return next;
     });
     try {
@@ -901,47 +881,6 @@ function Store({ lang, profile, shopPersona, onHome, onSignIn, onProfile, onOrde
 
   return (
     <div className="min-h-screen bg-ink-950 text-ink-100">
-      <header className="sticky top-0 z-30 border-b border-ink-800 bg-ink-950/80 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-800 flex items-center justify-center"><ShoppingCart size={16} className="text-white" /></div>
-              <span className="font-bold text-ink-50 tracking-tight">Shop<span className="brand-text">Easy</span></span>
-            </div>
-            <ProductSwitcher current="shop" />
-          </div>
-          <nav className="flex items-center gap-3 text-xs">
-            <button onClick={onHome} className="text-ink-300 hover:text-ink-50">Home</button>
-            {hasSession && (
-              <button onClick={onOrders} className="text-ink-300 hover:text-ink-50 inline-flex items-center gap-1">
-                <History size={12} /> Orders
-              </button>
-            )}
-            <button onClick={onWishlist} className="text-ink-300 hover:text-ink-50 inline-flex items-center gap-1 relative">
-              <Heart size={12} /> Wishlist
-              {wishlistCount > 0 && (
-                <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-amber-600 text-[9px] text-white flex items-center justify-center font-bold">
-                  {wishlistCount > 9 ? "9+" : wishlistCount}
-                </span>
-              )}
-            </button>
-            <a href="#b2b" className="text-ink-300 hover:text-ink-50">For Business</a>
-            <button onClick={() => { localStorage.removeItem("shopeasy_lang"); window.location.reload(); }}
-                    className="text-ink-400 hover:text-ink-200 capitalize">{lang} ⌄</button>
-            {profile ? (
-              <button onClick={onProfile} className="inline-flex items-center gap-1.5 bg-ink-900 border border-ink-700 rounded-full pl-1 pr-3 py-1 hover:border-amber-600/60 transition-colors">
-                <img src={personaAvatar(profile.id)} alt="" className="w-5 h-5 rounded-full" />
-                <span className="text-ink-200">{profile.name}</span>
-              </button>
-            ) : (
-              <button onClick={onSignIn}
-                      className="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg px-3 py-1.5 font-medium">
-                <LogIn size={13} /> Sign in
-              </button>
-            )}
-          </nav>
-        </div>
-      </header>
 
       {/* Persona pill (Feature 1a) */}
       {shopPersona && (
@@ -1118,24 +1057,6 @@ function Home({ profile, onStart, onSignIn }:
   { profile: ShopProfile | null; onStart: (category?: string) => void; onSignIn: () => void }) {
   return (
     <div className="min-h-screen bg-ink-950 text-ink-100">
-      <header className="sticky top-0 z-30 border-b border-ink-800 bg-ink-950/80 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-800 flex items-center justify-center"><ShoppingCart size={16} className="text-white" /></div>
-              <span className="font-bold text-ink-50 tracking-tight">Shop<span className="brand-text">Easy</span></span>
-            </div>
-            <ProductSwitcher current="shop" />
-          </div>
-          <nav className="flex items-center gap-3 text-xs">
-            <button onClick={() => onStart()} className="text-ink-300 hover:text-ink-50">Browse</button>
-            <a href="#b2b" className="text-ink-300 hover:text-ink-50">For Business</a>
-            {profile
-              ? <span className="inline-flex items-center gap-1.5 bg-ink-900 border border-ink-700 rounded-full pl-1 pr-3 py-1"><img src={personaAvatar(profile.id)} alt="" className="w-5 h-5 rounded-full" /><span className="text-ink-200">{profile.name}</span></span>
-              : <button onClick={onSignIn} className="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg px-3 py-1.5 font-medium"><LogIn size={13} /> Sign in</button>}
-          </nav>
-        </div>
-      </header>
 
       <div className="max-w-4xl mx-auto px-6">
         {/* Hero */}
@@ -1231,7 +1152,6 @@ function Home({ profile, onStart, onSignIn }:
 }
 
 // ── ShopApp state machine ─────────────────────────────────────────────────────
-type View = "home" | "store" | "profile" | "orders" | "wishlist";
 
 function ShopApp({ lang }: { lang: AppLang }) {
   const [view, setView] = useState<View>("store");
@@ -1239,6 +1159,7 @@ function ShopApp({ lang }: { lang: AppLang }) {
   const [shopPersona, setShopPersona] = useState<ShopPersona | null>(null);
   const [onboarding, setOnboarding] = useState(false);
   const [storeCategory, setStoreCategory] = useState<string | undefined>(undefined);
+  const [wishlistCount, setWishlistCount] = useState(0);
 
   useEffect(() => {
     const p = loadProfile();
@@ -1247,10 +1168,10 @@ function ShopApp({ lang }: { lang: AppLang }) {
         .then((r) => setProfile({ id: p.id, name: r.name, persona: r.persona }))
         .catch(() => {});
     }
-    // Load DB-backed persona if signed in via Supabase
     const hasSession = !!localStorage.getItem("shop_profile_id");
     if (hasSession) {
       getShopPersona().then(setShopPersona).catch(() => {});
+      getWishlist().then((items) => setWishlistCount(items.length)).catch(() => {});
     }
   }, []);
 
@@ -1264,59 +1185,65 @@ function ShopApp({ lang }: { lang: AppLang }) {
     localStorage.removeItem("shop_profile_name");
     setProfile(null);
     setShopPersona(null);
-    setView("home");
+    setWishlistCount(0);
+    setView("store");
   }
 
-  if (view === "home") {
-    return (
-      <>
-        <Home profile={profile} onStart={goStore} onSignIn={() => setOnboarding(true)} />
-        {onboarding && (
-          <Onboarding onClose={() => setOnboarding(false)}
-                      onDone={(p) => { setProfile(p); setOnboarding(false); setView("store"); }} />
-        )}
-      </>
-    );
-  }
+  const layoutProps = {
+    view,
+    onNav: (v: View) => { if (v === "store") goStore(); else setView(v); },
+    onCategorySelect: goStore,
+    profile,
+    shopPersona,
+    wishlistCount,
+    onSignIn: () => setOnboarding(true),
+    onSignOut: handleSignOut,
+  };
 
-  if (view === "profile") {
-    return (
-      <ProfilePage
-        profile={profile}
-        persona={shopPersona}
-        onBack={() => setView("store")}
-        onSignOut={handleSignOut}
-      />
-    );
-  }
-
-  if (view === "orders") {
-    return <OrderHistory onBack={() => setView("store")} />;
-  }
-
-  if (view === "wishlist") {
-    return <WishlistPage onBack={() => setView("store")} onSignIn={() => setOnboarding(true)} />;
-  }
-
-  // view === "store"
   return (
-    <>
-      <Store
-        lang={lang}
-        profile={profile}
-        shopPersona={shopPersona}
-        onHome={() => setView("home")}
-        onSignIn={() => setOnboarding(true)}
-        onProfile={() => setView("profile")}
-        onOrders={() => setView("orders")}
-        onWishlist={() => setView("wishlist")}
-        initialCategory={storeCategory}
-      />
-      {onboarding && (
-        <Onboarding onClose={() => setOnboarding(false)}
-                    onDone={(p) => { setProfile(p); setOnboarding(false); }} />
+    <ShopLayoutWrapper {...layoutProps}>
+      {view === "home" && (
+        <Home profile={profile} onStart={goStore} onSignIn={() => setOnboarding(true)} />
       )}
-    </>
+      {view === "profile" && (
+        <ProfilePage
+          profile={profile}
+          persona={shopPersona}
+          onBack={() => setView("store")}
+          onSignOut={handleSignOut}
+        />
+      )}
+      {view === "orders" && (
+        <OrderHistory onBack={() => setView("store")} />
+      )}
+      {view === "wishlist" && (
+        <WishlistPage
+          onBack={() => setView("store")}
+          onSignIn={() => setOnboarding(true)}
+          onWishlistChange={setWishlistCount}
+        />
+      )}
+      {(view === "store" || !["home","profile","orders","wishlist"].includes(view)) && (
+        <Store
+          lang={lang}
+          profile={profile}
+          shopPersona={shopPersona}
+          onHome={() => setView("home")}
+          onSignIn={() => setOnboarding(true)}
+          onProfile={() => setView("profile")}
+          onOrders={() => setView("orders")}
+          onWishlist={() => setView("wishlist")}
+          initialCategory={storeCategory}
+          onWishlistCountChange={setWishlistCount}
+        />
+      )}
+      {onboarding && (
+        <Onboarding
+          onClose={() => setOnboarding(false)}
+          onDone={(p) => { setProfile(p); setOnboarding(false); setView("store"); }}
+        />
+      )}
+    </ShopLayoutWrapper>
   );
 }
 
