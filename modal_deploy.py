@@ -13,7 +13,7 @@ Build the frontend first:
 
 import modal
 
-app = modal.App("naija-persona-agent")
+app = modal.App("naijapersona")
 
 # ── Image ──────────────────────────────────────────────────────────────────────
 image = (
@@ -36,7 +36,7 @@ image = (
     # min_containers=1,
 )
 @modal.asgi_app()
-def fastapi_app():
+def web():
     import sys
     sys.path.insert(0, "/app")
     from app.api.main import app as fastapi_application
