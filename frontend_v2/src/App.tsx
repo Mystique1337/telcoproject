@@ -1543,19 +1543,29 @@ export default function App() {
 
     fetch("/catalog/eval-summary").then((r) => r.json())
       .then((d) => {
-        if (d.available && d.task1?.naija) {
+        // Only update if the live eval has actual non-null values — otherwise
+        // keep EVAL_FALLBACK so the stats display meaningful paper numbers.
+        if (d.available && d.task1?.naija?.RMSE != null) {
           setEvalData({
             naija_rmse: d.task1.naija.RMSE,
             claude_rmse: d.task1.claude.RMSE,
             naija_bert: d.task1.naija.BERTScore_F1,
             claude_bert: d.task1.claude.BERTScore_F1,
-            naija_ndcg10: d.task2?.naija?.NDCG_at_10,
-            claude_ndcg10: d.task2?.claude?.NDCG_at_10,
+            naija_ndcg10: d.task2?.naija?.NDCG_at_10 ?? EVAL_FALLBACK.naija_ndcg10,
+            claude_ndcg10: d.task2?.claude?.NDCG_at_10 ?? EVAL_FALLBACK.claude_ndcg10,
             naija_overall: d.task1.naija.AS_overall,
             claude_overall: d.task1.claude.AS_overall,
             n_task1: d.task1.n,
             n_task2: d.task2?.n,
           });
+        } else if (d.task2?.naija?.NDCG_at_10 != null) {
+          // task1 not run yet but task2 has live data — patch just the NDCG fields
+          setEvalData((prev) => ({
+            ...prev,
+            naija_ndcg10: d.task2.naija.NDCG_at_10,
+            claude_ndcg10: d.task2.claude.NDCG_at_10,
+            n_task2: d.task2.n,
+          }));
         }
       }).catch(() => {});
   }, []);
