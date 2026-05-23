@@ -6,6 +6,7 @@ import {
   FileSpreadsheet, CheckCircle2, X, AlertCircle,
   ChevronDown,
 } from "lucide-react";
+import RichTextEditor from "@/components/RichTextEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -96,7 +97,8 @@ function SingleProjectForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !description.trim()) { setError("Product name and description are required."); return; }
+    const descText = description.replace(/<[^>]+>/g, "").trim();
+    if (!name.trim() || !descText) { setError("Product name and description are required."); return; }
     setError(""); setLoading(true);
     try {
       const res = await createProject({ name: name.trim(), description: description.trim(), category, image_url: imageUrl.trim() || undefined });
@@ -116,10 +118,16 @@ function SingleProjectForm() {
             className="bg-ink-950 border-ink-700 text-ink-50 placeholder:text-ink-600 focus-visible:ring-naija-600" disabled={loading} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="description" className="text-ink-200">Description <span className="text-red-400">*</span></Label>
-          <textarea id="description" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} disabled={loading}
-            placeholder="Describe the product — what it is, who it's for, price point…"
-            className="w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 focus:outline-none focus:ring-2 focus:ring-naija-600 focus:border-transparent disabled:opacity-50 resize-none" />
+          <Label className="text-ink-200">
+            Description <span className="text-red-400">*</span>
+            <span className="ml-2 text-xs text-ink-600 font-normal">supports bold, italic, lists</span>
+          </Label>
+          <RichTextEditor
+            value={description}
+            onChange={setDescription}
+            placeholder="Describe the product — what it is, who it's for, price point, key variants…"
+            disabled={loading}
+          />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">

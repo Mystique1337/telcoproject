@@ -2,11 +2,19 @@
 
 from __future__ import annotations
 
+import re
 import uuid
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
+
+
+def _strip_html(html: str) -> str:
+    """Remove HTML tags so the LLM receives clean plain text."""
+    text = re.sub(r"<[^>]+>", " ", html)
+    text = text.replace("&nbsp;", " ").replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
+    return re.sub(r"\s+", " ", text).strip()
 
 from app.api.schemas.product import Product as ProductSchema
 from app.db.repositories.shared import UserRepository
@@ -51,7 +59,7 @@ async def create_project(
     product = ProductSchema(
         product_id=str(uuid.uuid4()),
         title=req.name,
-        description=req.description,
+        description=_strip_html(req.description),  # LLM gets plain text
         category=req.category,
         metadata={"image_url": req.image_url} if req.image_url else {},
     )
@@ -132,7 +140,7 @@ async def create_projects_bulk(
         product = ProductSchema(
             product_id=str(uuid.uuid4()),
             title=item.name,
-            description=item.description,
+            description=_strip_html(item.description),
             category=item.category,
             metadata={"image_url": item.image_url} if item.image_url else {},
         )
@@ -222,7 +230,7 @@ async def rerun_project(
     product = ProductSchema(
         product_id=str(uuid.uuid4()),
         title=project.name,
-        description=project.description,
+        description=_strip_html(project.description),
         category=project.category,
         metadata={},
     )

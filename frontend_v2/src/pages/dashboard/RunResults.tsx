@@ -434,7 +434,10 @@ export default function RunResults() {
                 </span>
               )}
             </div>
-            <p className="text-sm text-ink-400 leading-relaxed">{run.project_description}</p>
+            <div
+              className="text-sm text-ink-400 leading-relaxed rich-text"
+              dangerouslySetInnerHTML={{ __html: run.project_description }}
+            />
           </div>
         )}
 
