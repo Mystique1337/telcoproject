@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, Users, Globe, BarChart3, Zap,
-  TrendingUp, DollarSign, Clock, ShieldCheck, Package,
+  TrendingUp, DollarSign, Clock, ShieldCheck, Package, Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
@@ -138,11 +138,12 @@ export default function InsideNaijaPage() {
           <h2 className="text-3xl font-bold text-ink-50 tracking-tight">From product to verdict in 90 seconds</h2>
           <p className="text-ink-400">A traditional Nigerian panel study costs ₦5M and takes 6 weeks. InsideNaija simulates one instantly so you can kill bad ideas before they cost you.</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
           {[
             { n: 1, icon: Package,   t: "Describe your product", d: "Title, price, a line of detail. Takes 20 seconds." },
             { n: 2, icon: Users,     t: "The panel reacts",       d: "24 Nigerian personas across 6 zones rate it and write a real review in their own register." },
             { n: 3, icon: BarChart3, t: "Read the verdict",       d: "Predicted rating, buy-likelihood, who's warm/cold, and the recurring praise & concerns." },
+            { n: 4, icon: Share2,    t: "Export & share",         d: "CSV export or shareable link. Ready for your deck, your client, or your team." },
           ].map(({ n, icon: Icon, t, d }) => (
             <div key={n} className="bg-ink-900/40 border border-ink-800 rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-4">
