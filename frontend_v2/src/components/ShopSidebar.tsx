@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ShoppingBag, Heart, Package, User, Smartphone, Shirt,
   Sparkles, ShoppingBasket, HomeIcon, Gamepad2, LogIn,
-  LogOut, Menu, X, ChevronRight,
+  LogOut, Menu, X, ChevronRight, FlaskConical,
 } from "lucide-react";
 
 export type ShopView = "home" | "store" | "orders" | "wishlist" | "profile";
@@ -69,6 +70,7 @@ function NavItem({ label, icon: Icon, active, badge, onClick }: {
 }
 
 function SidebarContent({ view, onNav, onCategorySelect, profile, shopPersona, wishlistCount, onSignIn, onSignOut, onClose }: Props) {
+  const navigate = useNavigate();
   function go(v: ShopView) { onNav(v); onClose?.(); }
   function cat(q: string) { onCategorySelect(q); onClose?.(); }
 
@@ -144,6 +146,17 @@ function SidebarContent({ view, onNav, onCategorySelect, profile, shopPersona, w
           ))}
         </div>
       </nav>
+
+      {/* Labz */}
+      <div className="px-3 pb-2">
+        <button
+          onClick={() => { onClose?.(); navigate("/lab"); }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium border border-ink-600 bg-ink-800/40 text-ink-400 hover:text-ink-200 hover:bg-ink-700/60 hover:border-ink-500 transition-all"
+        >
+          <FlaskConical size={15} className="shrink-0" />
+          Labz
+        </button>
+      </div>
 
       {/* Footer */}
       <div className="border-t border-ink-800 mx-3 mb-1" />

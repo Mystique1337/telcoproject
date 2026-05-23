@@ -21,6 +21,7 @@ import Personas from "@/pages/dashboard/Personas";
 import ShareView from "@/pages/ShareView";
 import Compare from "@/pages/dashboard/Compare";
 import ShopGate from "@/pages/ShopGate";
+import LabGate from "@/pages/LabGate";
 
 // Existing product components (preserved from v1)
 import InsideNaija from "./InsideNaija";
@@ -162,18 +163,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/lab"
-              element={
-                <LanguageGate
-                  storageKey="lab_lang"
-                  title="NaijaPersona Labz"
-                  subtitle="Pick a language for the developer console."
-                >
-                  {() => <App />}
-                </LanguageGate>
-              }
-            />
+            <Route path="/lab" element={<LabGate />} />
 
             {/* Widget (embed, no auth) */}
             <Route path="/widget" element={<Widget />} />

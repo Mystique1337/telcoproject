@@ -11,6 +11,7 @@ import {
   X,
   ChevronRight,
   DoorOpen,
+  FlaskConical,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 
@@ -141,6 +142,17 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           </div>
         ))}
       </nav>
+
+      {/* Labz */}
+      <div className="px-3 pb-2">
+        <button
+          onClick={() => go("/lab")}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium border border-ink-600 bg-ink-800/40 text-ink-400 hover:text-ink-200 hover:bg-ink-700/60 hover:border-ink-500 transition-all"
+        >
+          <FlaskConical size={15} className="shrink-0" />
+          Labz
+        </button>
+      </div>
 
       {/* Footer */}
       <div className="border-t border-ink-800 mx-3 mb-1" />
