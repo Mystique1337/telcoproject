@@ -58,6 +58,20 @@ The same FastAPI service powers four end-user surfaces.
 | **NaijaPersona Lab** | Developers | Console for driving the raw endpoints, A/B-ing across eleven LLM backbones, and inspecting the agent's reasoning trace. Experiment history is persisted in Supabase. |
 | **B2B widget** | External sites | iframe-embeddable persona-aware recommendation widget. |
 
+## Navigating the live app
+
+Open <https://switteefranca2-0--naijapersona-web.modal.run/>. The Modal endpoint scales to zero, so the first request may take ten to fifteen seconds to warm; subsequent requests are fast. From the landing page:
+
+| Click | Where it takes you | What to try |
+|---|---|---|
+| **InsideNaija** (default home) | The synthetic-panel interface. | Type a product description (for example *"Tecno Spark 10 mobile phone, 4 GB RAM, 64 GB storage, 5,000 mAh battery, NGN 145,000"*) and run the panel. You will see a 24-persona reaction stream with star ratings, register-tagged reviews, and aggregates by zone, age band, and register. Click any reaction to expand the persona detail and the reasoning. |
+| **ShopEasy** (top nav) | The Nigerian-shopper storefront. | Try the text search (for example *"affordable phone under 100k"*), the voice search (microphone icon), and the image search (upload any product photo). Click into a product to see specs, simulated reviews from the panel, and a "why this for you" rationale. The chat icon opens the conversational assistant; try refining the budget mid-conversation. |
+| **NaijaPersona Lab** (top nav, after sign-in) | The developer console. | Run a side-by-side A/B between any two of the eleven supported LLM backbones on the same persona and product. Inspect the structured reasoning trace each one returns. Every run is saved to your experiment history; click any past run to re-open or share. |
+| **B2B widget** | Demonstration of the embeddable iframe. | Register a business, copy the generated iframe snippet, and confirm the recommendation surface renders inside the snippet. |
+| **Sign in** (top right) | Supabase magic link. | Sign in with any email; you will receive a magic link. After login an onboarding wizard builds your personal persona which is used to personalise both panel and storefront responses from that session onwards. |
+
+If the live link is asleep when you click it, the first request triggers the warm-up. No action is required.
+
 ## How judges should evaluate this
 
 ### Fastest path: try the live app
@@ -150,6 +164,25 @@ python deploy/test_modal.py https://chidi-ashinze--naija-reviewer-serve.modal.ru
 ```
 
 Both Task A and Task B papers include a higher-fidelity rendering of this diagram (TikZ, in the `.tex`).
+
+## Agentic workflow: where to read the code
+
+The "agentic" surface is concentrated in five files. Each is heavily commented to explain the *why* (architectural decision) as well as the *what* (code mechanics), so a judge reading them top to bottom can follow the reasoning.
+
+| File | Agent | What its workflow does |
+|---|---|---|
+| `app/agents/review_agent.py` | **Review generator** (Task A) | Picks the register-aware prompt template by persona tier, renders the Jinja template against the persona JSON, dispatches to the configured backbone, parses the rating and review out of the response, optionally runs a second-pass refinement loop, and returns the structured rationale. |
+| `app/agents/panel_agent.py` | **Multi-persona panel** (Task A) | Fans out review generation across the 24 persona library in parallel, aggregates star ratings, sentiment, register-tagged themes, and buy-likelihood by zone, age band, and register, and returns the aggregate object the InsideNaija UI consumes. |
+| `app/agents/recommend_agent.py` | **Recommendation re-ranker** (Task B) | Six explicit stages: scenario detection (cold-start / cross-domain / multi-turn), constraint extraction from the persona and conversation, Pinecone dense retrieval, optional Cohere Stage-2.5 pre-rerank, persona-aware LLM re-rank with index-based scoring, and an MMR diversity pass. Each stage writes into the reasoning trace. |
+| `app/agents/chat_agent.py` | **Conversational shopper** (Task B) | Handles multi-turn refinement: detects budget changes mid-chat, parses category and constraint updates from natural language, re-issues a recommendation call with the refined persona view, and stitches the dialog state into a coherent reply. |
+| `app/agents/visual_search.py` | **Image-to-recommendation** | Pulls product features out of a user-uploaded image, projects into the same embedding space as the catalogue, and hands off to the recommendation re-ranker so the same persona-aware pipeline handles visual queries. |
+
+Two further pieces sit underneath the agents:
+
+- `app/llm/client.py` is the unified LLM provider gateway. One `complete(...)` interface dispatches to eleven backbones (Anthropic, OpenAI, NVIDIA NIM, HuggingFace Inference, Ollama Cloud, LM Studio, freemodel.dev, our Modal endpoint, etc.); the comments at the top explain the dispatch contract, the JSON-following parser, and the 429 backoff strategy that lets the multi-backbone re-ranker comparison run without silent fallbacks.
+- `app/rag/` contains the Pinecone retrieval wrappers and the Chroma local fallback. The asymmetric query / passage encoding rationale is documented in the module header.
+
+Every recommendation and chat response carries a `reasoning_trace` field that lets you read each stage's input, decision, and output without diving into the code; it is the agent's narrative of its own work. The Lab UI renders this trace alongside the response.
 
 ## API reference
 
