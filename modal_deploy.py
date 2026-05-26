@@ -32,11 +32,9 @@ image = (
 @app.function(
     image=image,
     secrets=[modal.Secret.from_name("naija-persona-secrets")],
-    allow_concurrent_inputs=50,
     timeout=300,
-    # Uncomment to keep a warm container always running:
-    # min_containers=1,
 )
+@modal.concurrent(max_inputs=50)
 @modal.asgi_app()
 def web():
     import sys
