@@ -1,48 +1,49 @@
-# Naija Persona Agent - FastAPI runtime requirements.
+# Naija Persona Agent — FastAPI runtime requirements
 # Install: pip install -r requirements.txt
 
-# Web framework
+# ── Web framework ─────────────────────────────────────────────────────────────
 fastapi>=0.115,<0.117
 uvicorn[standard]>=0.32,<0.34
 
-# Schemas + config
+# ── Schemas + config ──────────────────────────────────────────────────────────
 pydantic>=2.9,<3.0
 pydantic-settings>=2.6,<3.0
 python-dotenv>=1.0
+eval_type_backport>=0.3   # Python 3.9 compat for X | None union syntax in Pydantic
 
-# Database (SQLAlchemy ORM + PostgreSQL driver)
+# ── Database (SQLAlchemy ORM + PostgreSQL) ────────────────────────────────────
 sqlalchemy>=2.0,<3.0
 psycopg2-binary>=2.9,<3.0
 
-# Auth (Supabase passwordless + JWT verification)
+# ── Auth (Supabase client) ────────────────────────────────────────────────────
 supabase>=2.0,<3.0
 python-jose[cryptography]>=3.3,<4.0
 
-# Prompt templating
+# ── Prompt templating ─────────────────────────────────────────────────────────
 jinja2>=3.1
 
-# HTTP client (used by every LLM provider client)
+# ── HTTP client ───────────────────────────────────────────────────────────────
 httpx>=0.27,<0.29
 
-# Frontier LLM SDKs
+# ── LLM SDKs ─────────────────────────────────────────────────────────────────
 anthropic>=0.39
 openai>=1.55
 
-# Vector retrieval
+# ── Vector retrieval ─────────────────────────────────────────────────────────
 chromadb>=0.5,<0.6
 pinecone>=7.0
 
-# Data
+# ── Data ─────────────────────────────────────────────────────────────────────
 pandas>=2.0
 numpy>=1.24,<2
 
-# Utilities (scripts / bulk import / human-eval XLSX)
-openpyxl>=3.1,<4.0
+# ── Utilities ─────────────────────────────────────────────────────────────────
+openpyxl>=3.1,<4.0          # XLSX export / bulk import
 pyyaml>=6.0,<7.0
 tqdm>=4.66,<5.0
 requests>=2.32
 
-# Evaluation suite
+# ── Evaluation suite (scripts/eval_all.py) ────────────────────────────────────
 bert-score>=0.3.13
 rouge-score>=0.1.2
 scikit-learn>=1.3
