@@ -788,7 +788,7 @@ function Store({ lang, profile, shopPersona, onHome, onSignIn, onProfile, onOrde
   }) {
   const t = T[lang] ?? T.english;
   const ct = CT[lang] ?? CT.english;
-  const [mode, setMode] = useState<"search" | "chat">("search");
+  const [mode, setMode] = useState<"search" | "chat">("chat");
   const [query, setQuery] = useState(initialCategory || "");
   const [loading, setLoading] = useState(false);
   const [detected, setDetected] = useState<string | null>(null);
@@ -902,13 +902,13 @@ function Store({ lang, profile, shopPersona, onHome, onSignIn, onProfile, onOrde
       {/* Mode toggle */}
       <div className="max-w-3xl mx-auto px-6 pt-6 flex justify-center">
         <div className="inline-flex bg-ink-900 border border-ink-700 rounded-lg p-1">
-          <button onClick={() => setMode("search")}
-                  className={`text-sm font-medium rounded-md px-4 py-1.5 inline-flex items-center gap-1.5 transition-colors ${mode === "search" ? "bg-amber-600 text-white" : "text-ink-300 hover:text-ink-50"}`}>
-            <Search size={14} /> {ct.stab}
-          </button>
           <button onClick={() => setMode("chat")}
                   className={`text-sm font-medium rounded-md px-4 py-1.5 inline-flex items-center gap-1.5 transition-colors ${mode === "chat" ? "bg-amber-600 text-white" : "text-ink-300 hover:text-ink-50"}`}>
             <MessageSquare size={14} /> {ct.tab}
+          </button>
+          <button onClick={() => setMode("search")}
+                  className={`text-sm font-medium rounded-md px-4 py-1.5 inline-flex items-center gap-1.5 transition-colors ${mode === "search" ? "bg-amber-600 text-white" : "text-ink-300 hover:text-ink-50"}`}>
+            <Search size={14} /> {ct.stab}
           </button>
         </div>
       </div>
