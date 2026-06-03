@@ -53,6 +53,7 @@ function usePersonaTTS(text: string, personaId: string, registerTier?: string | 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: text.slice(0, 500), voice }),
       });
+
       if (!r.ok) throw new Error(`TTS ${r.status}`);
       const url = URL.createObjectURL(await r.blob());
       cachedUrl.current = url;

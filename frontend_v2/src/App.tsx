@@ -1020,7 +1020,7 @@ function TabRecommend({ personas }: { personas: Persona[] }) {
   const [domain, setDomain] = useState("jumia");
   const [k, setK] = useState(5);
   // Default to Claude - the right model for Task B re-ranking
-  const [model, setModel] = useState(MODELS[2].spec);  // default Claude Sonnet
+  const [model, setModel] = useState(MODELS[0].spec);  // default NaijaReviewer-8B
   const [data, setData] = useState<RecommendResponse | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -1130,7 +1130,7 @@ interface ChatMessageItem {
 
 function TabChat({ personas }: { personas: Persona[] }) {
   const [persona, setPersona] = useState<Persona | null>(null);
-  const [model, setModel] = useState(MODELS[2].spec);  // default Claude Sonnet
+  const [model, setModel] = useState(MODELS[1].spec);  // default Claude Sonnet
   const [chatLang, setChatLang] = useState<"yoruba" | "hausa" | "igbo" | null>(null);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessageItem[]>([

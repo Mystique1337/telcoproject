@@ -23,13 +23,13 @@ export const MODELS: ModelOption[] = [
     // Empirically TOP RANKER on v2 B-eval (NDCG@10 0.588 vs Claude 0.433).
     bestFor: "both",
   },
-  {
-    label: "NaijaReviewer-8B (local)",
-    spec: "lmstudio:naija-reviewer-8b",
-    badge: "🇳🇬 fine-tune · local",
-    // Same fine-tune via LM Studio on localhost — use when running offline.
-    bestFor: "both",
-  },
+  // {
+  //   label: "NaijaReviewer-8B (local)",
+  //   spec: "lmstudio:naija-reviewer-8b",
+  //   badge: "🇳🇬 fine-tune · local",
+  //   // Same fine-tune via LM Studio on localhost — use when running offline.
+  //   bestFor: "both",
+  // },
 
   // ── Frontier (closed-source) ────────────────────────────────────────
   {
