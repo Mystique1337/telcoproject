@@ -1,0 +1,271 @@
+{
+  "files": [
+    {
+      "file": "Inter-ExtraLight.woff2",
+      "family": "Inter",
+      "rawFamily": "Inter ExtraLight",
+      "subfamily": "Regular",
+      "postscript": "Inter-ExtraLight",
+      "weight": 200,
+      "style": "normal",
+      "variationAxes": [],
+      "identified": true
+    },
+    {
+      "file": "Inter-ExtraLightItalic.woff2",
+      "family": "Inter",
+      "rawFamily": "Inter ExtraLight",
+      "subfamily": "Italic",
+      "postscript": "Inter-ExtraLightItalic",
+      "weight": 200,
+      "style": "italic",
+      "variationAxes": [],
+      "identified": true
+    },
+    {
+      "file": "Inter-LightItalic.woff2",
+      "family": "Inter",
+      "rawFamily": "Inter Light",
+      "subfamily": "Italic",
+      "postscript": "Inter-LightItalic",
+      "weight": 300,
+      "style": "italic",
+      "variationAxes": [],
+      "identified": true
+    },
+    {
+      "file": "Inter-MediumItalic.woff2",
+      "family": "Inter",
+      "rawFamily": "Inter Medium",
+      "subfamily": "Italic",
+      "postscript": "Inter-MediumItalic",
+      "weight": 500,
+      "style": "italic",
+      "variationAxes": [],
+      "identified": true
+    },
+    {
+      "file": "Inter-SemiBoldItalic.woff2",
+      "family": "Inter",
+      "rawFamily": "Inter SemiBold",
+      "subfamily": "Italic",
+      "postscript": "Inter-SemiBoldItalic",
+      "weight": 600,
+      "style": "italic",
+      "variationAxes": [],
+      "identified": true
+    },
+    {
+      "file": "Inter-ThinItalic.woff2",
+      "family": "Inter",
+      "rawFamily": "Inter Thin",
+      "subfamily": "Italic",
+      "postscript": "Inter-ThinItalic",
+      "weight": 100,
+      "style": "italic",
+      "variationAxes": [],
+      "identified": true
+    },
+    {
+      "file": "InterDisplay-ExtraLight.woff2",
+      "family": "Inter Display",
+      "rawFamily": "Inter Display ExtraLight",
+      "subfamily": "Regular",
+      "postscript": "InterDisplay-ExtraLight",
+      "weight": 200,
+      "style": "normal",
+      "variationAxes": [],
+      "identified": true
+    },
+    {
+      "file": "InterDisplay-ExtraLightItalic.woff2",
+      "family": "Inter Display",
+      "rawFamily": "Inter Display ExtraLight",
+      "subfamily": "Italic",
+      "postscript": "InterDisplay-ExtraLightItalic",
+      "weight": 200,
+      "style": "italic",
+      "variationAxes": [],
+      "identified": true
+    },
+    {
+      "file": "InterDisplay-LightItalic.woff2",
+      "family": "Inter Display",
+      "rawFamily": "Inter Display Light",
+      "subfamily": "Italic",
+      "postscript": "InterDisplay-LightItalic",
+      "weight": 300,
+      "style": "italic",
+      "variationAxes": [],
+      "identified": true
+    },
+    {
+      "file": "InterDisplay-MediumItalic.woff2",
+      "family": "Inter Display",
+      "rawFamily": "Inter Display Medium",
+      "subfamily": "Italic",
+      "postscript": "InterDisplay-MediumItalic",
+      "weight": 500,
+      "style": "italic",
+      "variationAxes": [],
+      "identified": true
+    },
+    {
+      "file": "InterDisplay-SemiBoldItalic.woff2",
+      "family": "Inter Display",
+      "rawFamily": "Inter Display SemiBold",
+      "subfamily": "Italic",
+      "postscript": "InterDisplay-SemiBoldItalic",
+      "weight": 600,
+      "style": "italic",
+      "variationAxes": [],
+      "identified": true
+    },
+    {
+      "file": "InterDisplay-ThinItalic.woff2",
+      "family": "Inter Display",
+      "rawFamily": "Inter Display Thin",
+      "subfamily": "Italic",
+      "postscript": "InterDisplay-ThinItalic",
+      "weight": 100,
+      "style": "italic",
+      "variationAxes": [],
+      "identified": true
+    },
+    {
+      "file": "InterVariable-Italic.woff2",
+      "family": "Inter Variable",
+      "rawFamily": "Inter Variable",
+      "subfamily": "Italic",
+      "postscript": "InterVariableItalic",
+      "weight": 400,
+      "style": "italic",
+      "variationAxes": [
+        "opsz",
+        "wght"
+      ],
+      "identified": true
+    },
+    {
+      "file": "InterVariable.woff2",
+      "family": "Inter Variable",
+      "rawFamily": "Inter Variable",
+      "subfamily": "Regular",
+      "postscript": "InterVariable",
+      "weight": 400,
+      "style": "normal",
+      "variationAxes": [
+        "opsz",
+        "wght"
+      ],
+      "identified": true
+    },
+    {
+      "file": "V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj42Vksj.ttf",
+      "family": "Space Grotesk",
+      "rawFamily": "Space Grotesk SemiBold",
+      "subfamily": "Regular",
+      "postscript": "SpaceGrotesk-SemiBold",
+      "weight": 600,
+      "style": "normal",
+      "variationAxes": [],
+      "identified": true
+    },
+    {
+      "file": "V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf",
+      "family": "Space Grotesk",
+      "rawFamily": "Space Grotesk",
+      "subfamily": "Bold",
+      "postscript": "SpaceGrotesk-Bold",
+      "weight": 700,
+      "style": "normal",
+      "variationAxes": [],
+      "identified": true
+    },
+    {
+      "file": "V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUUsj.ttf",
+      "family": "Space Grotesk",
+      "rawFamily": "Space Grotesk Medium",
+      "subfamily": "Regular",
+      "postscript": "SpaceGrotesk-Medium",
+      "weight": 500,
+      "style": "normal",
+      "variationAxes": [],
+      "identified": true
+    }
+  ],
+  "families": [
+    {
+      "family": "Inter",
+      "weights": [
+        100,
+        200,
+        300,
+        500,
+        600
+      ],
+      "variable": false,
+      "fileCount": 6,
+      "files": [
+        "Inter-ExtraLight.woff2",
+        "Inter-ExtraLightItalic.woff2",
+        "Inter-LightItalic.woff2",
+        "Inter-MediumItalic.woff2",
+        "Inter-SemiBoldItalic.woff2",
+        "Inter-ThinItalic.woff2"
+      ]
+    },
+    {
+      "family": "Inter Display",
+      "weights": [
+        100,
+        200,
+        300,
+        500,
+        600
+      ],
+      "variable": false,
+      "fileCount": 6,
+      "files": [
+        "InterDisplay-ExtraLight.woff2",
+        "InterDisplay-ExtraLightItalic.woff2",
+        "InterDisplay-LightItalic.woff2",
+        "InterDisplay-MediumItalic.woff2",
+        "InterDisplay-SemiBoldItalic.woff2",
+        "InterDisplay-ThinItalic.woff2"
+      ]
+    },
+    {
+      "family": "Inter Variable",
+      "weights": [
+        400
+      ],
+      "variable": true,
+      "fileCount": 2,
+      "files": [
+        "InterVariable-Italic.woff2",
+        "InterVariable.woff2"
+      ]
+    },
+    {
+      "family": "Space Grotesk",
+      "weights": [
+        500,
+        600,
+        700
+      ],
+      "variable": false,
+      "fileCount": 3,
+      "files": [
+        "V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj42Vksj.ttf",
+        "V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf",
+        "V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUUsj.ttf"
+      ]
+    }
+  ],
+  "unidentified": [],
+  "meta": {
+    "generatedAt": "2026-06-03T10:58:55.553Z",
+    "tool": "fontkit"
+  }
+}

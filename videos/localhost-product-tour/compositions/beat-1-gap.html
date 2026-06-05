@@ -1,0 +1,295 @@
+<template>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @font-face {
+      font-family: "Space Grotesk";
+      src: url("capture/assets/fonts/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf") format("truetype");
+      font-weight: 700;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Space Grotesk";
+      src: url("capture/assets/fonts/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj42Vksj.ttf") format("truetype");
+      font-weight: 600;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Space Grotesk";
+      src: url("capture/assets/fonts/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUUsj.ttf") format("truetype");
+      font-weight: 500;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Inter Variable";
+      src: url("capture/assets/fonts/InterVariable.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: block;
+    }
+
+    #beat-1-gap {
+      position: relative;
+      overflow: hidden;
+      background: #060912;
+      width: 1920px;
+      height: 1080px;
+    }
+
+    #beat-1-gap .dolly-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1920px;
+      height: 1080px;
+      transform-origin: center center;
+    }
+
+    #beat-1-gap .ghost-grid {
+      position: absolute;
+      width: 1920px;
+      top: 50%;
+      left: 0;
+      transform: translateY(-55%);
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(4, 80px);
+      gap: 0;
+      padding: 0 120px;
+      pointer-events: none;
+      align-items: center;
+    }
+
+    #beat-1-gap .ghost-grid span {
+      font-family: "Inter Variable", sans-serif;
+      font-size: 20px;
+      font-weight: 400;
+      color: rgba(247, 248, 250, 0.28);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    #beat-1-gap .main-content {
+      position: absolute;
+      top: 410px;
+      left: 0;
+      width: 1920px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 0 200px;
+      pointer-events: none;
+    }
+
+    #beat-1-gap .headline-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    #beat-1-gap .word-western-ai {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 80px;
+      font-weight: 700;
+      line-height: 1.0;
+      color: #F7F8FA;
+      display: inline-block;
+      letter-spacing: 0;
+    }
+
+    #beat-1-gap .line-2 {
+      display: flex;
+      flex-direction: row;
+      align-items: baseline;
+      gap: 22px;
+    }
+
+    #beat-1-gap .word-doesnt,
+    #beat-1-gap .word-know {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 80px;
+      font-weight: 700;
+      line-height: 1.0;
+      color: #F7F8FA;
+      display: inline-block;
+      letter-spacing: 0;
+    }
+
+    #beat-1-gap .word-nigeria {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 80px;
+      font-weight: 700;
+      line-height: 1.0;
+      color: #008751;
+      display: inline-block;
+      text-shadow: 0 0 40px rgba(0, 135, 81, 0.5);
+      letter-spacing: 0;
+    }
+
+    #beat-1-gap .subtext {
+      font-family: "Inter Variable", sans-serif;
+      font-size: 24px;
+      font-weight: 400;
+      color: #6E7C92;
+      margin-top: 32px;
+    }
+
+    #beat-1-gap .grain {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1920px;
+      height: 1080px;
+      opacity: 0.06;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 300px 300px;
+    }
+  </style>
+
+  <div id="beat-1-gap" data-composition-id="beat-1-gap" data-width="1920" data-height="1080" style="width:1920px; height:1080px; position:relative; overflow:hidden; background:#060912;">
+
+    <!-- Dolly container: entire composition scales for dolly-in -->
+    <div style="clip-path:inset(0px round 0px)" class="dolly-container" id="b1-dolly">
+
+      <!-- Ghost grid: 24 persona names, 6x4 layout, drifts upward -->
+      <div class="ghost-grid" id="b1-ghost-grid" data-layout-ignore="" aria-hidden="true">
+        <span data-layout-ignore="">Chinonso (Igbo)</span>
+        <span data-layout-ignore="">Bola (Yoruba)</span>
+        <span data-layout-ignore="">Musa (Hausa)</span>
+        <span data-layout-ignore="">Emeka (Igbo)</span>
+        <span data-layout-ignore="">Fatima (Hausa)</span>
+        <span data-layout-ignore="">Tunde (Yoruba)</span>
+        <span data-layout-ignore="">Kemi (Yoruba)</span>
+        <span data-layout-ignore="">Ibrahim (Hausa)</span>
+        <span data-layout-ignore="">Ngozi (Igbo)</span>
+        <span data-layout-ignore="">Sola (Yoruba)</span>
+        <span data-layout-ignore="">Abubakar (Hausa)</span>
+        <span data-layout-ignore="">Ifeoma (Igbo)</span>
+        <span data-layout-ignore="">Kunle (Yoruba)</span>
+        <span data-layout-ignore="">Halima (Hausa)</span>
+        <span data-layout-ignore="">Chidi (Igbo)</span>
+        <span data-layout-ignore="">Yemi (Yoruba)</span>
+        <span data-layout-ignore="">Usman (Hausa)</span>
+        <span data-layout-ignore="">Adaeze (Igbo)</span>
+        <span data-layout-ignore="">Femi (Yoruba)</span>
+        <span data-layout-ignore="">Zainab (Hausa)</span>
+        <span data-layout-ignore="">Obiora (Igbo)</span>
+        <span data-layout-ignore="">Tobi (Yoruba)</span>
+        <span data-layout-ignore="">Amina (Hausa)</span>
+        <span data-layout-ignore="">Nneka (Igbo)</span>
+      </div>
+
+      <!-- Main content: headline + subtext -->
+      <div style="opacity:1" class="main-content">
+        <div class="headline-group" id="b1-headline-group">
+          <!-- Line 1: WESTERN AI -->
+          <span class="word-western-ai" id="b1-western-ai">WESTERN AI</span>
+
+          <!-- Line 2: DOESN'T KNOW NIGERIA. -->
+          <div class="line-2">
+            <span class="word-doesnt" id="b1-doesnt">DOESN’T</span>
+            <span class="word-know" id="b1-know">KNOW</span>
+            <span class="word-nigeria" id="b1-nigeria">NIGERIA.</span>
+          </div>
+        </div>
+
+        <!-- Sub-text -->
+        <div class="subtext" id="b1-subtext">The language. The culture. The 218M consumers.</div>
+      </div>
+
+    </div><!-- /dolly-container -->
+
+    <!-- Grain overlay -->
+    <div class="grain" data-layout-ignore=""></div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      var BEAT_ID = "beat-1-gap";
+      window.__timelines = window.__timelines || {};
+
+      var tl = gsap.timeline({ paused: true });
+
+      // ── 0.0s: Dolly container drifts in — scale 1.0→1.06, x 0→8px over 9.5s ──
+      tl.fromTo(
+        "#b1-dolly",
+        { scale: 1.0, x: 0 },
+        { scale: 1.06, x: 8, duration: 9.5, ease: "none" },
+        0.0
+      );
+
+      // ── 0.2s: "WESTERN AI" SLAMS in from below ──
+      // y: 120→0, scale: 0.85→1.0, 0.28s, expo.out
+      tl.fromTo(
+        "#b1-western-ai",
+        { y: 120, scale: 0.85 },
+        { y: 0, scale: 1.0, duration: 0.28, ease: "expo.out" },
+        0.2
+      );
+
+      // ── 0.58s: "DOESN'T" punches in ──
+      // y: 30→0, scale: 0.9→1.0, 0.22s, back.out(1.4)
+      tl.fromTo(
+        "#b1-doesnt",
+        { y: 30, scale: 0.9 },
+        { y: 0, scale: 1.0, duration: 0.22, ease: "back.out(1.4)" },
+        0.58
+      );
+
+      // ── 0.80s: "KNOW" punches in ──
+      tl.fromTo(
+        "#b1-know",
+        { y: 30, scale: 0.9 },
+        { y: 0, scale: 1.0, duration: 0.22, ease: "back.out(1.4)" },
+        0.80
+      );
+
+      // ── 1.02s: "NIGERIA." punches in with glow ──
+      tl.fromTo(
+        "#b1-nigeria",
+        { y: 30, scale: 0.9 },
+        { y: 0, scale: 1.0, duration: 0.22, ease: "back.out(1.4)" },
+        1.02
+      );
+
+      // ── 1.5s: Sub-text fades up ──
+      // opacity: 0→0.7, y: 20→0, 0.6s, power2.out
+      tl.fromTo(
+        "#b1-subtext",
+        { opacity: 0, y: 20 },
+        { opacity: 0.7, y: 0, duration: 0.6, ease: "power2.out" },
+        1.5
+      );
+
+      // ── 2.5s: Ghost grid begins drift ──
+      // y: 0→-12px over 7s, linear
+      tl.fromTo(
+        "#b1-ghost-grid",
+        { y: 0 },
+        { y: -48, duration: 7.0, ease: "none" },
+        2.5
+      );
+
+      // ── 3.0s: Headline subtle letter-spacing breathe ──
+      // letter-spacing 0→0.01em, sine.inOut, 3s, yoyo, repeat:1
+      // repeat:1 means 2 plays total: 3.0s→6.0s (forward) + 6.0s→9.0s (reverse) — within 9.5s beat
+      tl.fromTo(
+        "#b1-headline-group",
+        { letterSpacing: "0em" },
+        { letterSpacing: "0.01em", duration: 3.0, ease: "sine.inOut", yoyo: true, repeat: 1 },
+        3.0
+      );
+
+      window.__timelines[BEAT_ID] = tl;
+    })();
+  </script>
+</template>

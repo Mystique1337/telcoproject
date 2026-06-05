@@ -1,0 +1,138 @@
+{
+  "typography": [
+    {
+      "role": "display",
+      "fontFamily": "Space Grotesk",
+      "fontSize": "72px",
+      "fontWeight": "700",
+      "lineHeight": "72px",
+      "letterSpacing": "-1.8px",
+      "color": "#F7F8FA",
+      "sampleText": "AI that understandsNigerian context"
+    },
+    {
+      "role": "body",
+      "fontFamily": "Inter",
+      "fontSize": "36px",
+      "fontWeight": "700",
+      "lineHeight": "40px",
+      "letterSpacing": "normal",
+      "color": "#4CC079",
+      "sampleText": "218M+"
+    },
+    {
+      "role": "heading",
+      "fontFamily": "Space Grotesk",
+      "fontSize": "30px",
+      "fontWeight": "700",
+      "lineHeight": "36px",
+      "letterSpacing": "-0.6px",
+      "color": "#F7F8FA",
+      "sampleText": "Why Naija Persona"
+    },
+    {
+      "role": "heading-3",
+      "fontFamily": "Space Grotesk",
+      "fontSize": "20px",
+      "fontWeight": "700",
+      "lineHeight": "28px",
+      "letterSpacing": "-0.4px",
+      "color": "#F7F8FA",
+      "sampleText": "InsideNaija"
+    },
+    {
+      "role": "heading-3",
+      "fontFamily": "Space Grotesk",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "lineHeight": "24px",
+      "letterSpacing": "-0.32px",
+      "color": "#EDF0F5",
+      "sampleText": "Built for Nigeria, not adapted"
+    }
+  ],
+  "spacing": {
+    "observed": [
+      4,
+      6,
+      8,
+      10,
+      12,
+      16,
+      20,
+      24,
+      32,
+      40,
+      48,
+      64
+    ],
+    "baseUnit": 8
+  },
+  "radius": [
+    "10px"
+  ],
+  "shadows": [],
+  "buttons": [
+    {
+      "label": "Get started free",
+      "background": "#008751",
+      "color": "#FFFFFF",
+      "padding": "0px 32px",
+      "borderRadius": "10px",
+      "border": "1px solid rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "fontSize": "16px",
+      "fontWeight": "500",
+      "height": "48px"
+    },
+    {
+      "label": "Sign in",
+      "background": "#000000",
+      "color": "#D6DCE6",
+      "padding": "0px 10px",
+      "borderRadius": "10px",
+      "border": "1px solid rgb(214, 220, 230)",
+      "boxShadow": "none",
+      "fontSize": "16px",
+      "fontWeight": "500",
+      "height": "48px"
+    },
+    {
+      "label": "Labz",
+      "background": "#000000",
+      "color": "#D8B4FE",
+      "padding": "0px 10px",
+      "borderRadius": "10px",
+      "border": "1px solid rgb(216, 180, 254)",
+      "boxShadow": "none",
+      "fontSize": "16px",
+      "fontWeight": "500",
+      "height": "48px"
+    },
+    {
+      "label": "InsideNaija",
+      "background": "#000000",
+      "color": "#2F3A4D",
+      "padding": "0px",
+      "borderRadius": "0px",
+      "border": "0px solid rgb(47, 58, 77)",
+      "boxShadow": "none",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "height": "20px"
+    }
+  ],
+  "cards": [],
+  "nav": {
+    "label": "navigation",
+    "background": "#060912",
+    "color": "#F7F8FA",
+    "padding": "12px 24px",
+    "borderRadius": "0px",
+    "border": "",
+    "boxShadow": "none",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "height": "61px"
+  }
+}

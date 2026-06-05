@@ -1,0 +1,6 @@
+# Render output
+renders/
+
+# HyperFrames Studio cache
+.thumbnails/
+.waveform-cache/

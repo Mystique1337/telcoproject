@@ -1,0 +1,662 @@
+[
+  {
+    "text": "Western",
+    "start": 0.04,
+    "end": 0.54
+  },
+  {
+    "text": "Eye",
+    "start": 0.54,
+    "end": 0.77
+  },
+  {
+    "text": "doesn't",
+    "start": 0.77,
+    "end": 1.31
+  },
+  {
+    "text": "know",
+    "start": 1.31,
+    "end": 1.61
+  },
+  {
+    "text": "Nigeria.",
+    "start": 1.61,
+    "end": 2.2
+  },
+  {
+    "text": "The",
+    "start": 2.24,
+    "end": 2.39
+  },
+  {
+    "text": "language,",
+    "start": 2.47,
+    "end": 3.11
+  },
+  {
+    "text": "the",
+    "start": 3.12,
+    "end": 3.37
+  },
+  {
+    "text": "culture,",
+    "start": 3.37,
+    "end": 4.05
+  },
+  {
+    "text": "the",
+    "start": 4.05,
+    "end": 4.43
+  },
+  {
+    "text": "218",
+    "start": 4.43,
+    "end": 5.02
+  },
+  {
+    "text": "million",
+    "start": 5.36,
+    "end": 5.62
+  },
+  {
+    "text": "consumers",
+    "start": 5.67,
+    "end": 5.9
+  },
+  {
+    "text": "that",
+    "start": 6.28,
+    "end": 6.43
+  },
+  {
+    "text": "every",
+    "start": 6.51,
+    "end": 6.83
+  },
+  {
+    "text": "generic",
+    "start": 6.83,
+    "end": 7.29
+  },
+  {
+    "text": "model",
+    "start": 7.29,
+    "end": 7.62
+  },
+  {
+    "text": "gets",
+    "start": 7.62,
+    "end": 7.87
+  },
+  {
+    "text": "wrong.",
+    "start": 7.87,
+    "end": 8.44
+  },
+  {
+    "text": "Nager",
+    "start": 8.48,
+    "end": 8.77
+  },
+  {
+    "text": "persona",
+    "start": 8.77,
+    "end": 9.25
+  },
+  {
+    "text": "is",
+    "start": 9.25,
+    "end": 9.38
+  },
+  {
+    "text": "different.",
+    "start": 9.38,
+    "end": 10.23
+  },
+  {
+    "text": "Nager",
+    "start": 10.28,
+    "end": 10.55
+  },
+  {
+    "text": "Reviewer",
+    "start": 10.55,
+    "end": 11.04
+  },
+  {
+    "text": "8B",
+    "start": 11.04,
+    "end": 11.28
+  },
+  {
+    "text": "was",
+    "start": 11.28,
+    "end": 11.46
+  },
+  {
+    "text": "fine-tuned",
+    "start": 11.46,
+    "end": 12.07
+  },
+  {
+    "text": "on",
+    "start": 12.11,
+    "end": 12.12
+  },
+  {
+    "text": "Nigerian",
+    "start": 12.47,
+    "end": 13.06
+  },
+  {
+    "text": "data,",
+    "start": 13.4,
+    "end": 13.52
+  },
+  {
+    "text": "not",
+    "start": 13.56,
+    "end": 13.71
+  },
+  {
+    "text": "a",
+    "start": 13.71,
+    "end": 13.79
+  },
+  {
+    "text": "Western",
+    "start": 13.79,
+    "end": 14.23
+  },
+  {
+    "text": "model",
+    "start": 14.23,
+    "end": 14.56
+  },
+  {
+    "text": "with",
+    "start": 14.56,
+    "end": 14.82
+  },
+  {
+    "text": "a",
+    "start": 14.82,
+    "end": 14.88
+  },
+  {
+    "text": "Nigerian",
+    "start": 14.88,
+    "end": 15.34
+  },
+  {
+    "text": "system",
+    "start": 15.75,
+    "end": 15.8
+  },
+  {
+    "text": "prompt,",
+    "start": 15.8,
+    "end": 16.24
+  },
+  {
+    "text": "a",
+    "start": 16.28,
+    "end": 16.29
+  },
+  {
+    "text": "model",
+    "start": 16.29,
+    "end": 16.58
+  },
+  {
+    "text": "that",
+    "start": 16.58,
+    "end": 16.81
+  },
+  {
+    "text": "actually",
+    "start": 16.81,
+    "end": 17.28
+  },
+  {
+    "text": "understands",
+    "start": 17.28,
+    "end": 17.92
+  },
+  {
+    "text": "the",
+    "start": 17.92,
+    "end": 18.07
+  },
+  {
+    "text": "culture.",
+    "start": 18.47,
+    "end": 18.72
+  },
+  {
+    "text": "Inside",
+    "start": 18.76,
+    "end": 19.16
+  },
+  {
+    "text": "Nager",
+    "start": 19.16,
+    "end": 19.52
+  },
+  {
+    "text": "is",
+    "start": 19.52,
+    "end": 19.66
+  },
+  {
+    "text": "a",
+    "start": 19.66,
+    "end": 19.73
+  },
+  {
+    "text": "synthetic",
+    "start": 19.73,
+    "end": 20.39
+  },
+  {
+    "text": "panel",
+    "start": 20.39,
+    "end": 20.56
+  },
+  {
+    "text": "of",
+    "start": 20.82,
+    "end": 20.94
+  },
+  {
+    "text": "24",
+    "start": 20.94,
+    "end": 21.42
+  },
+  {
+    "text": "culturally",
+    "start": 21.42,
+    "end": 22.22
+  },
+  {
+    "text": "grounded",
+    "start": 22.22,
+    "end": 22.6
+  },
+  {
+    "text": "Nigerian",
+    "start": 23.01,
+    "end": 23.49
+  },
+  {
+    "text": "personas.",
+    "start": 23.49,
+    "end": 24.16
+  },
+  {
+    "text": "Yoruba,",
+    "start": 24.2,
+    "end": 24.8
+  },
+  {
+    "text": "Horsa,",
+    "start": 24.8,
+    "end": 25.36
+  },
+  {
+    "text": "Igbo,",
+    "start": 25.36,
+    "end": 25.84
+  },
+  {
+    "text": "and",
+    "start": 25.84,
+    "end": 25.99
+  },
+  {
+    "text": "Pigeon",
+    "start": 26.16,
+    "end": 26.56
+  },
+  {
+    "text": "speakers.",
+    "start": 26.56,
+    "end": 27.28
+  },
+  {
+    "text": "Structured",
+    "start": 27.32,
+    "end": 27.94
+  },
+  {
+    "text": "feedback",
+    "start": 27.94,
+    "end": 28.47
+  },
+  {
+    "text": "in",
+    "start": 28.47,
+    "end": 28.6
+  },
+  {
+    "text": "under",
+    "start": 28.6,
+    "end": 28.93
+  },
+  {
+    "text": "two",
+    "start": 28.93,
+    "end": 29.1
+  },
+  {
+    "text": "minutes.",
+    "start": 29.51,
+    "end": 29.64
+  },
+  {
+    "text": "48.5%",
+    "start": 29.68,
+    "end": 30.89
+  },
+  {
+    "text": "win",
+    "start": 30.89,
+    "end": 31.18
+  },
+  {
+    "text": "rate",
+    "start": 31.18,
+    "end": 31.46
+  },
+  {
+    "text": "versus",
+    "start": 31.87,
+    "end": 32.14
+  },
+  {
+    "text": "Claude",
+    "start": 32.14,
+    "end": 32.47
+  },
+  {
+    "text": "Sonnet.",
+    "start": 32.8,
+    "end": 33.32
+  },
+  {
+    "text": "Shop",
+    "start": 33.36,
+    "end": 33.51
+  },
+  {
+    "text": "easy",
+    "start": 33.59,
+    "end": 33.82
+  },
+  {
+    "text": "powers,",
+    "start": 33.82,
+    "end": 34.32
+  },
+  {
+    "text": "persona-aware",
+    "start": 34.32,
+    "end": 35.1
+  },
+  {
+    "text": "recommendations",
+    "start": 35.1,
+    "end": 36.02
+  },
+  {
+    "text": "tuned",
+    "start": 36.06,
+    "end": 36.33
+  },
+  {
+    "text": "to",
+    "start": 36.33,
+    "end": 36.45
+  },
+  {
+    "text": "Nigerian",
+    "start": 36.45,
+    "end": 36.95
+  },
+  {
+    "text": "shopping",
+    "start": 36.95,
+    "end": 37.45
+  },
+  {
+    "text": "behavior,",
+    "start": 37.45,
+    "end": 38.1
+  },
+  {
+    "text": "cultural",
+    "start": 38.14,
+    "end": 38.63
+  },
+  {
+    "text": "context,",
+    "start": 38.63,
+    "end": 39.23
+  },
+  {
+    "text": "and",
+    "start": 39.23,
+    "end": 39.43
+  },
+  {
+    "text": "language",
+    "start": 39.43,
+    "end": 39.9
+  },
+  {
+    "text": "register.",
+    "start": 40.33,
+    "end": 40.72
+  },
+  {
+    "text": "NDCG",
+    "start": 40.76,
+    "end": 41.22
+  },
+  {
+    "text": "at",
+    "start": 41.22,
+    "end": 41.48
+  },
+  {
+    "text": "10,",
+    "start": 41.48,
+    "end": 42.5
+  },
+  {
+    "text": "0.572.",
+    "start": 42.5,
+    "end": 44.48
+  },
+  {
+    "text": "Best",
+    "start": 44.52,
+    "end": 44.78
+  },
+  {
+    "text": "of",
+    "start": 44.78,
+    "end": 44.93
+  },
+  {
+    "text": "five",
+    "start": 44.93,
+    "end": 45.23
+  },
+  {
+    "text": "models",
+    "start": 45.23,
+    "end": 45.68
+  },
+  {
+    "text": "tested,",
+    "start": 45.68,
+    "end": 46.3
+  },
+  {
+    "text": "218",
+    "start": 46.71,
+    "end": 47.27
+  },
+  {
+    "text": "million",
+    "start": 47.27,
+    "end": 48
+  },
+  {
+    "text": "Nigerians,",
+    "start": 48,
+    "end": 48.96
+  },
+  {
+    "text": "15%",
+    "start": 49,
+    "end": 49.6
+  },
+  {
+    "text": "e-commerce",
+    "start": 49.6,
+    "end": 50.51
+  },
+  {
+    "text": "growth",
+    "start": 50.51,
+    "end": 50.79
+  },
+  {
+    "text": "every",
+    "start": 51.2,
+    "end": 51.51
+  },
+  {
+    "text": "year,",
+    "start": 51.51,
+    "end": 52.08
+  },
+  {
+    "text": "and",
+    "start": 52.12,
+    "end": 52.28
+  },
+  {
+    "text": "until",
+    "start": 52.28,
+    "end": 52.62
+  },
+  {
+    "text": "now.",
+    "start": 52.62,
+    "end": 53.04
+  },
+  {
+    "text": "Zero",
+    "start": 53.08,
+    "end": 53.37
+  },
+  {
+    "text": "culturally",
+    "start": 53.37,
+    "end": 54.21
+  },
+  {
+    "text": "native",
+    "start": 54.21,
+    "end": 54.71
+  },
+  {
+    "text": "eye",
+    "start": 54.71,
+    "end": 54.87
+  },
+  {
+    "text": "tools",
+    "start": 55.27,
+    "end": 55.4
+  },
+  {
+    "text": "for",
+    "start": 55.4,
+    "end": 55.68
+  },
+  {
+    "text": "the",
+    "start": 55.68,
+    "end": 55.88
+  },
+  {
+    "text": "market.",
+    "start": 56.2,
+    "end": 56.56
+  },
+  {
+    "text": "Get",
+    "start": 56.6,
+    "end": 56.75
+  },
+  {
+    "text": "started",
+    "start": 56.83,
+    "end": 57.45
+  },
+  {
+    "text": "free,",
+    "start": 57.46,
+    "end": 58.02
+  },
+  {
+    "text": "no",
+    "start": 58.02,
+    "end": 58.21
+  },
+  {
+    "text": "credit",
+    "start": 58.21,
+    "end": 58.38
+  },
+  {
+    "text": "card,",
+    "start": 58.8,
+    "end": 59.36
+  },
+  {
+    "text": "first",
+    "start": 59.4,
+    "end": 59.7
+  },
+  {
+    "text": "results",
+    "start": 59.7,
+    "end": 60.18
+  },
+  {
+    "text": "in",
+    "start": 60.18,
+    "end": 60.31
+  },
+  {
+    "text": "under",
+    "start": 60.31,
+    "end": 60.65
+  },
+  {
+    "text": "2",
+    "start": 60.65,
+    "end": 60.85
+  },
+  {
+    "text": "minutes.",
+    "start": 60.85,
+    "end": 61.36
+  }
+]

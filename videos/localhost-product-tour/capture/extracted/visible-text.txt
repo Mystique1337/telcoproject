@@ -1,0 +1,45 @@
+[span] Naija Persona
+[button] Products
+[button] For Business
+[span] Get started
+[div] AI infrastructure for the Nigerian market
+[h1] AI that understands
+[span] Nigerian context
+[p] Two products. One mission — close the gap between generic Western AI and the richness of Nigerian consumer culture.
+[button] Get started free
+[button] Sign in
+[button] Labz
+[span] B2B
+[h3] InsideNaija
+[p] Synthetic Nigerian consumer research panel
+[p] Run any product through 24 culturally-grounded Nigerian personas and get structured, actionable feedback in under 2 minutes.
+[span] 48.5% win rate vs. Claude Sonnet
+[span] Explore InsideNaija
+[span] B2C
+[h3] ShopEasy
+[p] Persona-aware Nigerian storefront
+[p] AI-powered product recommendations tuned to Nigerian shopping behaviour, language register, and cultural context.
+[span] NDCG@10 0.572 — best of 5 models
+[span] Explore ShopEasy
+[h2] Why Naija Persona
+[h3] Built for Nigeria, not adapted
+[p] NaijaReviewer-8B was fine-tuned on Nigerian review data. Not a generic LLM with a Nigerian system prompt — a model that actually understands the culture.
+[h3] Research-grade results
+[p] Blind human evaluation shows statistical parity with frontier models at 4× smaller size. Real signal, not synthetic noise.
+[h3] 24 personas, not one prompt
+[p] Coverage across Yoruba, Hausa, Igbo, and Pidgin speakers — with distinct cognitive dimensions, aspect priorities, and register tiers per persona.
+[h2] The opportunity
+[p] 218M+
+[p] Nigerians
+[p] Africa's largest consumer market
+[p] 15%+
+[p] E-commerce growth YoY
+[p] fastest growing digital market on the continent
+[p] Culturally-native AI tools
+[p] before Naija Persona
+[h2] Start building for Nigeria today
+[p] Free to try. No credit card. Results in under 2 minutes.
+[button] Get started free
+[span] Naija Persona
+[button] InsideNaija
+[button] ShopEasy
