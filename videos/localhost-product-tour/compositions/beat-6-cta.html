@@ -1,0 +1,193 @@
+<template>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @font-face {
+      font-family: "Space Grotesk";
+      src: url("capture/assets/fonts/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf") format("truetype");
+      font-weight: 700; font-display: block;
+    }
+
+    #beat-6-cta {
+      position: relative;
+      overflow: hidden;
+      background: #060912;
+      width: 1920px;
+      height: 1080px;
+    }
+
+    #beat-6-cta .grain {
+      position: absolute;
+      top: 0; left: 0;
+      width: 1920px; height: 1080px;
+      opacity: 0.08;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 300px 300px;
+      z-index: 10;
+    }
+
+    #beat-6-cta .cta-orb {
+      position: absolute;
+      left: 50%;
+      top: 43%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,135,81,0.5) 0%, rgba(0,135,81,0.12) 40%, rgba(0,135,81,0) 70%);
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    #beat-6-cta .content-stack {
+      position: absolute;
+      position: absolute;
+      top: 360px;
+      left: 0;
+      width: 1920px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      z-index: 2;
+    }
+
+    #beat-6-cta .wordmark {
+      font-family: "Inter", sans-serif;
+      font-size: 20px; font-weight: 600;
+      color: rgba(247, 248, 250, 0.5);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      opacity: 0;
+    }
+
+    #beat-6-cta .headline {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 80px; font-weight: 700;
+      color: #F7F8FA;
+      text-align: center;
+      letter-spacing: -2px;
+      margin-bottom: 52px;
+      opacity: 0;
+    }
+
+    #beat-6-cta .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #008751;
+      color: #FFFFFF;
+      font-family: "Inter", sans-serif;
+      font-size: 22px; font-weight: 500;
+      padding: 0 48px;
+      height: 68px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 24px;
+      opacity: 0;
+    }
+
+    #beat-6-cta .sub-copy {
+      font-family: "Inter", sans-serif;
+      font-size: 18px; font-weight: 400;
+      color: #6E7C92;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #beat-6-cta .sub-copy span {
+      opacity: 0;
+    }
+
+    #beat-6-cta .sub-copy .dot {
+      color: #2F3A4D;
+      opacity: 0;
+    }
+  </style>
+
+  <div id="beat-6-cta"
+       data-composition-id="beat-6-cta"
+       data-width="1920" data-height="1080"
+       style="width:1920px;height:1080px;position:relative;overflow:hidden;background:#060912;">
+
+    <!-- Green orb -->
+    <div class="cta-orb" id="b6-orb"></div>
+
+    <!-- Content stack -->
+    <div class="content-stack">
+      <div class="wordmark" id="b6-wordmark">Naija Persona</div>
+      <div class="headline" id="b6-headline">Start building for Nigeria today</div>
+      <button class="cta-btn" id="b6-btn">Get started free &#8594;</button>
+      <div class="sub-copy">
+        <span id="b6-s1">Free to try</span>
+        <span class="dot" id="b6-d1">·</span>
+        <span id="b6-s2">No credit card</span>
+        <span class="dot" id="b6-d2">·</span>
+        <span id="b6-s3">Under 2 minutes</span>
+      </div>
+    </div>
+
+    <!-- Grain overlay -->
+    <div class="grain" data-layout-ignore></div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      var BEAT = 8.0;
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true });
+
+      // 0.0s: Orb blooms from nothing
+      tl.fromTo("#b6-orb", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "expo.out" }, 0.0);
+
+      // 0.4s: Headline resolves from blur
+      tl.fromTo("#b6-headline",
+        { opacity: 0, filter: "blur(20px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.6, ease: "power2.out" },
+        0.4
+      );
+
+      // 1.0s: CTA button SLAMS in
+      tl.fromTo("#b6-btn",
+        { opacity: 0, y: 60, scale: 0.85 },
+        { opacity: 1, y: 0, scale: 1.0, duration: 0.4, ease: "back.out(2.0)" },
+        1.0
+      );
+
+      // 1.4s: Sub-copy spans appear (staggered)
+      ["#b6-s1","#b6-d1","#b6-s2","#b6-d2","#b6-s3"].forEach(function(sel, i) {
+        tl.fromTo(sel,
+          { opacity: 0, filter: "blur(6px)" },
+          { opacity: 1, filter: "blur(0px)", duration: 0.5, ease: "power2.out" },
+          1.4 + i * 0.12
+        );
+      });
+
+      // 1.8s: Wordmark fades in
+      tl.fromTo("#b6-wordmark", { opacity: 0 }, { opacity: 0.5, duration: 0.5, ease: "power2.out" }, 1.8);
+
+      // 2.5s: Button breathes
+      tl.to("#b6-btn", { scale: 1.02, duration: 2.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.5);
+
+      // 2.5s: Orb breathes
+      tl.to("#b6-orb", { opacity: 0.85, duration: 3.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.5);
+
+      // 2.5s: Headline gentle drift
+      tl.to("#b6-headline", { y: -3, duration: 2.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.5);
+
+      // Final fade out at t=7.5s (last beat — exit allowed)
+      tl.to("#beat-6-cta", { opacity: 0, duration: 0.5, ease: "power2.in" }, 7.5);
+
+      window.__timelines["beat-6-cta"] = tl;
+    })();
+  </script>
+</template>

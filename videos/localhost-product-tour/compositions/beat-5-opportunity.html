@@ -1,0 +1,208 @@
+<template>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @font-face {
+      font-family: "Space Grotesk";
+      src: url("capture/assets/fonts/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf") format("truetype");
+      font-weight: 700; font-display: block;
+    }
+
+    #beat-5-opportunity {
+      position: relative;
+      overflow: hidden;
+      background: #060912;
+      width: 1920px;
+      height: 1080px;
+    }
+
+    #beat-5-opportunity .dolly-wrap {
+      position: absolute;
+      top: 0; left: 0;
+      width: 1920px; height: 1080px;
+      transform-origin: center center;
+    }
+
+    #beat-5-opportunity .stats-row {
+      position: absolute;
+      top: 360px;
+      left: 0; right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    #beat-5-opportunity .stat-col {
+      width: 400px;
+      padding: 0 48px;
+      opacity: 0;
+      position: relative;
+    }
+
+    #beat-5-opportunity .stat-col:not(:last-child) {
+      border-right: 1px solid #2F3A4D;
+    }
+
+    #beat-5-opportunity .col-eyebrow {
+      font-family: "Inter", sans-serif;
+      font-size: 11px; font-weight: 500;
+      color: #6E7C92;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding-left: 10px;
+      border-left: 3px solid #4CC079;
+    }
+
+    #beat-5-opportunity .stat-num {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 80px; font-weight: 700;
+      color: #4CC079;
+      line-height: 1;
+      display: flex;
+      align-items: baseline;
+      gap: 0;
+    }
+
+    #beat-5-opportunity .stat-num .suffix {
+      font-size: 52px;
+    }
+
+    #beat-5-opportunity .stat-num.void-num {
+      color: #F7F8FA;
+    }
+
+    #beat-5-opportunity .stat-sub {
+      font-family: "Inter", sans-serif;
+      font-size: 12px; font-weight: 400;
+      color: #6E7C92;
+      margin-top: 12px;
+      line-height: 1.5;
+      opacity: 0;
+    }
+
+    #beat-5-opportunity .col3-glow {
+      position: absolute;
+      top: -20px; left: 50%;
+      transform: translateX(-50%);
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,135,81,0.1) 0%, rgba(0,135,81,0) 70%);
+      filter: blur(30px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #beat-5-opportunity .replace-text {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 64px; font-weight: 700;
+      color: #008751;
+      opacity: 0;
+      position: absolute;
+      top: -8px; left: 0;
+      white-space: nowrap;
+    }
+
+    #beat-5-opportunity .chart-accent {
+      position: absolute;
+      top: -4px; right: 8px;
+      opacity: 0;
+    }
+  </style>
+
+  <div id="beat-5-opportunity" data-composition-id="beat-5-opportunity" data-width="1920" data-height="1080" style="width:1920px;height:1080px;position:relative;overflow:hidden;background:#060912;">
+
+    <div class="dolly-wrap" id="b5-dolly">
+
+      <div class="stats-row">
+        <!-- Column 1: 218M+ Nigerians -->
+        <div class="stat-col" id="b5-col1">
+          <div class="chart-accent" id="b5-chart-icon">
+            <img src="capture/assets/svgs/lucide-chart-column.svg" width="20" height="20" style="filter: invert(65%) sepia(60%) saturate(400%) hue-rotate(100deg) brightness(1.1); display:block;">
+          </div>
+          <div class="col-eyebrow">Nigerians</div>
+          <div class="stat-num">
+            <span id="b5-c1-num">0</span><span class="suffix">M+</span>
+          </div>
+          <div class="stat-sub" id="b5-sub1">Africa's largest consumer market</div>
+        </div>
+
+        <!-- Column 2: 15%+ E-Commerce -->
+        <div class="stat-col" id="b5-col2">
+          <div class="col-eyebrow">E-Commerce Growth YoY</div>
+          <div class="stat-num">
+            <span id="b5-c2-num">0</span><span class="suffix">%+</span>
+          </div>
+          <div class="stat-sub" id="b5-sub2">Fastest growing digital market on the continent</div>
+        </div>
+
+        <!-- Column 3: 0 → NAIJA PERSONA -->
+        <div class="stat-col" id="b5-col3" style="position:relative;">
+          <div class="col3-glow" id="b5-glow"></div>
+          <div class="col-eyebrow" style="border-left-color:#6E7C92;">Culturally-Native AI Tools</div>
+          <div class="stat-num void-num" id="b5-c3-zero">0</div>
+          <div data-hf-studio-original-inline-translate="" data-hf-studio-original-translate="" data-hf-studio-path-offset="true" style="--hf-studio-offset-x:0px;--hf-studio-offset-y:40px;translate:var(--hf-studio-offset-x, 0px) var(--hf-studio-offset-y, 0px)" class="replace-text" id="b5-replace">NAIJA PERSONA</div>
+          <div class="stat-sub" id="b5-sub3">Before Naija Persona</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      var BEAT = 9.5;
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true });
+
+      // Slow dolly in: scale 1.0→1.05, x 0→6 over 9.5s
+      tl.fromTo("#b5-dolly", { scale: 1.0, x: 0 }, { scale: 1.05, x: 6, duration: 9.5, ease: "none" }, 0.0);
+
+      // Column 1 appears + counter starts
+      tl.fromTo("#b5-col1", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.0);
+      var c1El = document.getElementById("b5-c1-num");
+      var c1Obj = { val: 0 };
+      tl.to(c1Obj, { val: 218, duration: 2.0, ease: "power2.out",
+        onUpdate: function() { if (c1El) c1El.textContent = Math.round(c1Obj.val); }
+      }, 0.0);
+
+      // Column 2 appears + counter starts
+      tl.fromTo("#b5-col2", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 1.2);
+      var c2El = document.getElementById("b5-c2-num");
+      var c2Obj = { val: 0 };
+      tl.to(c2Obj, { val: 15, duration: 1.5, ease: "power2.out",
+        onUpdate: function() { if (c2El) c2El.textContent = Math.round(c2Obj.val); }
+      }, 1.2);
+
+      // Column 3 appears — void "0"
+      tl.fromTo("#b5-col3", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 2.4);
+
+      // Chart icon accent after col1 counter finishes
+      tl.fromTo("#b5-chart-icon", { opacity: 0 }, { opacity: 0.6, duration: 0.4, ease: "power2.out" }, 2.5);
+
+      // Sub-labels reveal (staggered)
+      tl.fromTo("#b5-sub1", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 3.0);
+      tl.fromTo("#b5-sub2", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 3.5);
+      tl.fromTo("#b5-sub3", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 4.2);
+
+      // At t=7.8s: "0" blurs out — VO has fully said "Zero culturally native AI tools" by this point
+      tl.to("#b5-c3-zero", { filter: "blur(24px)", opacity: 0, duration: 0.5, ease: "power2.in" }, 7.8);
+
+      // At t=8.1s: "NAIJA PERSONA" resolves — VO "for the market" at internal ~8.0s
+      tl.fromTo("#b5-replace",
+        { opacity: 0, filter: "blur(16px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.6, ease: "power2.out" },
+        8.1
+      );
+
+      // Column 3 glow pulses
+      tl.fromTo("#b5-glow", { opacity: 0 }, { opacity: 1, duration: 0.75, ease: "sine.inOut", yoyo: true, repeat: 1 }, 8.4);
+
+      window.__timelines["beat-5-opportunity"] = tl;
+    })();
+  </script>
+</template>

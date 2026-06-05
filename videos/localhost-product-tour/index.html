@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: #060912;
+    }
+    .scene {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      opacity: 0;
+    }
+    #beat-1 { opacity: 1; z-index: 1; background: #060912; }
+    #beat-2 { z-index: 2; background: #060912; }
+    #beat-3 { z-index: 3; background: #0A0E18; }
+    #beat-4 { z-index: 4; background: #060912; }
+    #beat-5 { z-index: 5; background: #060912; }
+    #beat-6 { z-index: 6; background: #060912; }
+    #s-end  { z-index: 7; background: #060912; }
+  </style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="69.5" data-width="1920" data-height="1080">
+
+    <!-- Beat 1: The Gap -->
+    <div id="beat-1" class="scene" data-composition-id="beat-1-gap" data-composition-src="compositions/beat-1-gap.html" data-start="0" data-duration="9.5" data-track-index="1" data-width="1920" data-height="1080">
+    </div>
+
+    <!-- Beat 2: The Solution -->
+    <div id="beat-2" class="scene" data-composition-id="beat-2-solution" data-composition-src="compositions/beat-2-solution.html" data-start="9.5" data-duration="10.8" data-track-index="2" data-width="1920" data-height="1080">
+    </div>
+
+    <!-- Beat 3: InsideNaija -->
+    <div id="beat-3" class="scene" data-composition-id="beat-3-insidenaija" data-composition-src="compositions/beat-3-insidenaija.html" data-start="19.5" data-duration="15.3" data-track-index="3" data-width="1920" data-height="1080">
+    </div>
+
+    <!-- Beat 4: ShopEasy -->
+    <div id="beat-4" class="scene" data-composition-id="beat-4-shopeasy" data-composition-src="compositions/beat-4-shopeasy.html" data-start="34.0" data-duration="14.2" data-track-index="4" data-width="1920" data-height="1080">
+    </div>
+
+    <!-- Beat 5: The Opportunity -->
+    <div id="beat-5" class="scene" data-composition-id="beat-5-opportunity" data-composition-src="compositions/beat-5-opportunity.html" data-start="47.4" data-duration="13.4" data-track-index="5" data-width="1920" data-height="1080">
+    </div>
+
+    <!-- Beat 6: CTA -->
+    <div id="beat-6" class="scene" data-composition-id="beat-6-cta" data-composition-src="compositions/beat-6-cta.html" data-start="57.3" data-duration="12.1" data-track-index="6" data-width="1920" data-height="1080">
+    </div>
+
+    <!-- Dummy end scene to prevent last-scene rendering issue -->
+    <div id="s-end" class="scene" data-composition-id="s-end" data-start="69.3" data-duration="0.1" data-track-index="7" data-width="1920" data-height="1080">
+    </div>
+
+    <!-- Narration: starts at 1.2s -->
+    <audio data-media-start="0.00" id="narration" src="narration.wav" data-start="1.2" data-duration="61.4" data-track-index="0" data-volume="1">
+    </audio>
+
+  </div>
+
+  <script>
+    window.__timelines = window.__timelines || {};
+
+    // Declare transitions for CLI shader compositing
+    window.__hf = window.__hf || {};
+    window.__hf.transitions = [
+      // domain-warp: beat-1 → beat-2 (dramatic problem-to-solution)
+      { time: 9.5, duration: 4.0, shader: "domain-warp", fromScene: "beat-1", toScene: "beat-2" },
+      // CSS crossfade: beat-2 → beat-3 (VO "InsideNaija" lands at root 19.96s)
+      { time: 19.5, duration: 0.8, fromScene: "beat-2", toScene: "beat-3" },
+      // CSS crossfade: beat-3 → beat-4 (VO "ShopEasy" lands at root 34.56s)
+      { time: 34.0, duration: 0.8, fromScene: "beat-3", toScene: "beat-4" },
+      // CSS crossfade: beat-4 → beat-5 (VO "218 million" lands at root 47.91s)
+      { time: 47.4, duration: 0.8, fromScene: "beat-4", toScene: "beat-5" },
+      // light-leak: beat-5 → beat-6 (VO "Get started free" lands at root 57.80s)
+      { time: 57.3, duration: 3.5, shader: "light-leak", fromScene: "beat-5", toScene: "beat-6" },
+      // dummy end
+      { time: 69.3, duration: 0.1, fromScene: "beat-6", toScene: "s-end" }
+    ];
+
+    // Root GSAP timeline — manages scene visibility
+    var tl = gsap.timeline({ paused: true });
+
+    // Beat 1: visible from start (opacity:1 in CSS), dolly handled in sub-comp
+    // domain-warp transition 9.5s→13.5s — beat-1 out, beat-2 in
+    tl.to("#beat-1", { opacity: 0, duration: 4.0, ease: "power2.inOut" }, 9.5);
+    tl.to("#beat-2", { opacity: 1, duration: 4.0, ease: "power2.inOut" }, 9.5);
+
+    // CSS crossfade beat-2 → beat-3 at 19.5s (0.8s)
+    tl.to("#beat-2", { opacity: 0, duration: 0.8, ease: "sine.inOut" }, 19.5);
+    tl.to("#beat-3", { opacity: 1, duration: 0.8, ease: "sine.inOut" }, 19.5);
+
+    // CSS crossfade beat-3 → beat-4 at 34.0s (0.8s)
+    tl.to("#beat-3", { opacity: 0, duration: 0.8, ease: "sine.inOut" }, 34.0);
+    tl.to("#beat-4", { opacity: 1, duration: 0.8, ease: "sine.inOut" }, 34.0);
+
+    // CSS crossfade beat-4 → beat-5 at 47.4s (0.8s)
+    tl.to("#beat-4", { opacity: 0, duration: 0.8, ease: "sine.inOut" }, 47.4);
+    tl.to("#beat-5", { opacity: 1, duration: 0.8, ease: "sine.inOut" }, 47.4);
+
+    // light-leak transition beat-5 → beat-6 at 57.3s (3.5s)
+    tl.to("#beat-5", { opacity: 0, duration: 3.5, ease: "power2.inOut" }, 57.3);
+    tl.to("#beat-6", { opacity: 1, duration: 3.5, ease: "power2.inOut" }, 57.3);
+
+    // End: s-end
+    tl.to("#beat-6", { opacity: 0, duration: 0.1, ease: "none" }, 69.3);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

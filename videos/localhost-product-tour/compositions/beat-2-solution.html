@@ -1,0 +1,329 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      src: url("capture/assets/fonts/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf") format("truetype");
+      font-weight: 700;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Space Grotesk";
+      src: url("capture/assets/fonts/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj42Vksj.ttf") format("truetype");
+      font-weight: 600;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Space Grotesk";
+      src: url("capture/assets/fonts/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUUsj.ttf") format("truetype");
+      font-weight: 500;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Inter Variable";
+      src: url("capture/assets/fonts/InterVariable.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: block;
+    }
+
+    #beat-2-solution * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    #beat-2-solution {
+      position: relative;
+      overflow: hidden;
+      background: #060912;
+      width: 1920px;
+      height: 1080px;
+    }
+
+    /* Camera / dolly wrapper */
+    #beat-2-solution .camera-wrap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1920px;
+      height: 1080px;
+      transform-origin: center center;
+    }
+
+    /* Green divider line — 1920px wide, 2px tall at 42% of 1080 = 453.6px */
+    #beat-2-solution .green-line {
+      position: absolute;
+      top: 558px;
+      left: 0;
+      width: 1920px;
+      height: 2px;
+      background: #008751;
+      transform-origin: left center;
+      transform: scaleX(0);
+    }
+
+    /* "Built for" label — centered above line */
+    #beat-2-solution .built-for {
+      position: absolute;
+      top: 272px;
+      left: 0;
+      width: 1920px;
+      text-align: center;
+      font-family: "Inter Variable", sans-serif;
+      font-size: 56px;
+      font-weight: 400;
+      color: #6E7C92;
+      opacity: 0;
+    }
+
+    /* NIGERIA. per-letter container */
+    #beat-2-solution .nigeria-wrap {
+      position: absolute;
+      top: 360px;
+      left: 0;
+      width: 1920px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0px;
+    }
+
+    #beat-2-solution .nigeria-wrap .letter {
+      display: inline-block;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 160px;
+      font-weight: 700;
+      color: #F7F8FA;
+      letter-spacing: -5px;
+      line-height: 1;
+      opacity: 0;
+    }
+
+    /* "Not adapted." below line */
+    #beat-2-solution .not-adapted {
+      position: absolute;
+      top: 588px;
+      left: 0;
+      width: 1920px;
+      text-align: center;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 40px;
+      font-weight: 600;
+      color: #008751;
+      opacity: 0;
+    }
+
+    /* NaijaReviewer-8B credential hero block */
+    #beat-2-solution .credential {
+      position: absolute;
+      top: 664px;
+      left: 0;
+      width: 1920px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #beat-2-solution .credential-name {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 144px;
+      font-weight: 700;
+      color: #D8B4FE;
+      letter-spacing: -5px;
+      line-height: 1.0;
+      text-align: center;
+      opacity: 0;
+    }
+
+    #beat-2-solution .credential-sub {
+      font-family: "Inter Variable", sans-serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: rgba(216, 180, 254, 0.65);
+      text-align: center;
+      opacity: 0;
+    }
+
+    /* CPU icon — right side, 60% from right = 40% from left = 768px, 28% from top = 302px */
+    #beat-2-solution .cpu-icon {
+      position: absolute;
+      top: 360px;
+      left: 820px;
+      opacity: 0;
+      line-height: 0;
+    }
+  </style>
+
+  <div
+    id="beat-2-solution"
+    data-composition-id="beat-2-solution"
+    data-width="1920"
+    data-height="1080"
+    style="width:1920px; height:1080px; position:relative; overflow:hidden; background:#060912;"
+  >
+
+    <!-- Camera dolly wrapper -->
+    <div class="camera-wrap" id="b2-camera">
+
+      <!-- Green divider line -->
+      <div class="green-line" id="b2-line"></div>
+
+      <!-- "Built for" label -->
+      <div class="built-for" id="b2-built-for">Built for</div>
+
+      <!-- NIGERIA. per-letter -->
+      <div class="nigeria-wrap" id="b2-nigeria-wrap">
+        <span class="letter" id="b2-l0">N</span>
+        <span class="letter" id="b2-l1">I</span>
+        <span class="letter" id="b2-l2">G</span>
+        <span class="letter" id="b2-l3">E</span>
+        <span class="letter" id="b2-l4">R</span>
+        <span class="letter" id="b2-l5">I</span>
+        <span class="letter" id="b2-l6">A</span>
+        <span class="letter" id="b2-l7">.</span>
+      </div>
+
+      <!-- "Not adapted." typing target -->
+      <div class="not-adapted" id="b2-not-adapted"></div>
+
+      <!-- NaijaReviewer-8B credential hero block -->
+      <div class="credential">
+        <div class="credential-name" id="b2-cred-name">NaijaReviewer-8B</div>
+        <div class="credential-sub" id="b2-cred-sub">Fine-tuned on 4.2M Nigerian interactions</div>
+      </div>
+
+      <!-- CPU icon (captured SVG, tinted violet via filter) -->
+      <div class="cpu-icon" id="b2-cpu">
+        <img src="capture/assets/svgs/lucide-cpu.svg" width="80" height="80"
+             style="filter: invert(44%) sepia(80%) saturate(500%) hue-rotate(250deg) brightness(1.1); display:block;">
+      </div>
+
+    </div><!-- /.camera-wrap -->
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      var BEAT = 7.5;
+
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true });
+
+      var TYPING_TEXT = "Not adapted.";
+      var TYPING_CHARS = TYPING_TEXT.length; // 12
+
+      /* ─── 0.0s: green line draws scaleX 0 → 1 ─────────────────── */
+      tl.fromTo(
+        "#b2-line",
+        { scaleX: 0 },
+        { scaleX: 1, duration: 0.5, ease: "expo.out" },
+        0.0
+      );
+
+      /* ─── 0.5s: "Built for" fades up ───────────────────────────── */
+      tl.fromTo(
+        "#b2-built-for",
+        { opacity: 0, y: 10 },
+        { opacity: 0.7, y: 0, duration: 0.4, ease: "power2.out" },
+        0.5
+      );
+
+      /* ─── 0.8s: NIGERIA. letters drop in with stagger ──────────── */
+      var letters = ["#b2-l0","#b2-l1","#b2-l2","#b2-l3","#b2-l4","#b2-l5","#b2-l6","#b2-l7"];
+      letters.forEach(function (sel, i) {
+        tl.fromTo(
+          sel,
+          { opacity: 0, y: -60, rotation: -8 },
+          { opacity: 1, y: 0, rotation: 0, duration: 0.45, ease: "back.out(1.7)" },
+          0.8 + i * 0.04
+        );
+      });
+
+      /* ─── 1.4s: camera push 1.0 → 1.04 ────────────────────────── */
+      tl.fromTo(
+        "#b2-camera",
+        { scale: 1.0 },
+        { scale: 1.04, duration: 0.35, ease: "power3.out" },
+        1.4
+      );
+
+      /* ─── 1.75s: slow dolly continues 1.04 → 1.07 over remaining beat.
+             Starts at 1.75 (after the push ends) to avoid overlap.     */
+      tl.to(
+        "#b2-camera",
+        { scale: 1.07, duration: BEAT - 1.75, ease: "none", overwrite: "auto" },
+        1.75
+      );
+
+      /* ─── 1.8s: "Not adapted." container fades in, chars type on ── */
+      var notAdaptedEl = document.getElementById("b2-not-adapted");
+      tl.fromTo(
+        "#b2-not-adapted",
+        { opacity: 0 },
+        { opacity: 1, duration: 0.01 },
+        1.8
+      );
+      var CHAR_DELAY = 0.035;
+      for (var c = 0; c <= TYPING_CHARS; c++) {
+        (function (ci) {
+          tl.call(
+            function () {
+              if (notAdaptedEl) {
+                notAdaptedEl.textContent = TYPING_TEXT.substring(0, ci);
+              }
+            },
+            null,
+            1.8 + ci * CHAR_DELAY
+          );
+        })(c);
+      }
+
+      /* ─── 2.6s: NaijaReviewer-8B resolves from blur — product name hero reveal */
+      tl.fromTo(
+        "#b2-cred-name",
+        { opacity: 0, filter: "blur(20px)", scale: 0.97 },
+        { opacity: 1, filter: "blur(0px)", scale: 1.0, duration: 0.7, ease: "power2.out" },
+        2.6
+      );
+
+      /* ─── 3.2s: subtitle fades up below */
+      tl.fromTo(
+        "#b2-cred-sub",
+        { opacity: 0, y: 12 },
+        { opacity: 0.65, y: 0, duration: 0.5, ease: "power2.out" },
+        3.2
+      );
+
+      /* ─── 3.0s: CPU icon fades in ───────────────────────────────── */
+      tl.fromTo(
+        "#b2-cpu",
+        { opacity: 0 },
+        { opacity: 0.65, duration: 0.6, ease: "power2.out" },
+        3.0
+      );
+
+      /* ─── 3.6s: CPU float oscillation y ±4px, 2.2s, yoyo, repeat:2
+             repeat:2 = 3 half-cycles = 6.6s total — runs to ~10.2s beat-local,
+             which beyond the beat duration is fine (clip stops at 7.5s).     */
+      tl.fromTo(
+        "#b2-cpu",
+        { y: 0 },
+        { y: -4, duration: 2.2, ease: "sine.inOut", yoyo: true, repeat: 2 },
+        3.6
+      );
+
+      /* ─── 3.5s: green line pulse opacity 0.85 → 1.0, 1.8s, yoyo, repeat:1 */
+      tl.fromTo(
+        "#b2-line",
+        { opacity: 0.85 },
+        { opacity: 1.0, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: 1 },
+        3.5
+      );
+
+      /* ─── register ──────────────────────────────────────────────── */
+      window.__timelines["beat-2-solution"] = tl;
+    })();
+  </script>
+</template>
